@@ -282,6 +282,7 @@ public class Signal extends JLabel implements AxleListener{
 		}
 		if(dir==Direction&&(Direction==Orientation.Odd ? Linked.OddOccupier : Linked.EvenOccupier).contains(a))
 		{
+			if(SignalAspect == Aspect.Parada) JOptionPane.showMessageDialog(null, "Tren x rebasó señal".concat(Name));
 			if(Automatic==Automatization.Manual||!ClearRequest) Close();
 		}
 		if(MonitoringCounters.contains(a))
