@@ -1,0 +1,4 @@
+bin/
+*.jar
+*.dll
+*.class
