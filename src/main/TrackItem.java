@@ -1,5 +1,10 @@
 package main;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -10,6 +15,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 enum Orientation
 {
@@ -19,7 +25,7 @@ enum Orientation
 	Both,
 	Unknown
 }
-public class TrackItem extends JLabel implements AxleListener{
+public class TrackItem extends JPanel implements AxleListener{
 	public String Name;
 	public Orientation BlockState = Orientation.None;
 	public Orientation Occupied = Orientation.None;
@@ -34,6 +40,8 @@ public class TrackItem extends JLabel implements AxleListener{
 	AxleCounter OddRelease = null;
 	List<AxleCounter> EvenOccupier = new ArrayList<AxleCounter>();
 	List<AxleCounter> OddOccupier = new ArrayList<AxleCounter>();
+	List<Signal> SignalsListening = new ArrayList<Signal>();
+	JLabel TrackIcon = new JLabel();
 	TrackItem()
 	{
 		return;
@@ -80,7 +88,23 @@ public class TrackItem extends JLabel implements AxleListener{
 			}
 	
 		});
-		setIcon(new ImageIcon("Images/TrackFree.png"));
+		this.setLayout(new GridBagLayout());
+		this.setBackground(Color.black);
+		GridBagConstraints g = new GridBagConstraints();
+		TrackIcon.setOpaque(true);
+		TrackIcon.setMinimumSize(new Dimension(20, 3));
+		TrackIcon.setPreferredSize(new Dimension(61, 3));
+		TrackIcon.setMaximumSize(new Dimension(61, 3));
+		this.add(TrackIcon, g);
+		updateIcon();
+		if(Name.charAt(0)=='V')
+		{
+			g.gridy++;
+			JLabel j = new JLabel();
+			j.setForeground(Color.yellow);
+			if(Name.contains("/Arb/CdM")) j.setText("Vía ".concat(Name.charAt(1)=='1' ? "I" : "II"));
+			else j.setText(Name.substring(1,2));
+		}
 	}
 	public void setCounters(Orientation dir)
 	{
@@ -173,14 +197,7 @@ public class TrackItem extends JLabel implements AxleListener{
 	}
 	void updateIcon()
 	{
-		ImageIcon i = null;
-		if(Occupied != Orientation.None)  i = new ImageIcon("Images/TrackOccupied.png");
-		else if(BlockState != Orientation.None) i = new ImageIcon("Images/TrackBlocked.png");
-		else i = new ImageIcon("Images/TrackFree.png");
-		/*ImageIcon icono = new ImageIcon(i.getImage().getScaledInstance(getWidth(), getHeight(), Image.SCALE_DEFAULT));
-		setIcon(icono);*/
-		setIcon(i);
-		this.repaint();
+		TrackIcon.setBackground(Occupied != Orientation.None ? Color.red : BlockState != Orientation.None ? Color.green : Color.yellow);
 	}
 	public void AxleDetected(AxleCounter a, Orientation dir) 
 	{
@@ -208,10 +225,22 @@ public class TrackItem extends JLabel implements AxleListener{
 			Occupied = Orientation.None;
 		}
 		updateIcon();
-		if(SignalLinked != null && !SignalLinked.MonitoringCounters.contains(a)) SignalLinked.AxleDetected(a, dir);
-		TrackItem t = getNext(Orientation.Even);
-		if(t!=null&&t.SignalLinked!=null && !t.SignalLinked.MonitoringCounters.contains(a)) t.SignalLinked.AxleDetected(a, dir);
-		t = getNext(Orientation.Odd);
-		if(t!=null&&t.SignalLinked!=null && !t.SignalLinked.MonitoringCounters.contains(a)) t.SignalLinked.AxleDetected(a, dir);
+	}
+	public void PerformAction(AxleCounter a, Orientation dir)
+	{
+		List<Signal> ss = new ArrayList<Signal>();
+		ss.addAll(SignalsListening);
+		for(Signal s : ss)
+		{
+			s.TrackChanged(this, dir, (dir == Orientation.Even ? EvenRelease : OddRelease)==a);
+		}
+		if(EvenItem != null && EvenItem.SignalLinked!=null)
+		{
+			EvenItem.SignalLinked.TrackChanged(this, dir, false);
+		}
+		if(OddItem != null && OddItem.SignalLinked!=null)
+		{
+			OddItem.SignalLinked.TrackChanged(this, dir, false);
+		}
 	}
 }

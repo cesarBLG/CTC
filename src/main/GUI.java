@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
@@ -53,47 +54,75 @@ public class GUI
 	void setTrackLayout()
 	{
 		JPanel layout = new JPanel();
+		layout.setBackground(Color.black);
 		layout.setLayout(new GridBagLayout());
 		GridBagConstraints g = new GridBagConstraints();
-		g.fill = GridBagConstraints.BOTH;
+		g.fill = GridBagConstraints.HORIZONTAL;
+		g.anchor = GridBagConstraints.NORTH;
 		g.gridx = g.gridy = 0;
+		g.insets = new Insets(0, 2, 0, 2);
 		for(TrackItem t : l.items)
 		{
 			g.gridx = g.gridy = 0;
 			if(t.Name.contains("Arb/CdM"))
 			{
-				g.gridx = 5;
-				g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) - 1) * 3 + 1;
-				layout.add(t, g);
-				continue;
+				g.gridx = 6;
+				g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) - 1) * 2 + 1;
 			}
-			else g.gridx = t.Name.contains("Arb") ? 0 : 6;
-			g.gridheight = 1;
-			if(t.Name.contains("PV"))
+			else
 			{
-				g.gridy = (Integer.parseInt(t.Name.substring(4, 5)) - 1) * 3 + 1;
-				if(t.Name.contains("PV1")) g.gridx += 1;
-				if(t.Name.contains("PV2")) g.gridx += 3;
-			}
-			if(t.Name.charAt(0)=='V')
-			{
-				g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) - 1) * 3 + 1;
-				g.gridx += 2;
-			}
-			if(t.Name.charAt(0)=='A')
-			{
-				g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) / 2 + 1) * 3;
-				g.gridheight = 3;
-				if(Integer.parseInt(t.Name.substring(1, 2))%2==1) g.gridx += 4;
-				else g.gridx+=0;
+				g.gridx = t.Name.contains("Arb") ? 0 : 7;
+				g.gridheight = 1;
+				if(t.Name.contains("PV"))
+				{
+					g.gridy = (Integer.parseInt(t.Name.substring(4, 5)) - 1) * 2 + 1;
+					if(t.Name.contains("PV1")) g.gridx += 1;
+					if(t.Name.contains("PV2")) g.gridx += 3;
+				}
+				if(t.Name.charAt(0)=='V')
+				{
+					g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) - 1) * 2 + 1;
+					g.gridx += 2;
+				}
+				if(t.Name.charAt(0)=='A')
+				{
+					g.anchor = GridBagConstraints.NORTH;
+					g.gridy = ((Integer.parseInt(t.Name.substring(1, 2)) - 1) / 2) * 2 + 1;
+					g.gridheight = 2;
+					if(Integer.parseInt(t.Name.substring(1, 2))%2==1) g.gridx += 4;
+					else g.gridx+=0;
+				}
+				if(t.Name.charAt(0)=='E')
+				{
+					g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) - 1) * 2 + 1;
+					g.gridx += 5;
+				}
 			}
 			layout.add(t, g);
 			if(t.SignalLinked!=null)
 			{
+				g.insets = new Insets(0, 2, 3, 2);
+				g.fill = GridBagConstraints.NONE;
+				g.anchor = t.SignalLinked.Direction == Orientation.Even ? GridBagConstraints.WEST : GridBagConstraints.EAST;
 				g.gridy--;
 				layout.add(t.SignalLinked, g);
+				g.fill = GridBagConstraints.HORIZONTAL;
+				g.insets = new Insets(0, 2, 0, 2);
+				g.anchor = GridBagConstraints.NORTH;
 			}
 		}
+		/*g.anchor = GridBagConstraints.CENTER;
+		g.gridx = 2;
+		g.gridy = 6;
+		g.insets = new Insets(15, 2, 0, 2);
+		JLabel l = new JLabel("Arboleda");
+		l.setForeground(Color.yellow);
+		layout.add(l, g);
+		g.gridx = 9;
+		g.gridy = 4;
+		l = new JLabel("C. Madera");
+		l.setForeground(Color.yellow);
+		layout.add(l, g);*/
 		frame.add(layout);
 	}
 	void setItineraryFrame()

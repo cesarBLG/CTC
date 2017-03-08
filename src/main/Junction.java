@@ -1,12 +1,21 @@
 package main;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 enum Position
@@ -27,6 +36,8 @@ public class Junction extends TrackItem
 	AxleCounter ReleaseCounter[] = new AxleCounter[2];
 	List<AxleCounter> StraightOccupier = new ArrayList<AxleCounter>();
 	List<AxleCounter> CurveOccupier = new ArrayList<AxleCounter>();
+	JLabel Locking = new JLabel();
+	JLabel State = new JLabel();
 	Junction(String s, Position p, Orientation o)
 	{
 		Name = s;
@@ -60,15 +71,11 @@ public class Junction extends TrackItem
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON1)
 				{
+					if(Muelle!=-1) Muelle = 1-Muelle;
 					if(Switch==Position.Straight) setSwitch(Class);
 					else setSwitch(Position.Straight);
 				}
-				if(arg0.getButton()==MouseEvent.BUTTON3)
-				{
-					JOptionPane.showMessageDialog(null, Occupied.name());
-				}
 			}
-
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
 				// TODO Auto-generated method stub
@@ -78,12 +85,9 @@ public class Junction extends TrackItem
 			}
 	
 		});
-		ImageIcon i = null;
-		if(Direction==Orientation.Odd&&Class==Position.Left) i = new ImageIcon("Images/LeftJunction_Straight_Left.png");
-		if(Direction==Orientation.Even&&Class==Position.Left) i = new ImageIcon("Images/LeftJunction_Straight_Right.png");
-		if(Direction==Orientation.Odd&&Class==Position.Right) i = new ImageIcon("Images/RightJunction_Straight_Left.png");
-		if(Direction==Orientation.Even&&Class==Position.Right) i = new ImageIcon("Images/RightJunction_Straight_Right.png");
-		setIcon(i);
+		setLayout(new GridBagLayout());
+		this.setBackground(Color.black);
+		setIcon();
 	}
 	@Override
 	public TrackItem getNext(Orientation o)
@@ -117,12 +121,19 @@ public class Junction extends TrackItem
 			}
 		}
 		if(BlockState==Orientation.None&&Occupied==Orientation.None) Locked = -1;
+		updateIcon();
 	}
+	boolean wasFree = true;
 	@Override
 	public void AxleDetected(AxleCounter c, Orientation dir)
 	{
-		boolean wasFree = Occupied == Orientation.None;
+		wasFree = Occupied == Orientation.None;
 		super.AxleDetected(c, dir);
+	}
+	@Override
+	public void PerformAction(AxleCounter c, Orientation dir)
+	{
+		super.PerformAction(c, dir);
 		if(Occupied==Direction) Locked = Switch==Position.Straight ? 0 : 1;
 		else if(Occupied!=Orientation.None)
 		{
@@ -144,9 +155,59 @@ public class Junction extends TrackItem
 		}
 		if(Occupied==Orientation.None && Muelle!=-1) setSwitch(Muelle == 0 ? Position.Straight : Class);
 		if(BlockState==Orientation.None&&Occupied==Orientation.None) Locked = -1;
+		updateIcon();
 	}
 	@Override
-	void updateIcon(){}
+	void updateIcon()
+	{
+		TrackIcon.setBackground(Occupied != Orientation.None ? Color.red : BlockState != Orientation.None ? Color.green : Color.yellow);
+		Locking.setBackground(Locked != -1 ? Color.blue : Color.yellow);
+		this.remove(State);
+		g.gridy = (Direction==Orientation.Even && Switch == Position.Right) || (Direction==Orientation.Odd && Switch == Position.Left) ? 1 : 0;
+		g.insets = new Insets(0, 0, 0, 0);
+		add(State, g);
+		this.repaint();
+		this.validate();
+	}
+	GridBagConstraints g = new GridBagConstraints();
+	void setIcon()
+	{
+		g.fill = GridBagConstraints.HORIZONTAL;
+		g.anchor = GridBagConstraints.NORTH;
+		g.gridx = Direction == Orientation.Even ? 0 : 2;
+		g.gridy = (Direction==Orientation.Even && Class == Position.Right) || (Direction==Orientation.Odd && Class == Position.Left) ? 0 : 1;
+		TrackIcon.setOpaque(true);
+		TrackIcon.setMinimumSize(new Dimension(10, 3));
+		TrackIcon.setPreferredSize(new Dimension(17, 3));
+		TrackIcon.setMaximumSize(new Dimension(17, 3));
+		add(TrackIcon, g);
+		g.gridy = 1-g.gridy;
+		JLabel j = new JLabel();
+		j.setForeground(Color.yellow);
+		j.setText(Name.substring(0, 2));
+		add(j, g);
+		g.gridy = 1-g.gridy;
+		if(Direction == Orientation.Even) g.gridx++;
+		else g.gridx--;
+		g.insets = new Insets(0, 2, 0, 2);
+		Locking.setOpaque(true);
+		Locking.setMinimumSize(new Dimension(3, 3));
+		Locking.setPreferredSize(new Dimension(4, 3));
+		Locking.setMaximumSize(new Dimension(4, 3));
+		add(Locking, g);
+		if(Switch != Position.Straight) g.gridy = 1-g.gridy;
+		if(Direction == Orientation.Even) g.gridx++;
+		else g.gridx--;
+		g.insets = new Insets(0, 0, 0, 0);
+		State.setOpaque(true);
+		State.setMinimumSize(new Dimension(3, 3));
+		State.setPreferredSize(new Dimension(4, 3));
+		State.setMaximumSize(new Dimension(4, 3));
+		State.setBackground(Color.yellow);
+		add(State, g);
+		this.validate();
+		updateIcon();
+	}
 	@Override
 	public void setCounters(Orientation dir)
 	{
@@ -278,26 +339,8 @@ public class Junction extends TrackItem
 	}
 	public void updatePosition()
 	{
+		updateIcon();
 		setCounters(Orientation.Both);
-		ImageIcon icon = null;
-		if(Switch==Position.Straight)
-		{
-
-			if(Direction==Orientation.Odd&&Class==Position.Left) icon = new ImageIcon("Images/LeftJunction_Straight_Left.png");
-			if(Direction==Orientation.Even&&Class==Position.Left) icon = new ImageIcon("Images/LeftJunction_Straight_Right.png");
-			if(Direction==Orientation.Odd&&Class==Position.Right) icon = new ImageIcon("Images/RightJunction_Straight_Left.png");
-			if(Direction==Orientation.Even&&Class==Position.Right) icon = new ImageIcon("Images/RightJunction_Straight_Right.png");
-		}
-		else
-		{
-			if(Direction==Orientation.Odd&&Class==Position.Left) icon = new ImageIcon("Images/LeftJunction_Left_Left.png");
-			if(Direction==Orientation.Even&&Class==Position.Left) icon = new ImageIcon("Images/LeftJunction_Left_Right.png");
-			if(Direction==Orientation.Odd&&Class==Position.Right) icon = new ImageIcon("Images/RightJunction_Right_Left.png");
-			if(Direction==Orientation.Even&&Class==Position.Right) icon = new ImageIcon("Images/RightJunction_Right_Right.png");
-		}
-		ImageIcon icono = new ImageIcon(icon.getImage().getScaledInstance(getWidth(), getHeight(), Image.SCALE_DEFAULT));
-		setIcon(icono);
-		this.repaint();
 	}
 	public void setSwitch(Position p)
 	{

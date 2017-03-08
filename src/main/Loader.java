@@ -1,10 +1,14 @@
 package main;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+
+import main.Signal.Aspect;
 
 public class Loader {
 	List<TrackItem> items = new ArrayList<TrackItem>();
@@ -12,229 +16,164 @@ public class Loader {
 	List<AxleCounter> counters = new ArrayList<AxleCounter>();
 	Loader()
 	{
-		items.add(new Junction("A2/Arb", Position.Right, Orientation.Even));
-		items.add(new Junction("A4/Arb", Position.Right, Orientation.Even));
-		items.add(new EoB("PV1/1/Arb"));
-		items.add(new EoB("PV1/2/Arb"));
-		items.add(new EoT("PV1/3/Arb"));
-		items.add(new TrackItem("V1/Arb"));
-		items.add(new TrackItem("V2/Arb"));
-		items.add(new TrackItem("V3/Arb"));
-		items.add(new EoB("PV2/1/Arb"));
-		items.add(new EoB("PV2/2/Arb"));
-		items.add(new EoB("PV2/3/Arb"));
-		items.add(new Junction("A1/Arb", Position.Left, Orientation.Odd));
-		items.add(new Junction("A3/Arb", Position.Left, Orientation.Odd));
-		items.add(new TrackItem("V1/Arb/CdM"));
-		items.add(new Junction("A2/CdM", Position.Right, Orientation.Even));
-		items.add(new TrackItem("PV1/1/CdM"));
-		items.add(new TrackItem("V1/CdM"));
-		items.add(new EoB("PV2/1/CdM"));
-		items.add(new EoB("PV1/2/CdM"));
-		signals.add(new Signal("S2/1/Arb"));
-		signals.add(new Signal("S2/2/Arb"));
-		signals.add(new Signal("S2/3/Arb"));
-		signals.add(new Signal("S1/1/CdM"));
-		counters.add(new AxleCounter("CV1/1/Arb"));
-		counters.add(new AxleCounter("CV1/2/Arb"));
-		counters.add(new AxleCounter("CV1/3/Arb"));
-		counters.add(new AxleCounter("CV2/1/Arb"));
-		counters.add(new AxleCounter("CV2/2/Arb"));
-		counters.add(new AxleCounter("CV2/3/Arb"));
-		counters.add(new AxleCounter("CV1/1/CdM"));
-		counters.add(new AxleCounter("CV2/1/CdM"));
-		for(TrackItem a : items)
-		{
-			if(a.Name.contains("PV"))
+		File layout = new File("layout.txt");
+		FileReader fr = null;
+		try {
+			fr = new FileReader(layout);
+			BufferedReader br = new BufferedReader(fr);
+			String s = br.readLine();
+			while(s!=null)
 			{
-				String c = "S";
-				c = c.concat(a.Name.substring(2));
-				for(Signal b : signals)
+				if(s.charAt(0)=='$')
 				{
-					if(b.Name.equals(c))
+					String name = ReadParameter(s);
+					if(name.charAt(0)=='A')
 					{
-						b.Linked = a;
-						a.SignalLinked = b;
+						br.readLine();
+						br.readLine();
+						br.readLine();
+						String p = ReadParameter(br.readLine());
+						String m = ReadParameter(br.readLine());
+						Position pos = p.contains("Izquierda") ? Position.Left : Position.Right;
+						int Number = Integer.parseInt(name.substring(1, 2));
+						Junction j = new Junction(name, pos, Number%2==1 ? Orientation.Odd : Orientation.Even);
+						if(m.contains("Desviada")) j.Muelle = 1;
+						else if(m.contains("Directa")) j.Muelle = 0;
+						else j.Muelle = -1;
+						j.setSwitch(Position.Straight);
+						items.add(j);
 					}
-				}
-				c = "CV";
-				c = c.concat(a.Name.substring(2));
-				for(AxleCounter b : counters)
-				{
-					if(b.Name.equals(c))
+					else
 					{
-						a.CounterLinked = b;
-						a.CounterDir = b.Name.charAt(2) == '1' ? Orientation.Even : Orientation.Odd;
-					}
-				}
-				c = "V";
-				c = c.concat(a.Name.substring(4));
-				for(TrackItem b : items)
-				{
-					if(b.Name.equals(c))
-					{
-						if(a.Name.charAt(2)=='1')
+						br.readLine();
+						br.readLine();
+						String sig = ReadParameter(br.readLine());
+						String ac = ReadParameter(br.readLine());
+						TrackItem t = new TrackItem(name);
+						if(sig.charAt(0)!='0')
 						{
-							a.EvenItem = b;
-							b.OddItem = a;
+							Signal Sig = new Signal(sig);
+							t.SignalLinked = Sig;
+							Sig.Linked = t;
+							signals.add(Sig);
 						}
-						else
+						if(ac.charAt(0)!='0')
 						{
-							b.EvenItem = a;
-							a.OddItem = b;
+							AxleCounter Ac = new AxleCounter(ac);
+							t.CounterLinked = Ac;
+							t.CounterDir = ac.charAt(2)=='1' ? Orientation.Even : Orientation.Odd;
+							counters.add(Ac);
 						}
+						items.add(t);
 					}
 				}
-				boolean Assigned = false;
-				c = "A";
-				Integer JunctionNumber = (Integer.parseInt(a.Name.substring(4, 5)) - 1) * 2 + (a.Name.charAt(2) == '1' ? 2 : 1);
-				c = c.concat(JunctionNumber.toString());
-				c = c.concat(a.Name.substring(5));
-				for(TrackItem b : items)
+				s = br.readLine();
+			}
+			fr = new FileReader(layout);
+			br = new BufferedReader(fr);
+			s = br.readLine();
+			while(s!=null)
+			{
+				if(s.charAt(0)=='$')
 				{
-					if(b.Name.equals(c))
+					String name = ReadParameter(s);
+					TrackItem ti = null;
+					for(TrackItem t : items)
 					{
-						((Junction)b).FrontItems[0] = a;
-						if(a.Name.charAt(2)=='1') a.OddItem = b;
-						else a.EvenItem = b;
-						Assigned = true;
+						if(t.Name.equals(name)) ti = t;
 					}
-				}
-				if(!Assigned)
-				{
-					c = "A";
-					JunctionNumber -= 2;
-					if(JunctionNumber == 0)
+					if(ti instanceof Junction)
 					{
-						for(TrackItem b : items)
+						Junction j = (Junction)ti;
+						String backname = ReadParameter(br.readLine());
+						for(TrackItem t : items)
 						{
-							if(b.Name.charAt(0)=='V'&&b.Name.contains("Arb/CdM")&&((a.Name.contains("Arb")&&a.Name.charAt(2)=='2')||(a.Name.contains("CdM")&&a.Name.charAt(2)=='1')))
+							if(t.Name.equals(backname))
 							{
-								if(a.Name.charAt(2)=='1')
-								{
-									a.OddItem = b;
-									b.EvenItem = a;
-								}
-								else
-								{
-									a.EvenItem = b;
-									b.OddItem = a;
-								}
+								j.BackItem = t;
+							}
+						}
+						String front0name = ReadParameter(br.readLine());
+						for(TrackItem t : items)
+						{
+							if(t.Name.equals(front0name))
+							{
+								j.FrontItems[0] = t;
+							}
+						}
+						String front1name = ReadParameter(br.readLine());
+						for(TrackItem t : items)
+						{
+							if(t.Name.equals(front1name))
+							{
+								j.FrontItems[1] = t;
 							}
 						}
 					}
 					else
 					{
-						c = c.concat(JunctionNumber.toString());
-						c = c.concat(a.Name.substring(5));
-						for(TrackItem b : items)
+						String oddname = ReadParameter(br.readLine());
+						for(TrackItem t : items)
 						{
-							if(b.Name.equals(c))
+							if(t.Name.equals(oddname))
 							{
-								((Junction)b).FrontItems[1] = a;
-								if(a.Name.charAt(2)=='1') a.OddItem = b;
-								else a.EvenItem = b;
-								Assigned = true;
+								ti.OddItem = t;
+							}
+						}
+						String evenname = ReadParameter(br.readLine());
+						for(TrackItem t : items)
+						{
+							if(t.Name.equals(evenname))
+							{
+								ti.EvenItem = t;
 							}
 						}
 					}
 				}
+				s = br.readLine();
 			}
-			if(a.Name.charAt(0)=='A')
+			fr.close();
+		}
+		catch(Exception e)
+		{
+			try
 			{
-				Integer Number = Integer.parseInt(a.Name.substring(1, 2));
-				Number -= 2;
-				if(Number <= 0)
-				{
-					for(TrackItem b : items)
-					{
-						if(b.Name.charAt(0)=='V'&&b.Name.contains("Arb/CdM")&&((a.Name.contains("Arb")&&a.Name.charAt(1)=='1')||(a.Name.contains("CdM")&&a.Name.charAt(1)=='2')))
-						{
-							if(Integer.parseInt(a.Name.substring(1, 2))%2 == 1)
-							{
-								((Junction)a).BackItem = b;
-								b.OddItem = a;
-							}
-							else
-							{
-								((Junction)a).BackItem = b;
-								b.EvenItem = a;
-							}
-						}
-					}
-				}
-				else
-				{
-					String c = "A";
-					c = c.concat(Number.toString());
-					c = c.concat(a.Name.substring(2));
-					for(TrackItem b : items)
-					{
-						if(b.Name.equals(c))
-						{
-							((Junction)b).FrontItems[1] = a;
-							((Junction)a).BackItem = b;
-						}
-					}
-				}
+				fr.close();
 			}
-			if(a.Name.charAt(0)=='V')
+			catch(Exception ex)
 			{
-				String c = "PV1/";
-				c = c.concat(a.Name.substring(1));
-				for(TrackItem b : items)
-				{
-					if(b.Name.equals(c))
-					{
-						a.OddItem = b;
-						b.EvenItem = a;
-					}
-				}
-				c = "PV2/";
-				c = c.concat(a.Name.substring(1));
-				for(TrackItem b : items)
-				{
-					if(b.Name.equals(c))
-					{
-						a.EvenItem = b;
-						b.OddItem = a;
-					}
-				}
 			}
-			/*if(a instanceof Junction)
-			{
-				try
-				{
-					JOptionPane.showMessageDialog(null, ((Junction)a).BackItem.Name.concat(a.Name.concat(((Junction)a).FrontItems[0].Name.concat(((Junction)a).FrontItems[1].Name))));
-				}
-				catch(Exception e){}
-			}
-			else
-			{
-				try
-				{
-					JOptionPane.showMessageDialog(null, a.EvenItem.Name.concat(a.Name.concat(a.OddItem.Name)));
-				}
-				catch(Exception e){}
-			}*/
 		}
 		for(TrackItem a : items)
 		{
-			if(a.Name == "A2/CdM")
-			{
-				((Junction)a).Muelle = 1;
-			}
-			if(a.CounterLinked!=null)
+			if(!(a instanceof Junction) && a.CounterLinked!=null)
 			{
 				a.setCounters(Orientation.None);
 				if(a.EvenItem!=null) a.EvenItem.setCounters(Orientation.Even);
+				else a.SignalLinked = new FixedSignal(Orientation.Even, Aspect.Anuncio_parada);
 				if(a.OddItem!=null) a.OddItem.setCounters(Orientation.Odd);
+				else a.SignalLinked = new FixedSignal(Orientation.Odd, Aspect.Anuncio_parada);
 			}
 		}
-		Collections.reverse(items);
-		/*for(TrackItem a : items)
+	}
+	String ReadParameter(String data)
+	{
+		String s = null;
+		int End = 0;
+		for(int i=0; i<data.length(); i++)
 		{
-			a.setCounters(Orientation.None);
-		}*/
+			if(data.charAt(i)==' ')
+			{
+				End = i;
+				break;
+			}
+			if(i+1==data.length())
+			{
+				End = i + 1;
+				break;
+			}
+		}
+		s = data.substring(data.charAt(0)=='$' ? 1 : 0, End);
+		return s;
 	}
 }

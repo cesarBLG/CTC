@@ -5,6 +5,7 @@ import java.util.*;
 interface AxleListener
 {
 	void AxleDetected(AxleCounter a, Orientation d);
+	void PerformAction(AxleCounter a, Orientation d);
 }
 public class AxleCounter 
 {
@@ -23,6 +24,10 @@ public class AxleCounter
 			if(l==null) listeners.remove(l); 
 			else l.AxleDetected(this, Orientation.Even);
 		}
+		for(AxleListener l  : c)
+		{
+			l.PerformAction(this, Orientation.Even);
+		}
 	}
 	public void OddPassed()
 	{
@@ -30,7 +35,12 @@ public class AxleCounter
 		c.addAll(listeners);
 		for(AxleListener l  : c)
 		{
-			if(l!=null) l.AxleDetected(this, Orientation.Odd);
+			if(l==null) listeners.remove(l); 
+			else l.AxleDetected(this, Orientation.Odd);
+		}
+		for(AxleListener l  : c)
+		{
+			l.PerformAction(this, Orientation.Odd);
 		}
 	}
 	public void addListener(AxleListener al)

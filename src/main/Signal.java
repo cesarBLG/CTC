@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.PopupMenu;
@@ -18,7 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 
-public class Signal extends JLabel implements AxleListener{
+public class Signal extends JLabel{
 	enum Aspect
 	{
 		Parada,
@@ -45,11 +46,12 @@ public class Signal extends JLabel implements AxleListener{
 	public Aspect SignalAspect = Aspect.Parada;
 	Signal NextSignal;
 	TrackItem Linked;
-	List<AxleCounter> MonitoringCounters = new ArrayList<AxleCounter>();
+	List<TrackItem> MonitoringItems = new ArrayList<TrackItem>();
 	JPopupMenu p;
 	JMenuItem close = new JMenuItem("Abrir señal");
 	JMenuItem override = new JMenuItem("Rebase autorizado");
 	JMenuItem auto = new JMenuItem("Modo automático");
+	List<Signal> SignalsListening = new ArrayList<Signal>();
 	Signal()
 	{
 		
@@ -130,6 +132,7 @@ public class Signal extends JLabel implements AxleListener{
 						if(arg0.getButton()==MouseEvent.BUTTON1)
 						{
 							Clear();
+							setAutomatic(false);
 						}
 					}
 
@@ -143,24 +146,56 @@ public class Signal extends JLabel implements AxleListener{
 					}
 			
 				});
+		this.setForeground(Color.WHITE);
+		this.setHorizontalTextPosition(CENTER);
+		this.setVerticalTextPosition(TOP);
+		this.setText(Name.substring(0, Name.charAt(0)=='S' ? 4 : 2));
 		setAspect();
 	}
 	public void Clear()
 	{
-		if(Cleared) return;
 		Occupied = false;
 		Override = false;
 		Switches = false;
 		if(Linked==null) return;
 		TrackItem i = Linked;
 		TrackItem p = null;
+		for(TrackItem t : MonitoringItems)
+		{
+			t.SignalsListening.remove(this);
+		}
+		MonitoringItems.clear();
 		do
 		{
-			if(i==null||(i.BlockState!=Orientation.None&&i.BlockState!=Direction)||(i.Occupied!=Orientation.None&&i.Occupied!=Direction)) return;
+			MonitoringItems.add(i);
+			TrackItem n;
+			if(p==null) n = i.getNext(Direction);
+			else n = i.getNext(p);
+			p = i;
+			i = n;
+		}
+		while(i==null||i.SignalLinked==null||i.SignalLinked.Direction!=Direction);
+		for(TrackItem t : MonitoringItems)
+		{
+			if(t!=null&&!t.SignalsListening.contains(this)) t.SignalsListening.add(this);
+		}
+		i = Linked;
+		p = null;
+		do
+		{
+			if(i==null||(i.BlockState!=Orientation.None&&i.BlockState!=Direction)||(i.Occupied!=Orientation.None&&i.Occupied!=Direction))
+			{
+				Close();
+				return;
+			}
 			if(i instanceof Junction)
 			{
 				Junction j = (Junction)i;
-				if(p!=null && !j.LockedFor(p)) return;
+				if(p!=null && !j.LockedFor(p))
+				{
+					Close();
+					return;
+				}
 			}
 			TrackItem n;
 			if(p==null) n = i.getNext(Direction);
@@ -169,11 +204,6 @@ public class Signal extends JLabel implements AxleListener{
 			i = n;
 		}
 		while(i==null||i.SignalLinked==null||i.SignalLinked.Direction!=Direction);
-		for(AxleCounter c : MonitoringCounters)
-		{
-			c.listeners.remove(this);
-		}
-		MonitoringCounters.clear();
 		i = Linked;
 		p = null;
 		do
@@ -185,10 +215,6 @@ public class Signal extends JLabel implements AxleListener{
 				if(j.Switch != Position.Straight && j.Direction==Direction) Switches = true;
 			}
 			i.setBlock(Direction);
-			if(i.EvenRelease!=null) MonitoringCounters.add(i.EvenRelease);
-			if(i.OddRelease!=null) MonitoringCounters.add(i.OddRelease);
-			MonitoringCounters.addAll(i.EvenOccupier);
-			MonitoringCounters.addAll(i.OddOccupier);
 			TrackItem n;
 			if(p==null) n = i.getNext(Direction);
 			else n = i.getNext(p);
@@ -196,15 +222,19 @@ public class Signal extends JLabel implements AxleListener{
 			i = n;
 		}
 		while(i.SignalLinked==null||i.SignalLinked.Direction!=Direction);
-		for(AxleCounter c : MonitoringCounters)
-		{
-			if(c!=null&&!c.listeners.contains(this)) c.listeners.add(this);
-		}
 		Cleared = true;
-		ClearRequest = false;
 		NextSignal = i.SignalLinked;
 		NextSignal.setState();
-		if(NextSignal.Automatic==Automatization.PreviousClear) NextSignal.Clear();
+		if(NextSignal.Automatic==Automatization.PreviousClear)
+		{
+			NextSignal.Clear();
+			if(!NextSignal.Cleared)
+			{
+				Close();
+				return;
+			}
+		}
+		NextSignal.SignalsListening.add(this);
 		setAspect();
 	}
 	public void setState()
@@ -234,9 +264,18 @@ public class Signal extends JLabel implements AxleListener{
 			return;
 		}
 		if(!Cleared) return;
+		if(Automatic == Automatization.PreviousClear)
+		{
+			List<Signal> ss = new ArrayList<Signal>();
+			ss.addAll(SignalsListening);
+			for(Signal s : ss)
+			{
+				if(s.NextSignal == this) s.Close();
+			}
+		}
 		Cleared = false;
-		ClearRequest = false;
 		if(Linked==null) return;
+		NextSignal.SignalsListening.remove(this);
 		TrackItem i = Linked;
 		TrackItem p = null;
 		boolean EndOfLock = true;
@@ -251,94 +290,54 @@ public class Signal extends JLabel implements AxleListener{
 			p = i;
 			i = n;
 		}
-		while(i.SignalLinked==null||i.SignalLinked.Direction!=Direction);
+		while(i.SignalLinked==null||i.SignalLinked.Direction!=Direction); 
 		if(EndOfLock)
 		{
-			for(AxleCounter c : MonitoringCounters)
-			{
-				c.listeners.remove(this);
-			}
-			MonitoringCounters.clear();
+			if(NextSignal!=null && NextSignal.Automatic==Automatization.PreviousClear) NextSignal.Close();
 		}
+		/*if(EndOfLock)
+		{
+			for(TrackItem t : MonitoringItems)
+			{
+				t.SignalsListening.remove(this);
+			}
+			MonitoringItems.clear();
+		}*/
 		setAspect();
 	}
 	public static Orientation OppositeDir(Orientation dir)
 	{
 		return dir==Orientation.Even ? Orientation.Odd : Orientation.Even;
 	}
-	public void AxleDetected(AxleCounter a, Orientation dir) 
+	public void TrackChanged(TrackItem t, Orientation dir, boolean Release)
 	{
-		if(Automatic!=Automatization.Manual&&(Direction==Orientation.Odd ? Linked.getNext(Orientation.Even).OddOccupier : Linked.getNext(Orientation.Odd).EvenOccupier).contains(a))
+		if(Direction==Orientation.Odd ? Linked.getNext(Orientation.Even) == t : Linked.getNext(Orientation.Odd) == t)
 		{
-			if(dir==Direction) ClearRequest = true;
-			else if((Direction==Orientation.Odd ? Linked.getNext(Orientation.Even).OddAxles : Linked.getNext(Orientation.Odd).EvenAxles)==0) Close();
-		}
-		if((Direction==Orientation.Odd ? Linked.getNext(Orientation.Even).OddRelease : Linked.getNext(Orientation.Odd).EvenRelease)==a)
-		{
-			if((Direction==Orientation.Odd ? Linked.getNext(Orientation.Even).OddAxles : Linked.getNext(Orientation.Odd).EvenAxles)==0)
+			if((Direction == Orientation.Odd ? t.OddAxles : t.EvenAxles)!=0) ClearRequest = true;
+			else
 			{
+				if(ClearRequest&&Automatic == Automatization.PreviousClear)
+				{
+					boolean canClose = true;
+					for(Signal s : SignalsListening)
+					{
+						if(s.NextSignal == this && s.Cleared) canClose = false;
+					}
+					if(canClose) Close();
+				}
 				ClearRequest = false;
 			}
 		}
-		if(dir==Direction&&(Direction==Orientation.Odd ? Linked.OddOccupier : Linked.EvenOccupier).contains(a))
+		if(t==Linked&&Direction==dir)
 		{
-			if(SignalAspect == Aspect.Parada) JOptionPane.showMessageDialog(null, "Tren x rebasó señal".concat(Name));
-			if(Automatic==Automatization.Manual||!ClearRequest) Close();
+			if(Automatic==Automatization.Manual && !Release) Close();
 		}
-		if(MonitoringCounters.contains(a))
+		if(MonitoringItems.contains(t)&&Cleared) Clear();
+		if(Automatic==Automatization.AutoClear&&!ClearRequest)
 		{
-			Occupied = false;
-			TrackItem i = Linked;
-			TrackItem p = null;
-			boolean EndOfLock = true;
-			do
-			{
-				if(i.Occupied==Direction) Occupied = true;
-				if(i.Occupied!=Orientation.None) EndOfLock = false;
-				if(i==null||(i.BlockState!=Orientation.None&&i.BlockState!=Direction)||(i.Occupied!=Orientation.None&&i.Occupied!=Direction)) Close();
-				if(i instanceof Junction)
-				{
-					Junction j = (Junction)i;
-					if(p!=null && !j.LockedFor(p)) Close();
-				}
-				TrackItem n;
-				if(p==null) n = i.getNext(Direction);
-				else n = i.getNext(p);
-				p = i;
-				i = n;
-			}
-			while(i.SignalLinked==null||i.SignalLinked.Direction!=Direction);
-			if(Cleared)
-			{
-				i = Linked;
-				p = null;
-				do
-				{
-					if(i.Occupied==Direction) Occupied = true;
-					if(i instanceof Junction)
-					{
-						Junction j = (Junction)i;
-						if(j.Switch != Position.Straight && j.Direction==Direction) Switches = true;
-					}
-					i.setBlock(Direction);
-					if(i.EvenRelease!=null) MonitoringCounters.add(i.EvenRelease);
-					if(i.OddRelease!=null) MonitoringCounters.add(i.OddRelease);
-					MonitoringCounters.addAll(i.EvenOccupier);
-					MonitoringCounters.addAll(i.OddOccupier);
-					TrackItem n;
-					if(p==null) n = i.getNext(Direction);
-					else n = i.getNext(p);
-					p = i;
-					i = n;
-				}
-				while(i.SignalLinked==null||i.SignalLinked.Direction!=Direction);
-				for(AxleCounter c : MonitoringCounters)
-				{
-					if(c!=null&&!c.listeners.contains(this)) c.listeners.add(this);
-				}
-			}
+			Close();
 		}
-		if(ClearRequest&&Automatic!=Automatization.Manual) Clear();
+		else if(ClearRequest&&Automatic!=Automatization.Manual) Clear();
 		setAspect();
 	}
 	public void setAutomatic(boolean v)
@@ -358,7 +357,7 @@ public class Signal extends JLabel implements AxleListener{
 		{
 			if(!Occupied)
 			{
-				if(NextSignal!=null&&(NextSignal.SignalAspect==Aspect.Anuncio_parada||NextSignal.SignalAspect==Aspect.Anuncio_precaucion||NextSignal.SignalAspect==Aspect.Via_libre))
+				if(NextSignal!=null&&(NextSignal.SignalAspect==Aspect.Precaucion||NextSignal.SignalAspect==Aspect.Anuncio_parada||NextSignal.SignalAspect==Aspect.Anuncio_precaucion||NextSignal.SignalAspect==Aspect.Via_libre))
 				{
 					if(!Switches) SignalAspect = Aspect.Via_libre;
 					else SignalAspect = Aspect.Anuncio_precaucion;
@@ -369,9 +368,13 @@ public class Signal extends JLabel implements AxleListener{
 		}
 		else if(Override) SignalAspect = Aspect.Rebase;
 		else SignalAspect = Aspect.Parada;
-		setIcon(new ImageIcon("Images/".concat((SignalAspect==Aspect.Parada&&Automatic!=Automatization.Manual ? "Automatic.png" : SignalAspect.name().concat(".png")))));
+		setIcon(new ImageIcon("Images/Signals/".concat((SignalAspect==Aspect.Parada&&Automatic!=Automatization.Manual ? "Automatic" : SignalAspect.name()).concat("_".concat(Direction.name().concat(".png"))))));
 		close.setText(Cleared ? "Cerrar señal" : "Abrir señal");
 		override.setText(Override ? "Desactivar rebase" : "Rebase autorizado");
 		auto.setText(Automatic == Automatization.Manual ? "Modo automático" : "Modo manual");
+		for(Signal s : SignalsListening)
+		{
+			s.setAspect();
+		}
 	}
 }

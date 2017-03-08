@@ -13,5 +13,5 @@ public class FixedSignal extends Signal {
 	@Override
 	public void setAspect() {SignalAspect = FixedAspect;}
 	@Override
-	public void AxleDetected(AxleCounter a, Orientation dir) {}
+	public void TrackChanged(TrackItem t, Orientation dir, boolean Release) {}
 }
