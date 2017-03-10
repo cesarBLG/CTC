@@ -1,10 +1,13 @@
 package main;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -42,6 +45,13 @@ public class TrackItem extends JPanel implements AxleListener{
 	List<AxleCounter> OddOccupier = new ArrayList<AxleCounter>();
 	List<Signal> SignalsListening = new ArrayList<Signal>();
 	JLabel TrackIcon = new JLabel();
+	GridBagConstraints GridBag = new GridBagConstraints();
+	int x = 0;
+	int y = 0;
+	void setSignal(Signal s)
+	{
+		SignalLinked = s;
+	}
 	TrackItem()
 	{
 		return;
@@ -51,7 +61,6 @@ public class TrackItem extends JPanel implements AxleListener{
 		Name = s;
 		addMouseListener(new MouseListener()
 		{
-
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				// TODO Auto-generated method stub
@@ -88,23 +97,30 @@ public class TrackItem extends JPanel implements AxleListener{
 			}
 	
 		});
-		this.setLayout(new GridBagLayout());
+		this.setLayout(new BorderLayout());
 		this.setBackground(Color.black);
-		GridBagConstraints g = new GridBagConstraints();
 		TrackIcon.setOpaque(true);
 		TrackIcon.setMinimumSize(new Dimension(20, 3));
-		TrackIcon.setPreferredSize(new Dimension(61, 3));
+		TrackIcon.setPreferredSize(new Dimension(30, 3));
+		switch(Name.charAt(0))
+		{
+			case 'V':
+				TrackIcon.setPreferredSize(new Dimension(61, 3));
+				break;
+		}
 		TrackIcon.setMaximumSize(new Dimension(61, 3));
-		this.add(TrackIcon, g);
-		updateIcon();
+		add(TrackIcon, BorderLayout.NORTH);
 		if(Name.charAt(0)=='V')
 		{
-			g.gridy++;
 			JLabel j = new JLabel();
+			j.setHorizontalAlignment(JLabel.CENTER);
 			j.setForeground(Color.yellow);
-			if(Name.contains("/Arb/CdM")) j.setText("Vía ".concat(Name.charAt(1)=='1' ? "I" : "II"));
+			j.setFont(new Font("Tahoma", 0, 10));
+			if(Name.length()>9) j.setText(Name.charAt(1)=='1' ? "I" : "II");
 			else j.setText(Name.substring(1,2));
+			add(j, BorderLayout.SOUTH);
 		}
+		updateIcon();
 	}
 	public void setCounters(Orientation dir)
 	{

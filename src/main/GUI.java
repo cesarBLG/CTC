@@ -63,41 +63,19 @@ public class GUI
 		g.insets = new Insets(0, 2, 0, 2);
 		for(TrackItem t : l.items)
 		{
-			g.gridx = g.gridy = 0;
-			if(t.Name.contains("Arb/CdM"))
+			if(t instanceof Junction)
 			{
-				g.gridx = 6;
-				g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) - 1) * 2 + 1;
+				Junction j = (Junction)t;
+				g.gridheight = 3;
+				g.anchor = (j.Direction==Orientation.Even && j.Class == Position.Right) || (j.Direction==Orientation.Odd && j.Class == Position.Left) ? GridBagConstraints.NORTH : GridBagConstraints.SOUTH;
 			}
 			else
 			{
-				g.gridx = t.Name.contains("Arb") ? 0 : 7;
 				g.gridheight = 1;
-				if(t.Name.contains("PV"))
-				{
-					g.gridy = (Integer.parseInt(t.Name.substring(4, 5)) - 1) * 2 + 1;
-					if(t.Name.contains("PV1")) g.gridx += 1;
-					if(t.Name.contains("PV2")) g.gridx += 3;
-				}
-				if(t.Name.charAt(0)=='V')
-				{
-					g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) - 1) * 2 + 1;
-					g.gridx += 2;
-				}
-				if(t.Name.charAt(0)=='A')
-				{
-					g.anchor = GridBagConstraints.NORTH;
-					g.gridy = ((Integer.parseInt(t.Name.substring(1, 2)) - 1) / 2) * 2 + 1;
-					g.gridheight = 2;
-					if(Integer.parseInt(t.Name.substring(1, 2))%2==1) g.gridx += 4;
-					else g.gridx+=0;
-				}
-				if(t.Name.charAt(0)=='E')
-				{
-					g.gridy = (Integer.parseInt(t.Name.substring(1, 2)) - 1) * 2 + 1;
-					g.gridx += 5;
-				}
+				g.anchor = GridBagConstraints.NORTH;
 			}
+			g.gridx = t.x;
+			g.gridy = t.y * 2 + 1;
 			layout.add(t, g);
 			if(t.SignalLinked!=null)
 			{

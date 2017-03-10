@@ -2,6 +2,7 @@ package main;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
@@ -44,7 +45,7 @@ public class Signal extends JLabel{
 	boolean ClearRequest = false;
 	boolean Switches = false;
 	public Aspect SignalAspect = Aspect.Parada;
-	Signal NextSignal;
+	Signal NextSignal = null;
 	TrackItem Linked;
 	List<TrackItem> MonitoringItems = new ArrayList<TrackItem>();
 	JPopupMenu p;
@@ -150,6 +151,7 @@ public class Signal extends JLabel{
 		this.setHorizontalTextPosition(CENTER);
 		this.setVerticalTextPosition(TOP);
 		this.setText(Name.substring(0, Name.charAt(0)=='S' ? 4 : 2));
+		this.setFont(new Font("Tahoma", 0, 10));
 		setAspect();
 	}
 	public void Clear()
@@ -174,7 +176,7 @@ public class Signal extends JLabel{
 			p = i;
 			i = n;
 		}
-		while(i==null||i.SignalLinked==null||i.SignalLinked.Direction!=Direction);
+		while(i!=null&&(i.SignalLinked==null||i.SignalLinked.Direction!=Direction));
 		for(TrackItem t : MonitoringItems)
 		{
 			if(t!=null&&!t.SignalsListening.contains(this)) t.SignalsListening.add(this);
@@ -185,7 +187,14 @@ public class Signal extends JLabel{
 		{
 			if(i==null||(i.BlockState!=Orientation.None&&i.BlockState!=Direction)||(i.Occupied!=Orientation.None&&i.Occupied!=Direction))
 			{
-				Close();
+				for(TrackItem t : MonitoringItems)
+				{
+					for(Signal s : t.SignalsListening)
+					{
+						if(s!=this&&!s.SignalsListening.contains(this)) s.SignalsListening.add(this);
+					}
+				}
+				if(Cleared) Close();
 				return;
 			}
 			if(i instanceof Junction)
@@ -193,7 +202,14 @@ public class Signal extends JLabel{
 				Junction j = (Junction)i;
 				if(p!=null && !j.LockedFor(p))
 				{
-					Close();
+					for(TrackItem t : MonitoringItems)
+					{
+						for(Signal s : t.SignalsListening)
+						{
+							if(s!=this&&!s.SignalsListening.contains(this)) s.SignalsListening.add(this);
+						}
+					}
+					if(Cleared) Close();
 					return;
 				}
 			}
@@ -234,7 +250,7 @@ public class Signal extends JLabel{
 				return;
 			}
 		}
-		NextSignal.SignalsListening.add(this);
+		if(!NextSignal.SignalsListening.contains(this)) NextSignal.SignalsListening.add(this);
 		setAspect();
 	}
 	public void setState()
@@ -257,29 +273,31 @@ public class Signal extends JLabel{
 	}
 	public void Close()
 	{
-		if(Override)
+		setAspect();
+		if(Override||!Cleared||Linked==null)
 		{
 			Override = false;
 			setAspect();
 			return;
 		}
-		if(!Cleared) return;
+		Cleared = false;
 		if(Automatic == Automatization.PreviousClear)
 		{
 			List<Signal> ss = new ArrayList<Signal>();
 			ss.addAll(SignalsListening);
 			for(Signal s : ss)
 			{
-				if(s.NextSignal == this) s.Close();
+				if(s!=this && s.NextSignal == this&&s.Cleared)
+				{
+					s.Close();
+				}
+				SignalsListening.remove(s);
 			}
 		}
-		Cleared = false;
-		if(Linked==null) return;
 		NextSignal.SignalsListening.remove(this);
 		TrackItem i = Linked;
 		TrackItem p = null;
 		boolean EndOfLock = true;
-		int in = 0;
 		do
 		{
 			if(i.Occupied!=Orientation.None) EndOfLock = false;
@@ -291,18 +309,8 @@ public class Signal extends JLabel{
 			i = n;
 		}
 		while(i.SignalLinked==null||i.SignalLinked.Direction!=Direction); 
-		if(EndOfLock)
-		{
-			if(NextSignal!=null && NextSignal.Automatic==Automatization.PreviousClear) NextSignal.Close();
-		}
-		/*if(EndOfLock)
-		{
-			for(TrackItem t : MonitoringItems)
-			{
-				t.SignalsListening.remove(this);
-			}
-			MonitoringItems.clear();
-		}*/
+		if(EndOfLock&&NextSignal!=null && NextSignal.Automatic==Automatization.PreviousClear) NextSignal.Close();
+		NextSignal = null;
 		setAspect();
 	}
 	public static Orientation OppositeDir(Orientation dir)
@@ -332,7 +340,7 @@ public class Signal extends JLabel{
 		{
 			if(Automatic==Automatization.Manual && !Release) Close();
 		}
-		if(MonitoringItems.contains(t)&&Cleared) Clear();
+		if(Cleared) Clear();
 		if(Automatic==Automatization.AutoClear&&!ClearRequest)
 		{
 			Close();
@@ -347,12 +355,20 @@ public class Signal extends JLabel{
 			Automatic = Automatization.AutoClear;
 			setState();
 			if(ClearRequest) Clear();
+			if(Automatic==Automatization.PreviousClear)
+			{
+				for(Signal s : SignalsListening)
+				{
+					if(s.NextSignal == this && s.Cleared) Clear();
+				}
+			}
 		}
 		else Automatic = Automatization.Manual;
 		setAspect();
 	}
 	public void setAspect()
 	{
+		Aspect prev = SignalAspect;
 		if(Cleared)
 		{
 			if(!Occupied)
@@ -372,9 +388,11 @@ public class Signal extends JLabel{
 		close.setText(Cleared ? "Cerrar señal" : "Abrir señal");
 		override.setText(Override ? "Desactivar rebase" : "Rebase autorizado");
 		auto.setText(Automatic == Automatization.Manual ? "Modo automático" : "Modo manual");
+		if(prev==SignalAspect) return;
 		for(Signal s : SignalsListening)
 		{
-			s.setAspect();
+			if(s.ClearRequest&&s.Automatic!=Automatization.Manual) s.Clear(); 
+			else s.setAspect();
 		}
 	}
 }
