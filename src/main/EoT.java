@@ -1,13 +1,24 @@
 package main;
 
-import main.Signal.Aspect;
-
-public class EoT extends TrackItem
-{
-	public EoT(String s)
+public class EoT extends FixedSignal {
+	public EoT(Orientation dir)
 	{
-		super(s);
-		SignalLinked = new FixedSignal(s.contains("V1/") ? Orientation.Odd : Orientation.Even, Aspect.Parada);
-		SignalLinked.Linked = this;
+		super(dir, Aspect.Parada, null);
+	}
+	@Override
+	public void Clear()
+	{
+	}
+	@Override
+	public void Close()
+	{
+	}
+	@Override
+	public void TrackChanged(TrackItem t, Orientation dir, boolean Release)
+	{
+	}
+	@Override
+	public void setState()
+	{
 	}
 }

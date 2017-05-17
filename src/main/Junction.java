@@ -28,6 +28,7 @@ enum Position
 }
 public class Junction extends TrackItem 
 {
+	int Number;
 	Orientation Direction;
 	Position Switch = Position.Straight;
 	Position Class;
@@ -41,11 +42,13 @@ public class Junction extends TrackItem
 	JLabel Locking = new JLabel();
 	JLabel Direct = new JLabel();
 	JLabel Desv = new JLabel();
-	Junction(String s, Position p, Orientation o)
+	Junction Linked = null;
+	Junction(int num, Station dep, Position p)
 	{
-		Name = s;
+		Number = num;
+		Station = dep;
 		Class = p;
-		Direction = o;
+		Direction = num%2==0 ? Orientation.Even : Orientation.Odd;
 		addMouseListener(new MouseListener()
 		{
 
@@ -168,25 +171,34 @@ public class Junction extends TrackItem
 		if(Switch==Position.Straight)
 		{
 			Direct.setBackground(Color.yellow);
-			Desv.setVisible(false);
+			Desv.setBackground(Color.black);
 		}
 		else
 		{
 			Direct.setBackground(Color.black);
-			Desv.setVisible(true);
-			ImageIcon fot = new ImageIcon("Images/Junction/".concat(Class.name()).concat(".png"));
-			Icon icono = new ImageIcon(fot.getImage().getScaledInstance(fot.getIconWidth(), 40, Image.SCALE_DEFAULT));
-			Desv.setIcon(icono);
-			repaint();
-		}
+			Desv.setBackground(Color.yellow);
+		}		
+		Serial.write(3);
+		if(Station.equals("Arb")) Serial.write(5);
+		else if(Station.equals("CdM")) Serial.write(4);
+		else Serial.write(0);
+		Serial.write(Number);
+		Serial.write(0);
+		int data = Switch == Position.Straight ? 0 : 1;
+		data += Locked == -1 ? 0 : 2;
+		data += Locked == 1 ? 4 : 0;
+		data += Occupied == Orientation.None ? 8 : 0;
+		Serial.write(data);
 	}
 	GridBagConstraints g = new GridBagConstraints();
 	void setIcon()
 	{
+		boolean Upwise = (Direction==Orientation.Even && Class == Position.Right) || (Direction==Orientation.Odd && Class == Position.Left); 
 		g.fill = GridBagConstraints.BOTH;
-		g.anchor = (Direction==Orientation.Even && Class == Position.Right) || (Direction==Orientation.Odd && Class == Position.Left) ? GridBagConstraints.NORTH : GridBagConstraints.SOUTH;
+		g.insets = new Insets(0, 2, 0, 2);
+		g.anchor = GridBagConstraints.CENTER;
 		g.gridx = Direction == Orientation.Even ? 0 : 2;
-		g.gridy = (Direction==Orientation.Even && Class == Position.Right) || (Direction==Orientation.Odd && Class == Position.Left) ? 0 : 1;
+		g.gridy = Upwise ? 0 : 1;
 		TrackIcon.setOpaque(true);
 		TrackIcon.setMinimumSize(new Dimension(10, 3));
 		TrackIcon.setPreferredSize(new Dimension(17, 3));
@@ -196,13 +208,13 @@ public class Junction extends TrackItem
 		JLabel j = new JLabel();
 		j.setVerticalAlignment(JLabel.TOP);
 		j.setForeground(Color.yellow);
-		j.setText(Name.substring(0, 2));
+		j.setText("A".concat(Integer.toString(Number)));
 		j.setFont(new Font("Tahoma", 0, 10));
 		add(j, g);
 		g.gridy--;
 		if(Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
-		g.insets = new Insets(0, 2, 0, 2);
+		g.insets = new Insets(0, 0, 0, 0);
 		Locking.setOpaque(true);
 		Locking.setMinimumSize(new Dimension(3, 3));
 		Locking.setPreferredSize(new Dimension(4, 3));
@@ -210,19 +222,28 @@ public class Junction extends TrackItem
 		add(Locking, g);
 		if(Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
-		g.insets = new Insets(0, 0, 0, 0);
+		g.insets = new Insets(0, 2, 0, 2);
 		Direct.setOpaque(true);
 		Direct.setMinimumSize(new Dimension(3, 3));
 		Direct.setPreferredSize(new Dimension(4, 3));
 		Direct.setMaximumSize(new Dimension(4, 3));
 		Direct.setBackground(Color.yellow);
 		add(Direct, g);
-		g.insets = new Insets(0, 2, 2, 0);
-		g.gridy = 1-g.gridy;
+		g.insets = new Insets(1, 0, 1, 0);
+		if(Upwise) g.gridy++;
+		else g.gridy--;
 		if(Direction == Orientation.Even) g.gridx--;
 		g.gridwidth = 2;
-		Desv.setBackground(Color.black);
-		Desv.setIcon(new ImageIcon("Images/Junction/".concat(Class.name()).concat(".png")));
+		g.fill = GridBagConstraints.NONE;
+		Desv.setVerticalAlignment(JLabel.TOP);
+		Desv.setHorizontalAlignment(Direction==Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
+		Desv.setBackground(Color.yellow);
+		Desv.setOpaque(true);
+		Desv.setIcon(new ImageIcon(getClass().getResource("/Images/Junction/".concat(Class.name()).concat(".png"))));
+		Desv.setHorizontalAlignment(JLabel.CENTER);
+		Desv.setPreferredSize(new Dimension(7, 4));
+		Desv.setMaximumSize(new Dimension(7, 4));
+		Desv.setMinimumSize(new Dimension(7, 4));
 		add(Desv, g);
 		this.validate();
 		updateIcon();
@@ -360,18 +381,43 @@ public class Junction extends TrackItem
 	{
 		updateIcon();
 		setCounters(Orientation.Both);
-		List<Signal> ss = new ArrayList<Signal>();
+		List<MainSignal> ss = new ArrayList<MainSignal>();
 		ss.addAll(SignalsListening);
-		for(Signal s : ss)
+		for(MainSignal s : ss)
 		{
 			s.TrackChanged(this, Orientation.None, false);
 		}
 	}
-	public void setSwitch(Position p)
+	public boolean setSwitch(Position p)
 	{
 		if(Occupied==Orientation.None&&Muelle!=-1) Switch = Muelle == 0 ? Position.Straight : Class;
-		else if(Switch!=p&&Occupied==Orientation.None&&BlockState==Orientation.None&&Locked==-1) Switch = p;
-		else return;
+		else if(Switch!=p&&Occupied==Orientation.None&&BlockState==Orientation.None&&Locked==-1)
+		{
+			if(Linked!=null&&!Linked.setSwitch((p == Position.Straight ? p : (p==Position.Left ? Position.Right : Position.Left)))) return false;
+			Switch = p;
+		}
+		else return false;
 		updatePosition();
+		return true;
+	}
+	public boolean connectsTo(Orientation dir, TrackItem t)
+	{
+		return connectsTo(dir, t.x, t.y, dir == Orientation.Even ? t.EvenRotation : t.OddRotation);
+	}
+	public boolean connectsTo(Orientation dir, int objx, int objy, int objrot)
+	{
+		if(super.connectsTo(dir, objx, objy, objrot)) return true;
+		if(dir!=Direction)
+		{
+			if(dir == Orientation.Even)
+			{
+				return x == objx + 1 && y == objy - (Class == Position.Left ? 1 : -1);
+			}
+			if(dir == Orientation.Odd)
+			{
+				return x == objx - 1 && y == objy + (Class == Position.Left ? 1 : -1);
+			}
+		}
+		return false;
 	}
 }

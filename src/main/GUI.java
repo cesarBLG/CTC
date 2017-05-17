@@ -11,8 +11,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import main.Signal.Aspect;
-
 import javax.swing.JFrame;
 
 public class GUI
@@ -22,29 +20,16 @@ public class GUI
 	private JLabel etiqueta;
 	private JFrame frame;
 	Loader l;
-	public GUI()
+	public GUI(Loader loader)
 	{
+		l = loader;
 		frame = new JFrame();
 		frame.setLayout(new BorderLayout());
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		Start();
 	}
-	void Prepare()
-	{
-		JLabel Waiting = new JLabel("Esperando al puerto serie...");
-		frame.add(Waiting);
-		frame.pack();
-		frame.setVisible(true);
-		while(!Serial.Connected)
-		{
-			Serial.begin(9600);
-		}
-		frame.remove(Waiting);
-		Start();
-	}
 	void Start()
 	{
-		l = new Loader();
 		setTrackLayout();
 		setItineraryFrame();
 		frame.pack();
@@ -55,52 +40,42 @@ public class GUI
 	{
 		JPanel layout = new JPanel();
 		layout.setBackground(Color.black);
+		/*layout.setLayout(null);
+		for(TrackItem t : l.items)
+		{
+			layout.add(t);
+			int x = 0;
+			int y = 0;
+			int maxx = 30;
+			int maxy = 50;
+			if(t.SignalLinked==null) x+=20;
+			t.setBounds(t.x * maxx + x, t.y * maxy + y, t.getPreferredSize().width, t.getPreferredSize().height);
+		}*/
 		layout.setLayout(new GridBagLayout());
 		GridBagConstraints g = new GridBagConstraints();
 		g.fill = GridBagConstraints.HORIZONTAL;
 		g.anchor = GridBagConstraints.NORTH;
 		g.gridx = g.gridy = 0;
-		g.insets = new Insets(0, 2, 0, 2);
+		g.insets = new Insets(0, 0, 0, 0);
+		g.gridheight = 1;
 		for(TrackItem t : l.items)
 		{
-			if(t instanceof Junction)
-			{
-				Junction j = (Junction)t;
-				g.gridheight = 3;
-				g.anchor = (j.Direction==Orientation.Even && j.Class == Position.Right) || (j.Direction==Orientation.Odd && j.Class == Position.Left) ? GridBagConstraints.NORTH : GridBagConstraints.SOUTH;
-			}
-			else
-			{
-				g.gridheight = 1;
-				g.anchor = GridBagConstraints.NORTH;
-			}
 			g.gridx = t.x;
-			g.gridy = t.y * 2 + 1;
+			g.gridy = t.y * 2;
 			layout.add(t, g);
 			if(t.SignalLinked!=null)
 			{
-				g.insets = new Insets(0, 2, 3, 2);
+				g.insets = new Insets(5, 0, 3, 0);
 				g.fill = GridBagConstraints.NONE;
-				g.anchor = t.SignalLinked.Direction == Orientation.Even ? GridBagConstraints.WEST : GridBagConstraints.EAST;
+				g.anchor = t.SignalLinked.Direction == Orientation.Even ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
+				if(t.SignalLinked instanceof FixedSignal && (t.EvenItem == null || t.OddItem == null) ) g.anchor = t.SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
 				g.gridy--;
 				layout.add(t.SignalLinked, g);
 				g.fill = GridBagConstraints.HORIZONTAL;
-				g.insets = new Insets(0, 2, 0, 2);
+				g.insets = new Insets(0, 0, 0, 0);
 				g.anchor = GridBagConstraints.NORTH;
 			}
 		}
-		/*g.anchor = GridBagConstraints.CENTER;
-		g.gridx = 2;
-		g.gridy = 6;
-		g.insets = new Insets(15, 2, 0, 2);
-		JLabel l = new JLabel("Arboleda");
-		l.setForeground(Color.yellow);
-		layout.add(l, g);
-		g.gridx = 9;
-		g.gridy = 4;
-		l = new JLabel("C. Madera");
-		l.setForeground(Color.yellow);
-		layout.add(l, g);*/
 		frame.add(layout);
 	}
 	void setItineraryFrame()

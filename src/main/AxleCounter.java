@@ -2,6 +2,8 @@ package main;
 
 import java.util.*;
 
+import javax.swing.JOptionPane;
+
 interface AxleListener
 {
 	void AxleDetected(AxleCounter a, Orientation d);
@@ -9,11 +11,16 @@ interface AxleListener
 }
 public class AxleCounter 
 {
-	public String Name;
+	public Station Station;
+	public int Number;
+	AxleCounter EvenCounter = null;
+	AxleCounter OddCounter = null;
 	List<AxleListener> listeners = new ArrayList<AxleListener>();
-	AxleCounter(String s)
+	TrackItem Linked = null;
+	AxleCounter(int num, Station dep)
 	{
-		Name = s;
+		Number = num;
+		Station = dep;
 	}
 	public void EvenPassed()
 	{
