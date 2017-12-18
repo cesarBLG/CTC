@@ -235,8 +235,6 @@ public class MainSignal extends Signal{
 			setOverride(true);
 			return;
 		}
-		Occupied = false;
-		Switches = false;
 		if(Linked==null) return;
 		setMonitors();
 		List<TrackItem> items = TrackItem.PositiveExploration(Linked, new TrackComparer()
@@ -281,12 +279,10 @@ public class MainSignal extends Signal{
 					public boolean condition(TrackItem i, Orientation dir) {
 						if(i==Linked||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir)
 						{
-							if(i.Occupied==dir) Occupied = true;
 							if(i instanceof Junction)
 							{
 								Junction j = (Junction)i;
 								j.lock(prev);
-								if(j.Switch != Position.Straight && j.Direction==dir) Switches = true;
 							}
 							i.setBlock(dir, sig);
 							prev = i;
@@ -305,6 +301,8 @@ public class MainSignal extends Signal{
 	}
 	public boolean tryClear()
 	{
+		Occupied = false;
+		Switches = false;
 		if(TrackItem.PositiveExploration(Linked, new TrackComparer()
 		{
 			boolean Next = false;
@@ -315,6 +313,7 @@ public class MainSignal extends Signal{
 				if(i==Linked||i==null||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir||(i.SignalLinked.BlockSignal&&!i.SignalLinked.Aspects.contains(Aspect.Parada)))
 				{
 					if(i!=Linked && i!=null && i.SignalLinked != null && i.SignalLinked.Direction == dir && i.SignalLinked instanceof MainSignal) Next = true;
+					if(i.Occupied==dir&&!Next) Occupied = true;
 					return true;
 				}
 				return false;
@@ -328,6 +327,7 @@ public class MainSignal extends Signal{
 				if(i instanceof Junction)
 				{
 					Junction j = (Junction)i;
+					if(j.Switch != Position.Straight && j.Direction==dir) Switches = true;
 					if(p!=null && !j.LockedFor(p)) return false;
 				}
 				p = i;
