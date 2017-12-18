@@ -189,6 +189,8 @@ public class MainSignal extends Signal{
 			
 				});
 		this.setForeground(Color.WHITE);
+		this.setVerticalAlignment(BOTTOM);
+		this.setHorizontalAlignment(Direction == Orientation.Odd ? RIGHT : LEFT);
 		this.setHorizontalTextPosition(CENTER);
 		this.setVerticalTextPosition(TOP);
 		this.setText(Name);
@@ -214,8 +216,20 @@ public class MainSignal extends Signal{
 			t.start();
 		}
 	}
+	double Clearing = 0;
 	public void Clear()
 	{
+		if(Cleared)
+		{
+			tryClear();
+			return;
+		}
+		if(tryClear()) return;
+		if(Clearing!=0)
+		{
+			if(Clearing + 5 < Clock.time()) Clearing = 0;
+			else return;
+		}
 		if(Class == SignalType.Shunting)
 		{
 			setOverride(true);
@@ -225,7 +239,7 @@ public class MainSignal extends Signal{
 		Switches = false;
 		if(Linked==null) return;
 		setMonitors();
-		if(TrackItem.PositiveExploration(Linked, new TrackComparer()
+		List<TrackItem> items = TrackItem.PositiveExploration(Linked, new TrackComparer()
 				{
 					boolean Next = false;
 					TrackItem p = null;
@@ -253,7 +267,8 @@ public class MainSignal extends Signal{
 						p = i;
 						return true;
 					}
-				}, Direction) == null)
+				}, Direction);
+		if(items==null)
 		{
 			if(Cleared) Close();
 			return;
@@ -261,6 +276,7 @@ public class MainSignal extends Signal{
 		MainSignal sig = this;
 		TrackItem.PositiveExploration(Linked, new TrackComparer()
 				{
+					TrackItem prev = null;
 					@Override
 					public boolean condition(TrackItem i, Orientation dir) {
 						if(i==Linked||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir)
@@ -269,9 +285,11 @@ public class MainSignal extends Signal{
 							if(i instanceof Junction)
 							{
 								Junction j = (Junction)i;
+								j.lock(prev);
 								if(j.Switch != Position.Straight && j.Direction==dir) Switches = true;
 							}
 							i.setBlock(dir, sig);
+							prev = i;
 							return true;
 						}
 						NextSignal = (MainSignal) i.SignalLinked;
@@ -282,10 +300,50 @@ public class MainSignal extends Signal{
 						return true;
 					}
 				}, Direction);
-		Override = false;
-		Cleared = true;
-		if(NextSignal!=null && !NextSignal.SignalsListening.contains(this)) NextSignal.SignalsListening.add(this);
-		setAspect();
+		Clearing = Clock.time();
+		tryClear();
+	}
+	public boolean tryClear()
+	{
+		if(TrackItem.PositiveExploration(Linked, new TrackComparer()
+		{
+			boolean Next = false;
+			TrackItem p = null;
+			@Override
+			public boolean condition(TrackItem i, Orientation dir) 
+			{
+				if(i==Linked||i==null||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir||(i.SignalLinked.BlockSignal&&!i.SignalLinked.Aspects.contains(Aspect.Parada)))
+				{
+					if(i!=Linked && i!=null && i.SignalLinked != null && i.SignalLinked.Direction == dir && i.SignalLinked instanceof MainSignal) Next = true;
+					return true;
+				}
+				return false;
+			}
+			@Override
+			public boolean criticalCondition(TrackItem i, Orientation dir) {
+				if(i==null||i.BlockState!=dir||(i.Occupied!=Orientation.None&&(i.Occupied!=dir||(!Next&&!allowsOnSight))))
+				{
+					return false;
+				}
+				if(i instanceof Junction)
+				{
+					Junction j = (Junction)i;
+					if(p!=null && !j.LockedFor(p)) return false;
+				}
+				p = i;
+				return true;
+			}
+		}, Direction) != null)
+		{
+			Clearing = 0;
+			Override = false;
+			Cleared = true;
+			if(NextSignal!=null && !NextSignal.SignalsListening.contains(this)) NextSignal.SignalsListening.add(this);
+			setAspect();
+			return true;
+		}
+		if(Cleared) Close();
+		return false;
 	}
 	public void setOverride(boolean o)
 	{
@@ -352,8 +410,6 @@ public class MainSignal extends Signal{
 	{
 		if(!Override) return;
 		if(Class == SignalType.Shunting) ClearRequest = false;
-		TrackItem i = Linked;
-		TrackItem p = null;
 		TrackItem.PositiveExploration(Linked, new TrackComparer()
 		{
 			boolean EndOfLock = true;
@@ -546,24 +602,10 @@ public class MainSignal extends Signal{
 	public List<MainSignal> getPreviousSignals()
 	{
 		List<MainSignal> list = new ArrayList<MainSignal>();
-		for(Signal s : Linked.getNext(OppositeDir(Direction)).SignalsListening)
+		for(Signal s : SignalsListening)
 		{
-			if(!(s instanceof MainSignal)) continue;
-			boolean valid = true;
-			for(TrackItem t = s.Linked.getNext(Direction); t==null||t.SignalLinked!=this; t = t.getNext(Direction))
-			{
-				if(t.SignalLinked instanceof MainSignal && t.SignalLinked.Direction == Direction)
-				{
-					valid = false;
-					break;
-				}
-				if(t.getNext(Direction)==null)
-				{
-					valid = false;
-					break;
-				}
-			}
-			if(valid) list.add((MainSignal)s);
+			if(!(s instanceof MainSignal)||((MainSignal)s).NextSignal!=this) continue;
+			list.add((MainSignal)s);
 		}
 		return list;
 	}
@@ -642,18 +684,21 @@ public class MainSignal extends Signal{
 		{
 			t.SignalsListening.remove(this);
 		}
-		MonitoringItems.clear();
-		do
-		{
-			MonitoringItems.add(i);
-			TrackItem n;
-			if(p==null) n = i.getNext(Direction);
-			else n = i.getNext(p);
-			p = i;
-			i = n;
-			if(i!=null&&i.SignalLinked!=null&&i.SignalLinked instanceof MainSignal&&i.SignalLinked.Direction == Direction) i.SignalLinked.setState();
-		}
-		while(i!=null&&(i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=Direction||i.SignalLinked.BlockSignal));
+		MonitoringItems = TrackItem.PositiveExploration(Linked, new TrackComparer()
+				{
+					@Override
+					public boolean condition(TrackItem i, Orientation dir) 
+					{
+						return i==Linked||(i!=null&&(i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir||i.SignalLinked.BlockSignal));
+					}
+
+					@Override
+					public boolean criticalCondition(TrackItem t, Orientation dir) {
+						// TODO Auto-generated method stub
+						return true;
+					}
+					
+				}, Direction);
 		for(TrackItem t : MonitoringItems)
 		{
 			if(t!=null&&!t.SignalsListening.contains(this)) t.SignalsListening.add(this);

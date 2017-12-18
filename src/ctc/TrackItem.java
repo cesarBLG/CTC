@@ -6,6 +6,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import ctc.grp.GRP;
 import ctc.train.Train;
@@ -42,8 +45,8 @@ public class TrackItem extends JPanel implements AxleListener{
 	GridBagConstraints GridBag = new GridBagConstraints();
 	public int x = 0;
 	public int y = 0;
-	int OddRotation = 0;
-	int EvenRotation = 0;
+	public int OddRotation = 0;
+	public int EvenRotation = 0;
 	boolean Acknowledged = true;
 	List<Train> trains = new ArrayList<Train>();
 	void setSignal(Signal sig)
@@ -52,18 +55,13 @@ public class TrackItem extends JPanel implements AxleListener{
 		GridBagConstraints g = new GridBagConstraints();
 		g.gridx = g.gridy = 0;
 		g.fill = GridBagConstraints.NONE;
-		g.anchor = GridBagConstraints.CENTER;
 		if(SignalLinked!=null)
 		{
 			g.insets = new Insets(5, 0, 3, 0);
-			g.anchor = SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.EAST : GridBagConstraints.WEST;
+			g.anchor = SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHEAST : GridBagConstraints.SOUTHWEST;
 			if(SignalLinked instanceof FixedSignal && (EvenItem == null || OddItem == null) ) g.anchor = SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
 			add(SignalLinked, g);
 		}
-		/*if(SignalLinked instanceof EoT)
-		{
-			this.setPreferredSize(new Dimension(8,3));
-		}*/
 	}
 	TrackItem()
 	{
@@ -121,6 +119,7 @@ public class TrackItem extends JPanel implements AxleListener{
 		this.setLayout(new GridBagLayout());
 		GridBagConstraints g = new GridBagConstraints();
 		g.gridx = g.gridy = 0;
+		g.insets = new Insets(0,0,0,0);
 		g.fill = GridBagConstraints.BOTH;
 		g.anchor = GridBagConstraints.CENTER;
 		this.setBackground(Color.black);
@@ -128,9 +127,9 @@ public class TrackItem extends JPanel implements AxleListener{
 		if(OddRotation==EvenRotation&&EvenRotation==-1)
 		{
 			TrackIcon.setIcon(new ImageIcon(getClass().getResource("/Images/Track/Right.png")));
-			TrackIcon.setMinimumSize(new Dimension(41, 36));
-			TrackIcon.setPreferredSize(new Dimension(41, 36));
-			TrackIcon.setMaximumSize(new Dimension(41, 36));
+			TrackIcon.setMinimumSize(new Dimension(30, 73));
+			TrackIcon.setPreferredSize(new Dimension(30, 73));
+			TrackIcon.setMaximumSize(new Dimension(30, 73));
 		}
 		else if(OddRotation==EvenRotation&&EvenRotation==1)
 		{
@@ -141,26 +140,48 @@ public class TrackItem extends JPanel implements AxleListener{
 		}
 		else
 		{
-			TrackIcon.setMinimumSize(new Dimension(20, 3));
+			TrackIcon.setMinimumSize(new Dimension(30, 3));
 			TrackIcon.setPreferredSize(new Dimension(30, 3));
-			TrackIcon.setMaximumSize(new Dimension(61, 3));
+			TrackIcon.setMaximumSize(new Dimension(30, 3));
 		}
 		g.gridy++;
 		add(TrackIcon, g);
 		Name = label;
-		JLabel j = new JLabel(label.length()== 0 ? " " : label);
-		j.setHorizontalAlignment(JLabel.CENTER);
-		j.setVerticalAlignment(JLabel.TOP);
-		j.setForeground(Color.yellow);
-		j.setFont(new Font("Tahoma", 0, 10));
-		g.gridy++;
-		add(j, g);
-		g.gridy++;
-		NumAxles.setFont(new Font("Tahoma", 0, 10));
-		NumAxles.setHorizontalAlignment(JLabel.CENTER);
-		NumAxles.setVerticalAlignment(JLabel.TOP);
-		NumAxles.setHorizontalTextPosition(JLabel.CENTER);
-		add(NumAxles, g);
+		if(Name.length()>=1)
+		{
+			JLabel j = new JLabel(label.length()== 0 ? " " : label);
+			j.setHorizontalAlignment(JLabel.CENTER);
+			j.setVerticalAlignment(JLabel.TOP);
+			j.setForeground(Color.yellow);
+			j.setFont(new Font("Tahoma", 0, 10));
+			g.gridy++;
+			add(j, g);
+			g.gridy++;
+			NumAxles.setFont(new Font("Tahoma", 0, 10));
+			NumAxles.setHorizontalAlignment(JLabel.CENTER);
+			NumAxles.setVerticalAlignment(JLabel.TOP);
+			NumAxles.setHorizontalTextPosition(JLabel.CENTER);
+			add(NumAxles, g);
+		}
+		if(OddRotation!=EvenRotation||OddRotation==0)
+		{
+			JPanel jp = new JPanel();
+			g.insets = new Insets(0,0,0,0);
+			g.gridx++;
+			g.gridy = 0;
+			g.fill = GridBagConstraints.BOTH;
+			jp.setMinimumSize(new Dimension(0,35));
+			jp.setPreferredSize(new Dimension(0,35));
+			jp.setMaximumSize(new Dimension(0,35));
+			add(jp,g);
+			jp = new JPanel();
+			g.gridy = 2;
+			if(Name.length()>=1) g.gridheight = 2;
+			jp.setMinimumSize(new Dimension(0,35));
+			jp.setPreferredSize(new Dimension(0,35));
+			jp.setMaximumSize(new Dimension(0,35));
+			add(jp,g);
+		}
 		updateState();
 	}
 	public void setCounters(Orientation dir)
@@ -257,26 +278,23 @@ public class TrackItem extends JPanel implements AxleListener{
 	}
 	void setBlock(Orientation o)
 	{
+		if(CrossingLinked!=null) CrossingLinked.setBlock(o, BlockingSignal);
 		if(BlockState == o) return;
 		BlockState = o;
 		if(EvenItem != null && EvenItem.SignalLinked!=null)
 		{
-			EvenItem.SignalLinked.TrackChanged(this, o, false);
+			EvenItem.SignalLinked.TrackChanged(this, o, true);
 		}
 		if(OddItem != null && OddItem.SignalLinked!=null)
 		{
-			OddItem.SignalLinked.TrackChanged(this, o, false);
+			OddItem.SignalLinked.TrackChanged(this, o, true);
 		}
-		if(BlockState == BlockState.None)
+		List<Signal> sigs = new ArrayList<Signal>(); 
+		sigs.addAll(SignalsListening);
+		for(Signal s : sigs)
 		{
-			List<Signal> sigs = new ArrayList<Signal>(); 
-			sigs.addAll(SignalsListening);
-			for(Signal s : sigs)
-			{
-				s.TrackChanged(this, BlockState, true);
-			}
+			s.TrackChanged(this, BlockState, true);
 		}
-		if(CrossingLinked!=null) CrossingLinked.setBlock(o);
 		updateState();
 	}
 	void updateState()
@@ -406,40 +424,33 @@ public class TrackItem extends JPanel implements AxleListener{
 		{
 			if(!tc.condition(t, dir)) break;
 			if(!tc.criticalCondition(t, dir)) return null;
-			else list.add(t);
+			list.add(t);
 			t = t.getNext(dir);
 		}
 		return list;
 	}
-	public static List<TrackItem> NegativeExploration(TrackItem start, TrackComparer tc, Orientation dir, boolean IncludeFirst, boolean IncludeLast)
+	public static List<TrackItem> NegativeExploration(TrackItem start, TrackComparer tc, Orientation dir)
 	{
 		List<TrackItem> list = new ArrayList<TrackItem>();
-		if(!tc.condition(start, dir))
-		{
-			if(IncludeFirst) list.add(start);
-			return list;
-		}
 		TrackItem t = start;
 		while(true)
 		{
+			if(!tc.condition(t, dir)) break;
+			if(!tc.criticalCondition(t, dir)) return null;
 			list.add(t);
 			if(t instanceof Junction)
 			{
 				Junction j = (Junction)t;
 				if(j.Direction == dir)
 				{
-					if(tc.condition(j.FrontItems[0], dir)) list.addAll(NegativeExploration(j.FrontItems[0], tc, dir, false, IncludeLast));
-					if(tc.condition(j.FrontItems[1], dir)) list.addAll(NegativeExploration(j.FrontItems[1], tc, dir, false, IncludeLast));
+					if(tc.condition(j.FrontItems[0], dir)) list.addAll(NegativeExploration(j.FrontItems[0], tc, dir));
+					if(tc.condition(j.FrontItems[1], dir)) list.addAll(NegativeExploration(j.FrontItems[1], tc, dir));
 					break;
 				}
 			}
 			TrackItem prev = t;
 			t = t.getNext(dir);
-			if(!tc.condition(t, dir)||prev!=t.getNext(Signal.OppositeDir(dir)))
-			{
-				if(IncludeLast) list.add(t);
-				break;
-			}
+			if(!tc.condition(t, dir)||prev!=t.getNext(Signal.OppositeDir(dir))) break;
 		}
 		return list;
 	}

@@ -19,6 +19,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 enum Position
 {
@@ -114,18 +115,21 @@ public class Junction extends TrackItem
 		if((t==FrontItems[0]&&Locked!=1)||(t==FrontItems[1]&&Locked!=0)||t==BackItem) return true;
 		return false;
 	}
-	@Override
-	void setBlock(Orientation o) 
+	void lock(TrackItem t)
 	{
 		if(Locked == -1)
 		{
-			if(o==Direction) Locked = Switch==Position.Straight ? 0 : 1;
-			else if(o!=Orientation.None)
+			if(t==BackItem) Locked = Switch==Position.Straight ? 0 : 1;
+			else
 			{
-				if(FrontItems[0].BlockState==o) Locked = 0;
+				if(FrontItems[0]==t) Locked = 0;
 				else Locked = 1;
 			}
 		}
+	}
+	@Override
+	void setBlock(Orientation o) 
+	{
 		if(o==Orientation.None&&Occupied==Orientation.None) Locked = -1;
 		super.setBlock(o);
 	}
@@ -170,13 +174,13 @@ public class Junction extends TrackItem
 		Locking.setBackground(Locked != -1 ? Color.blue : Color.yellow);
 		if(Switch==Position.Straight)
 		{
-			Direct.setBackground(Color.yellow);
+			Direct.setBackground(Locked==0 ? (Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);
 			Desv.setBackground(Color.black);
 		}
 		else
 		{
 			Direct.setBackground(Color.black);
-			Desv.setBackground(Color.yellow);
+			Desv.setBackground(Locked==1 ? (Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);
 		}		
 		Serial.send(this, true);
 	}
@@ -185,14 +189,14 @@ public class Junction extends TrackItem
 	{
 		boolean Upwise = (Direction==Orientation.Even && Class == Position.Right) || (Direction==Orientation.Odd && Class == Position.Left); 
 		g.fill = GridBagConstraints.BOTH;
-		g.insets = new Insets(0, 2, 0, 2);
+		g.insets = new Insets(0, 0, 0, 0);
 		g.anchor = GridBagConstraints.CENTER;
 		g.gridx = Direction == Orientation.Even ? 0 : 2;
-		g.gridy = Upwise ? 0 : 1;
+		g.gridy = 1;
 		TrackIcon.setOpaque(true);
-		TrackIcon.setMinimumSize(new Dimension(10, 3));
-		TrackIcon.setPreferredSize(new Dimension(17, 3));
-		TrackIcon.setMaximumSize(new Dimension(17, 3));
+		TrackIcon.setMinimumSize(new Dimension(22, 3));
+		TrackIcon.setPreferredSize(new Dimension(22, 3));
+		TrackIcon.setMaximumSize(new Dimension(22, 3));
 		add(TrackIcon, g);
 		g.gridy++;
 		JLabel j = new JLabel();
@@ -206,35 +210,51 @@ public class Junction extends TrackItem
 		else g.gridx--;
 		g.insets = new Insets(0, 0, 0, 0);
 		Locking.setOpaque(true);
-		Locking.setMinimumSize(new Dimension(3, 3));
+		Locking.setMinimumSize(new Dimension(4, 3));
 		Locking.setPreferredSize(new Dimension(4, 3));
 		Locking.setMaximumSize(new Dimension(4, 3));
 		add(Locking, g);
 		if(Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
-		g.insets = new Insets(0, 2, 0, 2);
+		g.insets = new Insets(0, 0, 0, 0);
 		Direct.setOpaque(true);
-		Direct.setMinimumSize(new Dimension(3, 3));
+		Direct.setMinimumSize(new Dimension(4, 3));
 		Direct.setPreferredSize(new Dimension(4, 3));
 		Direct.setMaximumSize(new Dimension(4, 3));
 		Direct.setBackground(Color.yellow);
 		add(Direct, g);
-		g.insets = new Insets(1, 0, 1, 0);
+		g.insets = new Insets(0, 0, 0, 0);
+		g.ipady = 2;
 		if(Upwise) g.gridy++;
 		else g.gridy--;
 		if(Direction == Orientation.Even) g.gridx--;
 		g.gridwidth = 2;
-		g.fill = GridBagConstraints.NONE;
+		g.fill = GridBagConstraints.VERTICAL;
 		Desv.setVerticalAlignment(JLabel.TOP);
 		Desv.setHorizontalAlignment(Direction==Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
 		Desv.setBackground(Color.yellow);
 		Desv.setOpaque(true);
 		Desv.setIcon(new ImageIcon(getClass().getResource("/Images/Junction/".concat(Class.name()).concat(".png"))));
 		Desv.setHorizontalAlignment(JLabel.CENTER);
-		Desv.setPreferredSize(new Dimension(7, 4));
-		Desv.setMaximumSize(new Dimension(7, 4));
-		Desv.setMinimumSize(new Dimension(7, 4));
+		Desv.setPreferredSize(new Dimension(7, 33));
+		Desv.setMaximumSize(new Dimension(7, 33));
+		Desv.setMinimumSize(new Dimension(7, 33));
 		add(Desv, g);
+		g.ipady = 0;
+		JPanel jp = new JPanel();
+		g.gridx = 4;
+		g.gridy = 2;
+		g.fill = GridBagConstraints.BOTH;
+		jp.setMinimumSize(new Dimension(0,35));
+		jp.setPreferredSize(new Dimension(0,35));
+		jp.setMaximumSize(new Dimension(0,35));
+		add(jp,g);
+		jp = new JPanel();
+		g.gridy = 0;
+		jp.setMinimumSize(new Dimension(0,35));
+		jp.setPreferredSize(new Dimension(0,35));
+		jp.setMaximumSize(new Dimension(0,35));
+		add(jp,g);
 		this.validate();
 		updateState();
 	}

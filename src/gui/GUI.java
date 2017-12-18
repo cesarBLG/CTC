@@ -47,21 +47,10 @@ public class GUI
 	{
 		JPanel layout = new JPanel();
 		layout.setBackground(Color.black);
-		/*layout.setLayout(null);
-		for(TrackItem t : l.items)
-		{
-			layout.add(t);
-			int x = 0;
-			int y = 0;
-			int maxx = 30;
-			int maxy = 50;
-			if(t.SignalLinked==null) x+=20;
-			t.setBounds(t.x * maxx + x, t.y * maxy + y, t.getPreferredSize().width, t.getPreferredSize().height);
-		}*/
 		layout.setLayout(new GridBagLayout());
 		GridBagConstraints g = new GridBagConstraints();
-		g.fill = GridBagConstraints.HORIZONTAL;
-		g.anchor = GridBagConstraints.NORTH;
+		g.fill = GridBagConstraints.BOTH;
+		g.anchor = GridBagConstraints.CENTER;
 		g.gridx = g.gridy = 0;
 		g.insets = new Insets(0, 0, 0, 0);
 		g.gridheight = 1;
@@ -70,18 +59,6 @@ public class GUI
 			g.gridx = t.x;
 			g.gridy = t.y * 2;
 			layout.add(t, g);
-			if(t.SignalLinked!=null)
-			{
-				g.insets = new Insets(5, 0, 3, 0);
-				g.fill = GridBagConstraints.NONE;
-				g.anchor = t.SignalLinked.Direction == Orientation.Even ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
-				if(t.SignalLinked instanceof FixedSignal && (t.EvenItem == null || t.OddItem == null) ) g.anchor = t.SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
-				g.gridy--;
-				layout.add(t.SignalLinked, g);
-				g.fill = GridBagConstraints.HORIZONTAL;
-				g.insets = new Insets(0, 0, 0, 0);
-				g.anchor = GridBagConstraints.NORTH;
-			}
 		}
 		frame.add(layout);
 	}
