@@ -7,15 +7,19 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import scrt.Orientation;
 import scrt.ctc.FixedSignal;
+import scrt.ctc.SignalType;
 import scrt.ctc.TrackItem;
 
 public class TrackIcon extends JPanel implements CTCIcon {
@@ -150,15 +154,38 @@ public class TrackIcon extends JPanel implements CTCIcon {
 			add((Component) item.SignalLinked.icon, g);
 		}
 	}
+	Timer timer = new Timer(350, new ActionListener()
+			{
+				boolean t = true;
+				@Override
+				public void actionPerformed(ActionEvent arg0) 
+				{
+					if(!item.Acknowledged)
+					{
+						if(t) TrackIcon.setBackground(Color.red);
+						else TrackIcon.setBackground(Color.yellow);
+						t = !t;
+					}
+				}
+			});
 	@Override
 	public void update()
 	{
-		if(item.Acknowledged) TrackIcon.setBackground(item.Occupied != Orientation.None ? Color.red : item.BlockState != Orientation.None ? Color.green : Color.yellow);
-		else TrackIcon.setBackground(Color.MAGENTA);
+		if(item.Acknowledged)
+		{
+			timer.stop();
+			TrackIcon.setBackground(item.Occupied != Orientation.None ? Color.red : item.BlockState != Orientation.None ? Color.green : Color.yellow);
+		}
+		else
+		{
+			timer.setInitialDelay(0);
+			timer.setRepeats(true);
+			timer.start();
+		}
 		if(item.Name.length()>=1)
 		{
 			String n = item.Occupied.name();
-			if(item.Occupied == Orientation.None && item.BlockState==Orientation.Odd && item.BlockState==Orientation.Even)
+			if(item.Occupied == Orientation.None && (item.BlockState==Orientation.Odd || item.BlockState==Orientation.Even))
 			{
 				n = "Block".concat(item.BlockState.name());
 			}

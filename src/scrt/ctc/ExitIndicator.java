@@ -40,12 +40,12 @@ public class ExitIndicator extends Signal{
 		super.setAspect();
 	}
 	@Override
-	public void Clear() {
+	public void Lock() {
 		// TODO Auto-generated method stub
 		
 	}
 	@Override
-	public void Close() {
+	public void Unlock() {
 		// TODO Auto-generated method stub
 		
 	}
@@ -60,11 +60,6 @@ public class ExitIndicator extends Signal{
 	}
 	@Override
 	public void muteEvents(boolean mute) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void tryClear() {
 		// TODO Auto-generated method stub
 		
 	}

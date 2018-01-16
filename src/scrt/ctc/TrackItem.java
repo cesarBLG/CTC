@@ -157,7 +157,7 @@ public class TrackItem extends CTCItem{
 		if(t==EvenItem) return OddItem;
 		return null;
 	}
-	MainSignal BlockingSignal;
+	public MainSignal BlockingSignal;
 	double BlockingTime = 0;
 	void setBlock(Orientation o, MainSignal blocksignal)
 	{
@@ -292,20 +292,6 @@ public class TrackItem extends CTCItem{
 	{
 		if(BlockingTime<=OccupiedTime)
 		{
-			/*TrackItem.PositiveExploration(BlockingSignal.Linked, new TrackComparer()
-					{
-						@Override
-						public boolean condition(TrackItem t, Orientation dir, TrackItem p) 
-						{
-							return false;
-						}
-
-						@Override
-						public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p) {
-							return false;
-						}
-				
-					}, BlockState);*/
 			setBlock(Orientation.None);
 		}
 	}

@@ -36,7 +36,6 @@ public class GUI
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setTitle("Control de Tráfico Centralizado");
 		Start();
-		new scrt.regulation.Loader();
 	}
 	void Start()
 	{

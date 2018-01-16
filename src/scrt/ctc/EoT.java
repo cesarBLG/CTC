@@ -9,11 +9,11 @@ public class EoT extends FixedSignal {
 		super(dir, Aspect.Parada, s);
 	}
 	@Override
-	public void Clear()
+	public void Lock()
 	{
 	}
 	@Override
-	public void Close()
+	public void Unlock()
 	{
 	}
 	@Override

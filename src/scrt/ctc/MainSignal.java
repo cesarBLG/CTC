@@ -115,7 +115,7 @@ public class MainSignal extends Signal{
 	{
 		Direction = dir;
 		icon = new SignalIcon(this);
-		setAspect();
+		super.setAspect();
 	}
 	public void UserRequest(boolean Clear)
 	{
@@ -137,17 +137,10 @@ public class MainSignal extends Signal{
 		}
 	}
 	double Clearing = 0;
-	public void Clear()
+	public void Lock()
 	{
-		if(Cleared)
-		{
-			tryClear();
-			return;
-		}
-		tryClear();
-		if(Cleared) return;
-		if(!tryBlockTrack()) return;
-		tryClear();
+		if(!Cleared) tryBlockTrack();
+		setAspect();
 	}
 	boolean tryBlockTrack()
 	{
@@ -258,6 +251,7 @@ public class MainSignal extends Signal{
 				return true;
 			}
 			NextSignal = (MainSignal)i.SignalLinked;
+			if(NextSignal!=null && !NextSignal.listeners.contains(this)) NextSignal.listeners.add(MainSignal.this);
 			return false;
 		}
 		@Override
@@ -266,7 +260,8 @@ public class MainSignal extends Signal{
 			return true;
 		}
 	}
-	public void tryClear()
+	@Override
+	public void setAspect()
 	{
 		Occupied = false;
 		Switches = false;
@@ -275,16 +270,46 @@ public class MainSignal extends Signal{
 			Clearing = 0;
 			Override = OverrideRequest;
 			Cleared = true;
-			if(NextSignal!=null && !NextSignal.listeners.contains(this)) NextSignal.listeners.add(this);
-			setAspect();
-			return;
+		}
+		else if(Cleared)
+		{
+			Unlock();
+			Cleared = Override = false;
 		}
 		if(Cleared)
 		{
-			if(tryBlockTrack()) return;
-			else Close();
+			if(Override)
+			{
+				if(Class!=SignalType.Entry&&Class!=SignalType.Exit&&Class!=SignalType.Shunting) SignalAspect = Aspect.Precaucion;
+				else SignalAspect = Aspect.Rebase;
+			}
+			else if(!Occupied)
+			{
+				if(NextSignal==null||((NextSignal.SignalAspect == Aspect.Parada || NextSignal.SignalAspect == Aspect.Rebase || NextSignal.SignalAspect == Aspect.Apagado)&&(Class!=SignalType.Exit || NextSignal.Station == Station || NextSignal.BlockSignal))) SignalAspect = Aspect.Anuncio_parada;
+				else
+				{
+					if(!Switches) SignalAspect = Aspect.Via_libre;
+					else SignalAspect = Aspect.Anuncio_precaucion;
+				}
+			}
+			else SignalAspect = Aspect.Precaucion;
 		}
-		Cleared = Override = false;
+		else SignalAspect = Aspect.Parada;
+		while(!Aspects.contains(SignalAspect))
+		{
+			if(SignalAspect == Aspect.Via_libre||SignalAspect == Aspect.Anuncio_precaucion) SignalAspect = Aspect.Anuncio_parada;
+			else if(SignalAspect == Aspect.Anuncio_parada||SignalAspect == Aspect.Precaucion) SignalAspect = Aspect.Rebase;
+			else if(SignalAspect == Aspect.Rebase)
+			{
+				if(BlockSignal) SignalAspect = Aspect.Apagado;
+				else SignalAspect = Aspect.Parada;
+			}
+			else if(SignalAspect == Aspect.Parada) SignalAspect = Aspect.Apagado;
+			else if(Aspects.size()!=0) SignalAspect = Aspects.get(0);
+			else SignalAspect = Aspect.Apagado;
+		}
+		icon.update();
+		super.setAspect();
 	}
 	private void deactivateOverride()
 	{
@@ -310,9 +335,8 @@ public class MainSignal extends Signal{
 			}
 	
 		}, Direction);
-		Override = false;
+		OverrideRequest = false;
 		if(!Automatic&&!BlockSignal) ClearRequest = false;
-		setAspect();
 	}
 	public void setState()
 	{
@@ -321,7 +345,8 @@ public class MainSignal extends Signal{
 		if(prev==BlockSignal) return;
 		update();
 	}
-	public void Close()
+	@Override
+	public void Unlock()
 	{
 		if(Override)
 		{
@@ -363,12 +388,9 @@ public class MainSignal extends Signal{
 		boolean BlockRequest = Linked.getNext(Orientation.OppositeDir(Direction)).BlockState == Direction;
 		if(((Automatic||BlockSignal) && TrainRequest) || ((Automatic||BlockSignal) && BlockRequest)) ClearRequest = true;
 		else if(Automatic||BlockSignal) ClearRequest = false;
-		boolean prev = Cleared;
-		if(ClearRequest) Clear();
-		else if(Cleared)
-		{
-			tryClose();
-		}
+		if(ClearRequest&&!Cleared) Lock();
+		if(!ClearRequest&&Cleared) tryClose();
+		setAspect();
 	}
 	int closeTimerValue = 0;
 	public void tryClose()
@@ -419,7 +441,7 @@ public class MainSignal extends Signal{
 						}
 					}, Orientation.OppositeDir(Direction));
 			if(closeTimerValue!=0) setClosingTimer(closeTimerValue);
-			else Close();
+			else Unlock();
 		}
 	}
 	Timer ClosingTimer = null;
@@ -436,7 +458,7 @@ public class MainSignal extends Signal{
 				}
 				if(!ClearRequest)
 				{
-					Close();
+					Unlock();
 					ClosingTimer.setRepeats(false);
 					ClosingTimer.stop();
 					return;
@@ -445,11 +467,10 @@ public class MainSignal extends Signal{
 				ClearRequest = false;
 				ForceClose = true;
 				muteEvents(true);
-				Close();
+				Unlock();
 				ClearRequest = true;
 				ForceClose = false;
-				muteEvents(true);
-				Clear();
+				Lock();
 				muteEvents(false);
 			}
 		});
@@ -483,7 +504,6 @@ public class MainSignal extends Signal{
 		}
 		else Automatic = false;
 		setState();
-		setAspect();
 	}
 	public int SigsAhead()
 	{
@@ -491,44 +511,6 @@ public class MainSignal extends Signal{
 		if(!Cleared) return 0;
 		if(NextSignal!=null && NextSignal.Cleared && (Class!=SignalType.Exit || NextSignal.Station == Station || NextSignal.BlockSignal)) return 2;
 		else return 1;
-	}
-	public void setAspect()
-	{
-		if(Cleared)
-		{
-			if(Override)
-			{
-				if(Class!=SignalType.Entry&&Class!=SignalType.Exit&&Class!=SignalType.Shunting) SignalAspect = Aspect.Precaucion;
-				else SignalAspect = Aspect.Rebase;
-			}
-			else if(!Occupied)
-			{
-				if(NextSignal==null||((NextSignal.SignalAspect == Aspect.Parada || NextSignal.SignalAspect == Aspect.Rebase || NextSignal.SignalAspect == Aspect.Apagado)&&(Class!=SignalType.Exit || NextSignal.Station == Station || NextSignal.BlockSignal))) SignalAspect = Aspect.Anuncio_parada;
-				else
-				{
-					if(!Switches) SignalAspect = Aspect.Via_libre;
-					else SignalAspect = Aspect.Anuncio_precaucion;
-				}
-			}
-			else SignalAspect = Aspect.Precaucion;
-		}
-		else SignalAspect = Aspect.Parada;
-		while(!Aspects.contains(SignalAspect))
-		{
-			if(SignalAspect == Aspect.Via_libre||SignalAspect == Aspect.Anuncio_precaucion) SignalAspect = Aspect.Anuncio_parada;
-			else if(SignalAspect == Aspect.Anuncio_parada||SignalAspect == Aspect.Precaucion) SignalAspect = Aspect.Rebase;
-			else if(SignalAspect == Aspect.Rebase)
-			{
-				if(BlockSignal) SignalAspect = Aspect.Apagado;
-				else SignalAspect = Aspect.Parada;
-			}
-			else if(SignalAspect == Aspect.Parada) SignalAspect = Aspect.Apagado;
-			else SignalAspect = Aspects.get(0);
-		}
-		icon.update();		
-		if(LastAspect==SignalAspect) return;
-		for(SRCTListener l : listeners) l.actionPerformed(new SignalEvent(this));
-		super.setAspect();
 	}
 	public void setMonitors()
 	{
@@ -556,9 +538,6 @@ public class MainSignal extends Signal{
 			if(t!=null&&!t.listeners.contains(this)) t.listeners.add(this);
 		}
 	}
-	List<SRCTListener> listeners = new ArrayList<SRCTListener>();
-	List<SRCTEvent> Queue = new ArrayList<SRCTEvent>();
-	boolean EventsMuted = false;
 	@Override
 	public void actionPerformed(SRCTEvent e) {
 		if(!EventsMuted)
@@ -586,7 +565,7 @@ public class MainSignal extends Signal{
 						if(!Automatic && Cleared)
 						{
 							ClearRequest = false;
-							Close();
+							Unlock();
 						}
 					}
 				}

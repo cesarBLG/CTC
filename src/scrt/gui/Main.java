@@ -21,5 +21,6 @@ public class Main {
 		}*/
 		l = new Loader();
 		new GUI();
+		//new scrt.regulation.Loader();
 	}
 }

@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import scrt.Orientation;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
+import scrt.ctc.SignalType;
 import scrt.ctc.TrackItem;
 
 public class JunctionIcon extends TrackIcon {

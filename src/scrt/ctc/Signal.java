@@ -8,22 +8,14 @@ import javax.swing.JLabel;
 import scrt.Orientation;
 import scrt.event.SRCTEvent;
 import scrt.event.SRCTListener;
+import scrt.event.SignalEvent;
 import scrt.gui.SignalIcon;
-enum SignalType
-{
-Exit,
-Entry,
-Advanced,
-Block,
-Shunting,
-Exit_Indicator,
-Switch_Indicator
-}
+
 public abstract class Signal extends CTCItem
 {
 	public Orientation Direction;
 	public String Name = "";
-	SignalType Class = SignalType.Entry;
+	public SignalType Class = SignalType.Entry;
 	public boolean Automatic = false;
 	boolean BlockSignal = false;
 	public boolean Cleared = false;
@@ -39,13 +31,14 @@ public abstract class Signal extends CTCItem
 	int Track;
 	int Number;
 	TrackItem Linked;
-	public abstract void Clear();
-	public abstract void Close();
-	public abstract void tryClear();
+	public abstract void Lock();
+	public abstract void Unlock();
 	public abstract void setState();
 	Aspect LastAspect = Aspect.Parada;
 	public void setAspect()
 	{
+		if(LastAspect==SignalAspect) return;
+		for(SRCTListener l : listeners) l.actionPerformed(new SignalEvent(this));
 		Serial.send(this, true);
 		LastAspect = SignalAspect;
 	}

@@ -52,15 +52,15 @@ public class SignalIcon extends JLabel implements CTCIcon {
 						public void actionPerformed(ActionEvent arg0) {
 							if(signal.OverrideRequest)
 							{
-								signal.OverrideRequest = false;
 								signal.ClearRequest = false;
-								signal.Close();
+								signal.OverrideRequest = false;
+								signal.Unlock();
 							}
 							else
 							{
-								signal.OverrideRequest = false;
+								signal.OverrideRequest = true;
 								signal.ClearRequest = true;
-								signal.Clear();
+								signal.Lock();
 							}
 						}
 				
