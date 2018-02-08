@@ -1,14 +1,23 @@
 package scrt.event;
-import scrt.ctc.Aspect;
-import scrt.ctc.Signal;
+import java.util.ArrayList;
+
+import scrt.ctc.Signal.Signal;
 
 public class SignalEvent extends SRCTEvent {
-	public Aspect prevAspect;
-	public Aspect newAspect;
-	public SignalEvent(Signal caller/*, Aspect p, Aspect n*/)
+	public SignalEvent(Signal caller)
 	{
 		super(EventType.Signal, caller);
-		/*prevAspect = p;
-		newAspect = n;*/
+	}
+	public byte[] getId()
+	{
+		Signal sig = (Signal)creator;
+		ArrayList<Integer> data = new ArrayList<Integer>();
+		data.add(0);
+		data.add(sig.Class.ordinal());
+		data.add(sig.Station.AssociatedNumber);
+		data.add(sig.Track);
+		data.add(sig.Number);
+		data.add(sig.SignalAspect.ordinal() + (sig.Automatic ? 16 : 0));
+		return getBytes(data);
 	}
 }

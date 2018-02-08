@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -20,6 +21,12 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.com.COM;
+import scrt.com.Serial;
+import scrt.ctc.Signal.ExitIndicator;
+import scrt.ctc.Signal.MainSignal;
+import scrt.ctc.Signal.Signal;
+import scrt.ctc.packet.Packet;
 import scrt.event.AxleEvent;
 import scrt.event.BlockEvent;
 import scrt.event.SRCTEvent;
@@ -27,6 +34,7 @@ import scrt.event.SRCTListener;
 import scrt.event.EventType;
 import scrt.event.OccupationEvent;
 import scrt.gui.TrackIcon;
+import scrt.regulation.Place;
 import scrt.regulation.grp.GRP;
 import scrt.regulation.train.Train;
 
@@ -53,7 +61,7 @@ public class TrackItem extends CTCItem{
 	public int EvenRotation = 0;
 	public boolean Acknowledged = true;
 	List<Train> trains = new ArrayList<Train>();
-	void setSignal(Signal sig)
+	public void setSignal(Signal sig)
 	{
 		SignalLinked = sig;
 		((TrackIcon)icon).setSignal();
@@ -158,14 +166,14 @@ public class TrackItem extends CTCItem{
 		return null;
 	}
 	public MainSignal BlockingSignal;
-	double BlockingTime = 0;
-	void setBlock(Orientation o, MainSignal blocksignal)
+	long BlockingTime = 0;
+	public void setBlock(Orientation o, MainSignal blocksignal)
 	{
 		BlockingSignal = blocksignal;
-		BlockingTime = Clock.time();
+		if(BlockState==Orientation.None) BlockingTime = Clock.time();
 		setBlock(o);
 	}
-	void setBlock(Orientation o)
+	public void setBlock(Orientation o)
 	{
 		if(CrossingLinked!=null) CrossingLinked.setBlock(o, BlockingSignal);
 		if(BlockState == o) return;
@@ -186,16 +194,23 @@ public class TrackItem extends CTCItem{
 		}
 		updateState();
 	}
-	void updateState()
+	public void updateState()
 	{
 		icon.update();
-		Serial.send(this, true);
+		COM.send(getPacket());
 	}
 	boolean wasFree = true;
-	double OccupiedTime = 0;
+	long OccupiedTime = 0;
 	public void AxleDetected(AxleCounter a, Orientation dir) 
 	{
 		wasFree = Occupied == Orientation.None;
+		if(!a.Working && (EvenOccupier.contains(a)||OddOccupier.contains(a)))
+		{
+			OddAxles = EvenAxles = 0;
+			Occupied = Orientation.Unknown;
+			updateOccupancy();
+			return;
+		}
 		if(EvenRelease==a&&dir==Orientation.Even)
 		{
 			if(EvenAxles>0) EvenAxles--;
@@ -222,22 +237,21 @@ public class TrackItem extends CTCItem{
 	}
 	void updateOccupancy()
 	{
-		if(Occupied == Orientation.Unknown) return;
-		else if(EvenAxles>0&&OddAxles>0) Occupied = Orientation.Both;
+		if(EvenAxles>0&&OddAxles>0) Occupied = Orientation.Both;
 		else if(EvenAxles>0) Occupied = Orientation.Even;
 		else if(OddAxles>0) Occupied = Orientation.Odd;
-		else Occupied = Orientation.None;
+		else if(Occupied!=Orientation.None) Occupied = Orientation.None;
 		if(wasFree && ((Occupied == Orientation.Even && EvenItem!=null && !EvenItem.Station.equals(Station) && EvenItem.Station.isOpen())||(Occupied == Orientation.Odd && OddItem!=null && !OddItem.Station.equals(Station) && OddItem.Station.isOpen())))
 		{
-			if(!trains.isEmpty())
+			/*if(!trains.isEmpty())
 			{
 				GRP grp = (Occupied == Orientation.Even ? EvenItem : OddItem).Station.grp;
 				grp.update();
-			}
+			}*/
 			Acknowledged = false;
 		}
 		if(Occupied == Orientation.None) Acknowledged = true;
-		if(CrossingLinked != null)
+		/*if(CrossingLinked != null)
 		{
 			if(Occupied == Orientation.None && CrossingLinked.Occupied == Orientation.Unknown)
 			{
@@ -261,7 +275,7 @@ public class TrackItem extends CTCItem{
 					l.actionPerformed(new OccupationEvent(CrossingLinked, Orientation.None, 0));
 				}
 			}
-		}
+		}*/
 		updateState();
 	}
 	public boolean trainStopped()
@@ -290,12 +304,12 @@ public class TrackItem extends CTCItem{
 	boolean Done = false;
 	private void tryToFree()
 	{
-		if(BlockingTime<=OccupiedTime)
+		if(BlockingTime<=OccupiedTime&&(BlockingSignal==null||!BlockingSignal.ClearRequest||!BlockingSignal.listeners.contains(this)))
 		{
 			setBlock(Orientation.None);
 		}
 	}
-	interface TrackComparer
+	public interface TrackComparer
 	{
 		boolean condition(TrackItem t, Orientation dir, TrackItem p);
 		boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p);
@@ -348,6 +362,8 @@ public class TrackItem extends CTCItem{
 	}
 	public boolean connectsTo(Orientation dir, int objx, int objy, int objrot)
 	{
+		if(x==-8&&dir==Orientation.Even) return objy == y+2 && objx==45;
+		if(x==45&&dir==Orientation.Odd) return objy == y-2 && objx==-8;
 		if(dir == Orientation.Even)
 		{
 			if(objrot == OddRotation) return x == objx + 1 && y == objy - objrot;
@@ -367,12 +383,12 @@ public class TrackItem extends CTCItem{
 			if(e.type == EventType.AxleCounter)
 			{
 				AxleEvent ae = (AxleEvent)e;
-				if(!ae.second) AxleDetected((AxleCounter)ae.creator, ae.dir);
-				else
+				if(!ae.second)
 				{
-					PerformAction((AxleCounter)ae.creator, ae.dir);
+					AxleDetected((AxleCounter)ae.creator, ae.dir);
 					if(SignalLinked!=null) SignalLinked.actionPerformed(e);
 				}
+				else PerformAction((AxleCounter)ae.creator, ae.dir);
 			}
 		}
 	}
@@ -385,5 +401,44 @@ public class TrackItem extends CTCItem{
 	public String toString()
 	{
 		return Integer.toString(x) + ", " + Integer.toString(y);
+	}
+	static int pathDepth = 0;
+	public List<TrackItem> path(TrackItem destination, Orientation dir, boolean start)
+	{
+		if(pathDepth>70) return null;
+		List<TrackItem> l = null;
+		if(destination == this)
+		{
+			l = new ArrayList<TrackItem>();
+			l.add(this);
+			return l;
+		}
+		TrackItem item = dir == Orientation.Odd ? OddItem : EvenItem;
+		if(item == null) return null;
+		else
+		{
+			pathDepth++;
+			l = item.path(destination, dir, false);
+		}
+		if(l==null) return null;
+		l.add(this);
+		if(start)
+		{
+			Collections.reverse(l);
+			pathDepth = 0;
+		}
+		return l;
+	}
+	@Override
+	public Packet getPacket()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void load(Packet p)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

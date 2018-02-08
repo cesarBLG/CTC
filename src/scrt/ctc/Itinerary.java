@@ -6,6 +6,10 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import scrt.Orientation;
+import scrt.ctc.Signal.MainSignal;
+import scrt.ctc.Signal.Signal;
+
 public class Itinerary {
 	Hashtable<Integer, Integer> Switches = new Hashtable<Integer, Integer>();
 	List<String> Signals = new ArrayList<String>();
@@ -134,5 +138,27 @@ public class Itinerary {
 	public String toString()
 	{
 		return Name.concat("/").concat(Station.Name);
+	}
+	public static void set(TrackItem s, TrackItem e, Orientation dir, boolean shunt)
+	{
+		List<TrackItem> path = s.path(e, dir, true);
+		for(TrackItem t : path)
+		{
+			if(path.indexOf(t) < path.size() - 1 && !path.contains(t.getNext(dir)))
+			{
+				Junction j = (Junction)t;
+				if(j.Muelle != -1) j.Muelle = 1-j.Muelle;
+				j.setSwitch(j.Switch == Position.Straight ? j.Class : Position.Straight);
+			}
+		}
+		for(TrackItem t : path)
+		{
+			if(t==e) break;
+			if(t.SignalLinked != null && t.SignalLinked.Direction == dir && t.SignalLinked instanceof MainSignal)
+			{
+				t.SignalLinked.OverrideRequest = shunt;
+				((MainSignal)t.SignalLinked).UserRequest(true);
+			}
+		}
 	}
 }

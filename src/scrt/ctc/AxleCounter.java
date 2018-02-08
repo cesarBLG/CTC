@@ -16,7 +16,8 @@ public class AxleCounter
 	AxleCounter EvenCounter = null;
 	AxleCounter OddCounter = null;
 	List<SRCTListener> listeners = new ArrayList<SRCTListener>();
-	TrackItem Linked = null;
+	boolean Working = true;
+	//List<TrackItem> Linked = null;
 	AxleCounter(int num, Station dep)
 	{
 		Number = num;
@@ -32,6 +33,7 @@ public class AxleCounter
 	}
 	public void Passed(Orientation dir)
 	{
+		Working = true;
 		List<SRCTListener> c = new ArrayList<SRCTListener>();
 		c.addAll(listeners);
 		for(SRCTListener l  : c)
@@ -46,6 +48,7 @@ public class AxleCounter
 	}
 	public void Error()
 	{
+		Working = false;
 		Passed(Orientation.Unknown);
 	}
 	public void addListener(SRCTListener al)

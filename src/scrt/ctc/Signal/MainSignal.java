@@ -1,4 +1,4 @@
-package scrt.ctc;
+package scrt.ctc.Signal;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -23,7 +23,14 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.ctc.Clock;
+import scrt.ctc.Junction;
+import scrt.ctc.Position;
+import scrt.ctc.Station;
+import scrt.ctc.TrackItem;
 import scrt.ctc.TrackItem.TrackComparer;
+import scrt.ctc.packet.Packet;
+import scrt.ctc.packet.SignalData;
 import scrt.event.AxleEvent;
 import scrt.event.BlockEvent;
 import scrt.event.SRCTEvent;
@@ -114,50 +121,41 @@ public class MainSignal extends Signal{
 	void set(Orientation dir)
 	{
 		Direction = dir;
-		icon = new SignalIcon(this);
 		super.setAspect();
+		setState();
 	}
+	boolean UserRequest = false;
 	public void UserRequest(boolean Clear)
 	{
-		ClearRequest = Clear;
-		setAutomatic(false);
+		if(UserRequest == Clear) return;
+		UserRequest = Clear;
+		if(Automatic) setAutomatic(false);
 		update();
-		if(!Cleared)
+		if(!Cleared&&UserRequest)
 		{
 			Timer t = new Timer(30000, new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(ClearRequest&&!Automatic&&!BlockSignal&&!Cleared)
-					{
-						ClearRequest = false;
-					}
+					UserRequest = false;
 				}
 			});
 			t.setRepeats(false);
 			t.start();
 		}
 	}
-	double Clearing = 0;
+	public boolean Locked = false;
+	long Clearing = 0;
+	static int x = 0;
 	public void Lock()
 	{
-		if(!Cleared) tryBlockTrack();
-		setAspect();
-	}
-	boolean tryBlockTrack()
-	{
-		if(Clearing!=0)
-		{
-			if(Clearing + 5 < Clock.time()) Clearing = 0;
-			else return false;
-		}
-		if(Linked==null) return false;
+		if(Linked==null) return;
 		muteEvents(true);
 		List<TrackItem> items = TrackItem.PositiveExploration(Linked, new TrackAvailable(OverrideRequest, false), Direction);
 		muteEvents(false);
-		if(items==null) return false;
-		TrackItem.PositiveExploration(Linked, new BlockTrack(false), Direction);
 		setMonitors();
+		if(items==null) return;
+		TrackItem.PositiveExploration(Linked, new BlockTrack(OverrideRequest), Direction);
+		Locked = true;
 		Clearing = Clock.time();
-		return true;
 	}
 	interface TrackIs
 	{
@@ -260,22 +258,19 @@ public class MainSignal extends Signal{
 			return true;
 		}
 	}
-	@Override
-	public void setAspect()
+	void setCleared()
 	{
-		Occupied = false;
-		Switches = false;
-		if(TrackItem.PositiveExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction) != null)
+		Cleared = Override = Switches = Occupied = false;
+		if(ClearRequest && TrackItem.PositiveExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction) != null)
 		{
-			Clearing = 0;
 			Override = OverrideRequest;
 			Cleared = true;
 		}
-		else if(Cleared)
-		{
-			Unlock();
-			Cleared = Override = false;
-		}
+	}
+	@Override
+	public void setAspect()
+	{
+		setCleared();
 		if(Cleared)
 		{
 			if(Override)
@@ -308,12 +303,10 @@ public class MainSignal extends Signal{
 			else if(Aspects.size()!=0) SignalAspect = Aspects.get(0);
 			else SignalAspect = Aspect.Apagado;
 		}
-		icon.update();
 		super.setAspect();
 	}
 	private void deactivateOverride()
 	{
-		if(!Override) return;
 		if(Class == SignalType.Shunting) ClearRequest = false;
 		TrackItem.PositiveExploration(Linked, new TrackComparer()
 		{
@@ -335,8 +328,6 @@ public class MainSignal extends Signal{
 			}
 	
 		}, Direction);
-		OverrideRequest = false;
-		if(!Automatic&&!BlockSignal) ClearRequest = false;
 	}
 	public void setState()
 	{
@@ -348,13 +339,14 @@ public class MainSignal extends Signal{
 	@Override
 	public void Unlock()
 	{
+		if(!Locked) return;
+		Locked = false;
+		Clearing = 0;
 		if(Override)
 		{
 			deactivateOverride();
 			return;
 		}
-		if(!Cleared) return;
-		Cleared = false;
 		muteEvents(true);
 		TrackItem.PositiveExploration(Linked, new TrackComparer()
 				{
@@ -377,19 +369,32 @@ public class MainSignal extends Signal{
 				}, Direction);
 		muteEvents(false);
 		setMonitors();
-		if(!Automatic&&!BlockSignal) ClearRequest = false;
+		UserRequest = false;
 		if(NextSignal != null) NextSignal.listeners.remove(this);
-		setAspect();
+	}
+	public void setClearRequest()
+	{
+		boolean TrainRequest = (Direction == Orientation.Odd ? Linked.getNext(Orientation.Even).OddAxles : Linked.getNext(Orientation.Odd).EvenAxles)!=0;
+		boolean BlockRequest = Linked.getNext(Orientation.OppositeDir(Direction)).BlockState == Direction;
+		ClearRequest = UserRequest || ((Automatic||BlockSignal) && TrainRequest) || ((/*Automatic||*/BlockSignal) && BlockRequest);
 	}
 	public void update()
 	{
 		if(Linked==null||ForceClose) return;
-		boolean TrainRequest = (Direction == Orientation.Odd ? Linked.getNext(Orientation.Even).OddAxles : Linked.getNext(Orientation.Odd).EvenAxles)!=0;
-		boolean BlockRequest = Linked.getNext(Orientation.OppositeDir(Direction)).BlockState == Direction;
-		if(((Automatic||BlockSignal) && TrainRequest) || ((Automatic||BlockSignal) && BlockRequest)) ClearRequest = true;
-		else if(Automatic||BlockSignal) ClearRequest = false;
-		if(ClearRequest&&!Cleared) Lock();
-		if(!ClearRequest&&Cleared) tryClose();
+		setClearRequest();
+		if(TrackItem.PositiveExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction) != null)
+		{
+			if(!ClearRequest) tryClose();
+			if(!Locked)
+			{
+				Clearing = 0;
+			}
+		}
+		else
+		{
+			if(ClearRequest) Lock();
+			else Unlock();
+		}
 		setAspect();
 	}
 	int closeTimerValue = 0;
@@ -504,6 +509,7 @@ public class MainSignal extends Signal{
 		}
 		else Automatic = false;
 		setState();
+		update();
 	}
 	public int SigsAhead()
 	{
@@ -539,6 +545,14 @@ public class MainSignal extends Signal{
 		}
 	}
 	@Override
+	public Packet getPacket()
+	{
+		SignalData d = (SignalData) super.getPacket();
+		if(d==null) return null;
+		d.UserRequest = UserRequest;
+		return d;
+	}
+	@Override
 	public void actionPerformed(SRCTEvent e) {
 		if(!EventsMuted)
 		{
@@ -562,11 +576,8 @@ public class MainSignal extends Signal{
 					AxleEvent ae = (AxleEvent)e;
 					if(Direction==ae.dir)
 					{
-						if(!Automatic && Cleared)
-						{
-							ClearRequest = false;
-							Unlock();
-						}
+						UserRequest = false;
+						//if(!Automatic) Locked = false;
 					}
 				}
 			}
@@ -587,5 +598,13 @@ public class MainSignal extends Signal{
 				else actionPerformed(e);
 			}
 		}
+	}
+	@Override
+	public void load(Packet p)
+	{
+		SignalData d = (SignalData)p;
+		((MainSignal)this).setAutomatic(d.Automatic);
+		OverrideRequest = d.OverrideRequest;
+		((MainSignal)this).UserRequest(d.UserRequest);
 	}
 }

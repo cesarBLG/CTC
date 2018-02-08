@@ -1,4 +1,4 @@
-package scrt.ctc;
+package scrt.ctc.Signal;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -6,7 +6,10 @@ import java.awt.Font;
 import javax.swing.ImageIcon;
 
 import scrt.Orientation;
+import scrt.ctc.Station;
+import scrt.ctc.TrackItem;
 import scrt.event.SRCTEvent;
+import scrt.gui.CTCIcon;
 import scrt.gui.SignalIcon;
 
 public class ExitIndicator extends Signal{
@@ -16,10 +19,13 @@ public class ExitIndicator extends Signal{
 		Name = s;
 		Station = dep;
 		Automatic = true;
-		icon = new SignalIcon(this);
 		Direction = Name.charAt(2)=='1' ? Orientation.Odd : Orientation.Even;
+		Class = SignalType.Exit_Indicator;
+		Number = Integer.parseInt(Name.split("/")[0].substring(2));
+		Track = 1;
+		setAspect();
 	}
-	public void setAspect()
+	void setMain()
 	{
 		if(MainSignal == null)
 		{
@@ -30,13 +36,21 @@ public class ExitIndicator extends Signal{
 				t = t.getNext(Direction);
 				if(t == null) return;
 			}
-			MainSignal = (scrt.ctc.MainSignal) t.SignalLinked;
-			MainSignal.listeners.add(this);
+			if(t.SignalLinked != null)
+			{
+				MainSignal = (scrt.ctc.Signal.MainSignal) t.SignalLinked;
+				MainSignal.listeners.add(this);
+			}
+
 		}
-		Cleared = MainSignal.SignalAspect != Aspect.Parada;
+	}
+	@Override
+	public void setAspect()
+	{
+		setMain();
+		Cleared = MainSignal != null && MainSignal.SignalAspect != Aspect.Parada;
 		if(Cleared) SignalAspect = Aspect.Via_libre;
 		else SignalAspect = Aspect.Parada;
-		icon.update();
 		super.setAspect();
 	}
 	@Override

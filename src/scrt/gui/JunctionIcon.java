@@ -1,23 +1,29 @@
 package scrt.gui;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import scrt.Orientation;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
-import scrt.ctc.SignalType;
 import scrt.ctc.TrackItem;
+import scrt.ctc.packet.Packet;
+import scrt.ctc.Signal.SignalType;
+import scrt.event.SRCTEvent;
 
 public class JunctionIcon extends TrackIcon {
 
@@ -28,7 +34,7 @@ public class JunctionIcon extends TrackIcon {
 	public JunctionIcon(Junction item) {
 		this.item = item;
 		junction = item;
-		addMouseListener(new MouseListener()
+		comp.addMouseListener(new MouseListener()
 		{
 
 			@Override
@@ -68,8 +74,8 @@ public class JunctionIcon extends TrackIcon {
 			}
 	
 		});
-		setLayout(new GridBagLayout());
-		setBackground(Color.black);
+		((Container)comp).setLayout(new GridBagLayout());
+		comp.setBackground(Color.black);
 		setIcon();
 	}
 	void setIcon()
@@ -85,7 +91,7 @@ public class JunctionIcon extends TrackIcon {
 		TrackIcon.setMinimumSize(new Dimension(18, 3));
 		TrackIcon.setPreferredSize(new Dimension(18, 3));
 		TrackIcon.setMaximumSize(new Dimension(18, 3));
-		add(TrackIcon, g);
+		((Container)comp).add(TrackIcon, g);
 		g.gridy++;
 		g.insets = new Insets(0,0,0,0);
 		JLabel j = new JLabel();
@@ -93,7 +99,7 @@ public class JunctionIcon extends TrackIcon {
 		j.setForeground(Color.yellow);
 		j.setText("A".concat(Integer.toString(junction.Number)));
 		j.setFont(new Font("Tahoma", 0, 10));
-		add(j, g);
+		((Container)comp).add(j, g);
 		g.gridy--;
 		if(junction.Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
@@ -102,7 +108,7 @@ public class JunctionIcon extends TrackIcon {
 		Locking.setMinimumSize(new Dimension(4, 3));
 		Locking.setPreferredSize(new Dimension(4, 3));
 		Locking.setMaximumSize(new Dimension(4, 3));
-		add(Locking, g);
+		((Container)comp).add(Locking, g);
 		if(junction.Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
 		g.insets = new Insets(0, 1, 0, 1);
@@ -111,7 +117,7 @@ public class JunctionIcon extends TrackIcon {
 		Direct.setPreferredSize(new Dimension(4, 3));
 		Direct.setMaximumSize(new Dimension(4, 3));
 		Direct.setBackground(Color.yellow);
-		add(Direct, g);
+		((Container)comp).add(Direct, g);
 		g.insets = new Insets(Upwise ? 1 : 0, 0, Upwise ? 0 : 1, 0);
 		g.ipady = 2;
 		if(Upwise) g.gridy++;
@@ -128,7 +134,7 @@ public class JunctionIcon extends TrackIcon {
 		Desv.setPreferredSize(new Dimension(7, 33));
 		Desv.setMaximumSize(new Dimension(7, 33));
 		Desv.setMinimumSize(new Dimension(7, 33));
-		add(Desv, g);
+		((Container)comp).add(Desv, g);
 		g.ipady = 0;
 		JPanel jp = new JPanel();
 		g.gridx = 4;
@@ -137,20 +143,42 @@ public class JunctionIcon extends TrackIcon {
 		jp.setMinimumSize(new Dimension(0,35));
 		jp.setPreferredSize(new Dimension(0,35));
 		jp.setMaximumSize(new Dimension(0,35));
-		add(jp,g);
+		((Container)comp).add(jp,g);
 		jp = new JPanel();
 		g.gridy = 0;
 		jp.setMinimumSize(new Dimension(0,35));
 		jp.setPreferredSize(new Dimension(0,35));
 		jp.setMaximumSize(new Dimension(0,35));
-		add(jp,g);
-		this.validate();
+		((Container)comp).add(jp,g);
+		comp.validate();
 	}
+	Timer FlashingTimer = new Timer(500, new ActionListener()
+	{
+		boolean a = false;
+		@Override
+		public void actionPerformed(ActionEvent e) 
+		{
+			Locking.setBackground(a ? Color.blue : Color.yellow);
+			a = !a;
+		}
+	});
 	@Override
 	public void update()
 	{
-		TrackIcon.setBackground(junction.Occupied != Orientation.None ? Color.red : junction.BlockState != Orientation.None ? Color.green : Color.yellow);
-		Locking.setBackground(junction.Locked != -1 ? Color.blue : Color.yellow);
+		TrackIcon.setBackground(junction.Occupied != Orientation.None ? (item.Occupied == Orientation.Unknown ? Color.white : Color.red) : junction.BlockState != Orientation.None ? Color.green : Color.yellow);
+		if(junction.BlockState != Orientation.None && junction.Locked == -1)
+		{
+			FlashingTimer.setRepeats(true);
+			FlashingTimer.start();
+			FlashingTimer.setInitialDelay(0);
+			Locking.setBackground(Color.blue);
+		}
+		else
+		{
+			FlashingTimer.setRepeats(false);
+			FlashingTimer.stop();
+			Locking.setBackground(junction.Locked != -1 ? Color.blue : Color.yellow);
+		}
 		if(junction.Switch==Position.Straight)
 		{
 			Direct.setBackground(junction.Locked==0 ? (junction.Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);

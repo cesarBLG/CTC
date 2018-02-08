@@ -125,9 +125,6 @@ public class TrafficGraph extends JFrame
 		rend.setBaseShapesVisible(false);
 		rend.setBaseShapesFilled(false);
 		rend.setAutoPopulateSeriesStroke(false);
-		rend.setBaseItemLabelPaint(Color.black);
-		rend.setBaseLegendTextPaint(Color.white);
-		rend.setBaseItemLabelPaint(Color.black);
 		rend.setBaseToolTipGenerator(new XYToolTipGenerator()
 				{
 					@Override
@@ -146,16 +143,10 @@ public class TrafficGraph extends JFrame
 			if(place.secondPK != 0 && place.secondPK < min) min = place.secondPK;
 			if(place.secondPK != 0 && place.secondPK > max) max = place.secondPK;
 		}
-		xAxis.setLabelPaint(Color.white);
-		xAxis.setTickLabelPaint(Color.white);
-		yAxis.setLabelPaint(Color.white);
-		yAxis.setTickLabelPaint(Color.white);
 		yAxis.setRange(min - (max-min)*0.02, max + (max-min)*0.02);
 		ValueMarker m = new ValueMarker(new Date().getTime(), Color.white, new BasicStroke(1.5f));
 		m.setLabel(Integer.toString(new Date().getHours()) + ":" + new Date().getMinutes());
-		m.setLabelPaint(Color.white);
 		plot.addDomainMarker(m);
-		plot.setBackgroundPaint(Color.black);
 		Timer t = new Timer(10000, new ActionListener()
 				{
 					@Override
@@ -170,6 +161,15 @@ public class TrafficGraph extends JFrame
 		chart.getTitle().setPaint(Color.white);
 		chart.setBackgroundPaint(Color.black);
 		chart.getLegend().setBackgroundPaint(Color.black);
+		m.setLabelPaint(Color.white);
+		plot.setBackgroundPaint(Color.black);
+		xAxis.setLabelPaint(Color.white);
+		xAxis.setTickLabelPaint(Color.white);
+		yAxis.setLabelPaint(Color.white);
+		yAxis.setTickLabelPaint(Color.white);
+		rend.setBaseItemLabelPaint(Color.black);
+		rend.setBaseLegendTextPaint(Color.white);
+		rend.setBaseItemLabelPaint(Color.black);
 		ChartPanel panel = new ChartPanel(chart);
 		panel.createToolTip();
 		panel.setPopupMenu(null);

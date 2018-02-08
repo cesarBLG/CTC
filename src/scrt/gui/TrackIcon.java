@@ -2,6 +2,7 @@ package scrt.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -14,26 +15,35 @@ import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import scrt.Orientation;
-import scrt.ctc.FixedSignal;
-import scrt.ctc.SignalType;
+import scrt.ctc.Itinerary;
 import scrt.ctc.TrackItem;
+import scrt.ctc.packet.Packet;
+import scrt.ctc.packet.SignalData;
+import scrt.ctc.Signal.EoT;
+import scrt.ctc.Signal.ExitIndicator;
+import scrt.ctc.Signal.FixedSignal;
+import scrt.ctc.Signal.SignalType;
+import scrt.event.SRCTEvent;
 
-public class TrackIcon extends JPanel implements CTCIcon {
+public class TrackIcon extends CTCIcon {
 	TrackItem item;
 	JLabel TrackIcon = new JLabel();
 	JLabel NumAxles = new JLabel();
 	TrackIcon()
 	{
-		
+		comp = new JPanel();
 	}
+	static TrackItem ItineraryStart = null;
 	public TrackIcon(TrackItem item) 
 	{
+		comp = new JPanel();
 		this.item = item;
-		addMouseListener(new MouseListener()
+		comp.addMouseListener(new MouseListener()
 		{
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -61,7 +71,12 @@ public class TrackIcon extends JPanel implements CTCIcon {
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON2)
 				{
-					
+					if(ItineraryStart == null) ItineraryStart = item;
+					else
+					{
+						Itinerary.set(ItineraryStart, item, item.x > ItineraryStart.x ? Orientation.Even : Orientation.Odd, false);
+						ItineraryStart = null;
+					}
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON3)
 				{
@@ -75,13 +90,13 @@ public class TrackIcon extends JPanel implements CTCIcon {
 			}
 	
 		});
-		this.setLayout(new GridBagLayout());
+		((Container) comp).setLayout(new GridBagLayout());
 		GridBagConstraints g = new GridBagConstraints();
 		g.gridx = g.gridy = 0;
 		g.insets = new Insets(0,0,0,0);
 		g.fill = GridBagConstraints.BOTH;
 		g.anchor = GridBagConstraints.CENTER;
-		this.setBackground(Color.black);
+		comp.setBackground(Color.black);
 		TrackIcon.setOpaque(true);
 		if(item.OddRotation==item.EvenRotation&&item.EvenRotation==-1)
 		{
@@ -104,7 +119,7 @@ public class TrackIcon extends JPanel implements CTCIcon {
 			TrackIcon.setMaximumSize(new Dimension(30, 3));
 		}
 		g.gridy++;
-		add(TrackIcon, g);
+		((Container)comp).add(TrackIcon, g);
 		if(item.Name.length()>=1)
 		{
 			JLabel j = new JLabel(item.Name.length()== 0 ? " " : item.Name);
@@ -113,13 +128,13 @@ public class TrackIcon extends JPanel implements CTCIcon {
 			j.setForeground(Color.yellow);
 			j.setFont(new Font("Tahoma", 0, 10));
 			g.gridy++;
-			add(j, g);
+			((Container)comp).add(j, g);
 			g.gridy++;
 			NumAxles.setFont(new Font("Tahoma", 0, 10));
 			NumAxles.setHorizontalAlignment(JLabel.CENTER);
 			NumAxles.setVerticalAlignment(JLabel.TOP);
 			NumAxles.setHorizontalTextPosition(JLabel.CENTER);
-			add(NumAxles, g);
+			((Container)comp).add(NumAxles, g);
 		}
 		if(item.OddRotation!=item.EvenRotation||item.OddRotation==0)
 		{
@@ -131,14 +146,14 @@ public class TrackIcon extends JPanel implements CTCIcon {
 			jp.setMinimumSize(new Dimension(0,35));
 			jp.setPreferredSize(new Dimension(0,35));
 			jp.setMaximumSize(new Dimension(0,35));
-			add(jp,g);
+			((Container)comp).add(jp,g);
 			jp = new JPanel();
 			g.gridy = 2;
 			if(item.Name.length()>=1) g.gridheight = 2;
 			jp.setMinimumSize(new Dimension(0,35));
 			jp.setPreferredSize(new Dimension(0,35));
 			jp.setMaximumSize(new Dimension(0,35));
-			add(jp,g);
+			((Container)comp).add(jp,g);
 		}
 	}
 	public void setSignal()
@@ -150,8 +165,14 @@ public class TrackIcon extends JPanel implements CTCIcon {
 		{
 			g.insets = new Insets(5, 0, 3, 0);
 			g.anchor = item.SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHEAST : GridBagConstraints.SOUTHWEST;
-			if(item.SignalLinked instanceof FixedSignal && (item.EvenItem == null || item.OddItem == null) ) g.anchor = item.SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
-			add((Component) item.SignalLinked.icon, g);
+			if(item.SignalLinked instanceof EoT && (item.EvenItem == null || item.OddItem == null) ) g.anchor = item.SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
+			for(CTCIcon i : CTCIcon.items)
+			{
+				if(i.getPacket().equals(item.SignalLinked.getPacket()))
+				{
+					((Container)comp).add(i.comp, g);
+				}
+			}
 		}
 	}
 	Timer timer = new Timer(350, new ActionListener()
@@ -171,10 +192,11 @@ public class TrackIcon extends JPanel implements CTCIcon {
 	@Override
 	public void update()
 	{
-		if(item.Acknowledged)
+		TrackItem i = item;
+		if(i.Acknowledged)
 		{
 			timer.stop();
-			TrackIcon.setBackground(item.Occupied != Orientation.None ? Color.red : item.BlockState != Orientation.None ? Color.green : Color.yellow);
+			TrackIcon.setBackground(i.Occupied != Orientation.None ? (i.Occupied == Orientation.Unknown ? Color.white : Color.red) : i.BlockState != Orientation.None ? Color.green : Color.yellow);
 		}
 		else
 		{
@@ -182,16 +204,28 @@ public class TrackIcon extends JPanel implements CTCIcon {
 			timer.setRepeats(true);
 			timer.start();
 		}
-		if(item.Name.length()>=1)
+		if(i.Name.length()>=1)
 		{
-			String n = item.Occupied.name();
-			if(item.Occupied == Orientation.None && (item.BlockState==Orientation.Odd || item.BlockState==Orientation.Even))
+			String n = i.Occupied.name();
+			if(i.Occupied == Orientation.None && (i.BlockState==Orientation.Odd || i.BlockState==Orientation.Even))
 			{
-				n = "Block".concat(item.BlockState.name());
+				n = "Block".concat(i.BlockState.name());
 			}
 			NumAxles.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Track/".concat(n).concat(".png"))));
-			NumAxles.setForeground(item.OddAxles + item.EvenAxles == 0 ? Color.YELLOW : Color.red);
-			NumAxles.setText(Integer.toString(item.EvenAxles + item.OddAxles));
+			NumAxles.setForeground(i.OddAxles + i.EvenAxles == 0 ? Color.YELLOW : Color.red);
+			NumAxles.setText(Integer.toString(i.EvenAxles + i.OddAxles));
 		}
+	}
+	@Override
+	public Packet getPacket()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void load(Packet p)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -1,4 +1,4 @@
-package scrt.ctc;
+package scrt.ctc.Signal;
 
 public enum SignalType
 {

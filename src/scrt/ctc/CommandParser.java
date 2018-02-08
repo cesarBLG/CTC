@@ -2,7 +2,9 @@ package scrt.ctc;
 
 import javax.swing.JOptionPane;
 
-import scrt.gui.Main;
+import scrt.Main;
+import scrt.ctc.Signal.MainSignal;
+import scrt.ctc.Signal.Signal;
 
 public class CommandParser {
 	public static void Parse(String s, Loader l)

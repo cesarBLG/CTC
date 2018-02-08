@@ -9,7 +9,17 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import scrt.Main;
 import scrt.Orientation;
+import scrt.com.COM;
+import scrt.com.tcp.TCP;
+import scrt.ctc.Signal.Aspect;
+import scrt.ctc.Signal.EoT;
+import scrt.ctc.Signal.ExitIndicator;
+import scrt.ctc.Signal.FixedSignal;
+import scrt.ctc.Signal.MainSignal;
+import scrt.ctc.Signal.Signal;
+import scrt.gui.GUI;
 import scrt.regulation.grp.GRPManager;
 
 public class Loader {
@@ -21,8 +31,11 @@ public class Loader {
 	public GRPManager grpManager;
 	public Loader()
 	{
+		COM.initialize();
+		Main.l = this;
 		parseLayoutFile(new File("D:\\cesar\\Documents\\Ferrocarril\\CiMaF\\SRCT\\layout.txt"));
 		grpManager = new GRPManager(this);
+		new GUI();
 	}
 	void parseLayoutFile(File layout)
 	{
@@ -108,20 +121,27 @@ public class Loader {
 						{
 							Signal Sig;
 							if(sig.charAt(0)=='I') Sig = new ExitIndicator(sig, Workingdep);
-							else if(sig.charAt(0)=='F') Sig = new FixedSignal(sig.charAt(1)=='1' ? Orientation.Odd : Orientation.Even, Aspect.Anuncio_parada, Workingdep);
+							else if(sig.charAt(0)=='F') Sig = new FixedSignal(sig, sig.charAt(1)=='1' ? Orientation.Odd : Orientation.Even, Aspect.Anuncio_parada, Workingdep);
 							else Sig = new MainSignal(sig, Workingdep);
-							t.setSignal(Sig);
-							Sig.Linked = t;
+							Sig.setLinked(t);
 							Workingdep.Signals.add(Sig);
 							signals.add(Sig);
 						}
 						if(ac.charAt(0)!='0')
 						{
-							AxleCounter Ac = new AxleCounter(Integer.parseInt(ac), Workingdep);
+							int num = Integer.parseInt(ac);
+							AxleCounter Ac = null;
+							for(TrackItem ti : Workingdep.Items)
+							{
+								if(ti.CounterLinked!=null && ti.CounterLinked.Number == num) Ac = ti.CounterLinked;
+							}
+							if(Ac == null)
+							{
+								Ac = new AxleCounter(num, Workingdep);
+								counters.add(Ac);
+							}
 							t.CounterLinked = Ac;
-							Ac.Linked = t;
 							t.CounterDir = Ac.Number % 2 == 0 ? Orientation.Even : Orientation.Odd;
-							counters.add(Ac);
 						}
 						for(TrackItem at : items)
 						{
@@ -177,9 +197,52 @@ public class Loader {
 				if(a instanceof Junction)
 				{
 					Junction j = (Junction)a;
-					if(b.connectsTo(j.Direction, a)) j.FrontItems[0] = b;
-					if(b.connectsTo(j.Direction, a.x, a.y, j.Class == Position.Right ? -1 : 1)) j.FrontItems[1] = b;
-					if(b.connectsTo(Orientation.OppositeDir(j.Direction), a)) j.BackItem = b;
+					if(b instanceof Junction)
+					{
+						Junction k = (Junction)b;
+						if(j.Direction != k.Direction)
+						{
+							if(j.x + (j.Direction == Orientation.Even ? 1 : -1) == k.x)
+							{
+								if(j.Class == k.Class && j.y + (j.Class == Position.Left ? -1 : 1)*(j.Direction == Orientation.Even ? 1 : -1) == k.y)
+								{
+									j.FrontItems[1] = k;
+									k.FrontItems[1] = j;
+									j.Linked = k;
+									k.Linked = j;
+								}
+								else if(j.Class != k.Class && j.y == k.y)
+								{
+									j.FrontItems[0] = k;
+									k.FrontItems[0] = j;
+								}
+								else
+								{
+									if(b.connectsTo(j.Direction, a)) j.FrontItems[0] = b;
+									if(b.connectsTo(j.Direction, a.x, a.y, j.Class == Position.Right ? -1 : 1)) j.FrontItems[1] = b;
+									if(b.connectsTo(Orientation.OppositeDir(j.Direction), a)) j.BackItem = b;
+								}
+							}
+							else
+							{
+								if(b.connectsTo(j.Direction, a)) j.FrontItems[0] = b;
+								if(b.connectsTo(j.Direction, a.x, a.y, j.Class == Position.Right ? -1 : 1)) j.FrontItems[1] = b;
+								if(b.connectsTo(Orientation.OppositeDir(j.Direction), a)) j.BackItem = b;
+							}
+						}
+						else
+						{
+							if(b.connectsTo(j.Direction, a)) j.FrontItems[0] = b;
+							if(b.connectsTo(j.Direction, a.x, a.y, j.Class == Position.Right ? -1 : 1)) j.FrontItems[1] = b;
+							if(b.connectsTo(Orientation.OppositeDir(j.Direction), a)) j.BackItem = b;
+						}
+					}
+					else
+					{
+						if(b.connectsTo(j.Direction, a)) j.FrontItems[0] = b;
+						if(b.connectsTo(j.Direction, a.x, a.y, j.Class == Position.Right ? -1 : 1)) j.FrontItems[1] = b;
+						if(b.connectsTo(Orientation.OppositeDir(j.Direction), a)) j.BackItem = b;
+					}
 				}
 				else
 				{

@@ -8,11 +8,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -20,8 +23,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.com.COM;
+import scrt.com.Serial;
 import scrt.event.SRCTListener;
 import scrt.event.OccupationEvent;
 import scrt.gui.JunctionIcon;
@@ -69,25 +75,42 @@ public class Junction extends TrackItem
 		if(t==BackItem) return FrontItems[Switch==Position.Straight ? 0 : 1];
 		return null;
 	}
-	boolean LockedFor(TrackItem t)
+	public boolean LockedFor(TrackItem t)
 	{
-		if((t==FrontItems[0]&&Locked!=1)||(t==FrontItems[1]&&Locked!=0)||t==BackItem) return true;
+		if(BlockState == Orientation.None&&Locked == -1) return true;
+		if(Locked!=-1&&((t==FrontItems[0]&&Locked==0)||(t==FrontItems[1]&&Locked==1)||t==BackItem)) return true;
 		return false;
 	}
-	void lock(TrackItem t)
+	boolean locking = false;
+	public void lock(TrackItem t)
 	{
 		if(Locked == -1)
 		{
-			if(t==BackItem) Locked = Switch==Position.Straight ? 0 : 1;
-			else
-			{
-				if(FrontItems[0]==t) Locked = 0;
-				else Locked = 1;
-			}
+			if(locking) return;
+			locking = true;
+			Timer timer = new Timer(2000, new ActionListener()
+					{
+						@Override
+						public void actionPerformed(ActionEvent arg0)
+						{
+							if(t==BackItem) Locked = Switch==Position.Straight ? 0 : 1;
+							else
+							{
+								if(FrontItems[0]==t) Locked = 0;
+								else Locked = 1;
+							}
+							locking = false;
+							Orientation o = BlockState;
+							BlockState = Orientation.None;
+							setBlock(o);
+						}
+					});
+			timer.setRepeats(false);
+			timer.start();
 		}
 	}
 	@Override
-	void setBlock(Orientation o) 
+	public void setBlock(Orientation o) 
 	{
 		if(o==Orientation.None&&Occupied==Orientation.None) Locked = -1;
 		super.setBlock(o);
@@ -127,10 +150,10 @@ public class Junction extends TrackItem
 		updateState();
 	}
 	@Override
-	void updateState()
+	public void updateState()
 	{
 		icon.update();		
-		Serial.send(this, true);
+		COM.send(getPacket());
 	}
 	@Override
 	public void setCounters(Orientation dir)
@@ -278,8 +301,8 @@ public class Junction extends TrackItem
 		if(Occupied==Orientation.None&&Muelle!=-1) Switch = Muelle == 0 ? Position.Straight : Class;
 		else if(Switch!=p&&Occupied==Orientation.None&&BlockState==Orientation.None&&Locked==-1)
 		{
-			if(Linked!=null&&!Linked.setSwitch((p == Position.Straight ? p : (p==Position.Left ? Position.Right : Position.Left)))) return false;
 			Switch = p;
+			if(Linked!=null&&Linked.Switch != Switch) Linked.setSwitch(p);
 		}
 		else return false;
 		updatePosition();
@@ -304,5 +327,35 @@ public class Junction extends TrackItem
 			}
 		}
 		return false;
+	}
+	@Override
+	public List<TrackItem> path(TrackItem destination, Orientation dir, boolean start)
+	{
+		List<TrackItem> l = null;
+		if(destination == this)
+		{
+			l = new ArrayList<TrackItem>();
+			l.add(this);
+			return l;
+		}
+		if(dir != Direction)
+		{
+			if(BackItem==null) return null;
+			l = BackItem.path(destination, dir, false);
+		}
+		else
+		{
+			int d = pathDepth;
+			l = getNext(dir).path(destination, dir, false);
+			pathDepth = d;
+			List<TrackItem> x = null;
+			if(FrontItems[Switch == Position.Straight ? 1 : 0]!=null) x = FrontItems[Switch == Position.Straight ? 1 : 0].path(destination, dir, false);
+			pathDepth = d;
+			if(l == null || (x!=null && x.size() + 5 < l.size())) l = x;
+		}
+		if(l==null) return null;
+		l.add(this);
+		if(start) Collections.reverse(l);
+		return l;
 	}
 }

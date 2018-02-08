@@ -65,14 +65,13 @@ public class Place
 		Track t = tracks.get(ta);
 		e.track = t;
 		t.occupation.add(e);
-		t.solveOverlaps();
 	}
 	public boolean crossingAvailable(Train arriving, Train waiting)
 	{
 		if(tracks.size() < 2) return false;
 		TimetableEntry t1 = arriving.timetable.getEntry(this);
 		TimetableEntry t2 = waiting.timetable.getEntry(this);
-		if(t1.track == null)
+		if(t1.track==null)
 		{
 			int ta = getTrackIndex(t1);
 			Track t = tracks.get(ta);
@@ -96,12 +95,13 @@ public class Place
 				if(t2.timetable.train.Direction == Orientation.Odd) odd++;
 				else even++;
 			}
-			List<TimetableEntry> l = track.getOverlaps(t2);
+			List<Overlap> l = track.getOverlaps(t2);
 			if(!l.isEmpty())
 			{
-				for(TimetableEntry e : l)
+				for(Overlap o : l)
 				{
-					//if(e.track.number == getTrackIndex(t2) && e.getEntry().getTime() > t2.getEntry().getTime() && e.timetable.train.Direction == waiting.Direction) continue;
+					TimetableEntry e = o.entries[1];
+					if(e.track.number == getTrackIndex(t2) && e.getEntry().getTime() > t2.getEntry().getTime() && e.timetable.train.Direction == waiting.Direction) continue;
 					if(e.timetable.train.Direction == Orientation.Odd) odd++;
 					if(e.timetable.train.Direction == Orientation.Even) even++;
 				}
@@ -147,8 +147,9 @@ public class Place
 			for(int i=0; i<tracks.size(); i++)
 			{
 				Track t = tracks.get(i);
-				for(TimetableEntry te : t.getOverlaps(e))
+				for(Overlap o : t.getOverlaps(e))
 				{
+					TimetableEntry te = o.entries[1];
 					if(te.timetable.train.Direction != e.timetable.train.Direction && other==-1) other = i;
 					if(te.timetable.train.Direction == e.timetable.train.Direction && same==-1 && t != avail.get(0)) same = i;
 				}
@@ -163,7 +164,8 @@ public class Place
 			for(int i=0; i<tracks.size(); i++)
 			{
 				Track t = tracks.get(i);
-				if(t.getFirstOverlap(e).timetable.train.Direction == e.timetable.train.Direction) same = i;
+				Overlap o = t.getFirstOverlap(e);
+				if(o.entries[1].timetable.train.Direction == e.timetable.train.Direction) same = i;
 			}
 			if(same==-1) return 0;
 			return same;
@@ -189,6 +191,15 @@ public class Place
 		}
 		return null;
 	}
+	public List<Overlap> getOverlaps()
+	{
+		List<Overlap> l = new ArrayList<Overlap>();
+		for(Track t : tracks)
+		{
+			l.addAll(t.getOverlaps());
+		}
+		return l;
+	}
 	public static Place IntermediatePlace(Place odd, Place even, int numtr)
 	{
 		Place p = new Place();
@@ -213,9 +224,7 @@ public class Place
 	@Override
 	public String toString()
 	{
+		if(name==null) return odd.get(0).toString() + "-" + even.get(0).toString();
 		return name;
-	}
-	public void solveOverlaps() {
-		for(Track t : tracks) t.solveOverlaps();
 	}
 }

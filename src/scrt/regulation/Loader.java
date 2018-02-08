@@ -15,6 +15,8 @@ import scrt.regulation.train.Train;
 
 public class Loader
 {
+	public static TrafficGraph g = null;
+	public static List<Train> t = new ArrayList<Train>();
 	public Loader()
 	{
 		Place cen = new Place("Central");
@@ -46,7 +48,7 @@ public class Loader
 		tr.add(new Track(arb, 80));
 		arb.tracks = new FunctionalList<Track>(tr);
 		arb.isPP = true;
-		arb.PK = -500;
+		arb.PK = -600;
 		//arb.Length = 80;
 		arb.maxSpeed = 10;
 		Place.IntermediatePlace(tmb, arb, 1);
@@ -82,21 +84,14 @@ public class Loader
 		t6.timetable.set(cen, cen);
 		t7.timetable.set(cen, cen);
 		t8.timetable.set(cen, cen);
+		t1.timetable.entries.get(0).setStop(0);
+		t2.timetable.entries.get(0).setStop(40);
 		t3.timetable.entries.get(0).setStop(30);
-		t4.timetable.entries.get(0).setStop(30);
+		t4.timetable.entries.get(0).setStop(70);
 		t5.timetable.entries.get(0).setStop(60);
 		t6.timetable.entries.get(0).setStop(60);
 		t7.timetable.entries.get(0).setStop(90);
 		t8.timetable.entries.get(0).setStop(90);
-		t1.timetable.validate();
-		t2.timetable.validate();
-		t3.timetable.validate();
-		t4.timetable.validate();
-		t5.timetable.validate();
-		t6.timetable.validate();
-		t7.timetable.validate();
-		t8.timetable.validate();
-		List<Train> t = new ArrayList<Train>();
 		t.add(t1);
 		t.add(t2);
 		t.add(t3);
@@ -105,7 +100,11 @@ public class Loader
 		t.add(t6);
 		t.add(t7);
 		t.add(t8);
-		TrafficGraph g = new TrafficGraph(p);
+		g = new TrafficGraph(p);
+		for(Train train: t)
+		{
+			train.timetable.validate();
+		}
 		g.updateData(t);
 		/*FileReader fr = null;
 		try {

@@ -1,6 +1,7 @@
 package scrt.gui;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,16 +9,18 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
+import scrt.Main;
 import scrt.Orientation;
 import scrt.ctc.CommandParser;
-import scrt.ctc.FixedSignal;
 import scrt.ctc.Loader;
 import scrt.ctc.TrackItem;
+import scrt.ctc.Signal.FixedSignal;
 
 import javax.swing.JFrame;
 
@@ -43,7 +46,7 @@ public class GUI
 		setTrackLayout();
 		setItineraryFrame();
 		frame.pack();
-		//frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setVisible(true);
 	}
 	void setTrackLayout()
@@ -60,11 +63,13 @@ public class GUI
 		g.gridheight = 1;
 		for(TrackItem t : l.items)
 		{
-			g.gridx = t.x;
+			g.gridx = t.x + 40;
 			g.gridy = t.y * 2;
-			layout.add((Component)t.icon, g);
+			layout.add(t.icon.comp, g);
 		}
-		frame.add(layout);
+		JScrollPane pane = new JScrollPane(layout);
+		pane.getHorizontalScrollBar().setUnitIncrement(20);
+		frame.add(pane);
 	}
 	void setItineraryFrame()
 	{

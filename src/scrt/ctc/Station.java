@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import scrt.ctc.Signal.Signal;
 import scrt.regulation.grp.GRP;
 import scrt.regulation.train.Train;
 
@@ -20,6 +21,16 @@ public class Station {
 	public Station(String name)
 	{
 		Name = name;
+		if(Name.equals("Cen"))
+		{
+			FullName = "Central";
+			AssociatedNumber = 0;
+		}
+		if(Name.equals("TmB"))
+		{
+			FullName = "Tomás Bretón";
+			AssociatedNumber = 3;
+		}
 		if(Name.equals("CdM"))
 		{
 			FullName = "Cajón de madera";
@@ -35,10 +46,10 @@ public class Station {
 			FullName = "Losilla-Cocherón";
 			AssociatedNumber = 6;
 		}
-		if(Name.equals("TmB"))
+		if(Name.equals("Car"))
 		{
-			FullName = "Tomás Bretón";
-			AssociatedNumber = 5;
+			FullName = "Carbonera";
+			AssociatedNumber = 7;
 		}
 		if(Name.matches("[0-9]{3}"))
 		{
@@ -69,11 +80,11 @@ public class Station {
 		if(AssociatedNumber == 0||ML) return;
 		for(TrackItem t : Items)
 		{
-			((Component) t.icon).setVisible(false);
+			t.icon.comp.setVisible(false);
 		}
 		for(Signal s : Signals)
 		{
-			((Component) s.icon).setVisible(false);
+			s.icon.comp.setVisible(false);
 		}
 		ML = true;
 	}
@@ -82,11 +93,11 @@ public class Station {
 		if(!ML) return;
 		for(TrackItem t : Items)
 		{
-			((Component) t.icon).setVisible(true);
+			t.icon.comp.setVisible(true);
 		}
 		for(Signal s : Signals)
 		{
-			((Component) s.icon).setVisible(true);
+			s.icon.comp.setVisible(true);
 		}
 		ML = false;
 	}
