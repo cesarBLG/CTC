@@ -10,6 +10,8 @@ import javax.swing.JPanel;
 import scrt.ctc.Signal.Signal;
 import scrt.ctc.packet.Packable;
 import scrt.ctc.packet.Packet;
+import scrt.ctc.packet.PacketManager;
+import scrt.ctc.packet.SignalData;
 import scrt.event.SRCTEvent;
 import scrt.event.SRCTListener;
 import scrt.gui.CTCIcon;
@@ -19,22 +21,9 @@ public abstract class CTCItem implements SRCTListener, Packable {
 	protected List<SRCTEvent> Queue = new ArrayList<SRCTEvent>();
 	protected boolean EventsMuted = false;
 	public CTCIcon icon;
-	static List<CTCItem> items = new ArrayList<CTCItem>();
+	public static PacketManager PacketManager = new PacketManager();
 	public CTCItem()
 	{
-		items.add(this);
-	}
-	public static void handlePacket(Packet p)
-	{
-		for(CTCItem t : items)
-		{
-			if(t instanceof Signal)
-			{
-				if(p.equals(t.getPacket()))
-				{
-					t.load(p);
-				}
-			}
-		}
+		PacketManager.items.add(this);
 	}
 }

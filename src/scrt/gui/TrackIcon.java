@@ -20,8 +20,11 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.ctc.AxleCounter;
+import scrt.ctc.CTCItem;
 import scrt.ctc.Itinerary;
 import scrt.ctc.TrackItem;
+import scrt.ctc.packet.ACData;
 import scrt.ctc.packet.Packet;
 import scrt.ctc.packet.SignalData;
 import scrt.ctc.Signal.EoT;
@@ -67,7 +70,12 @@ public class TrackIcon extends CTCIcon {
 				// TODO Auto-generated method stub
 				if(arg0.getButton()==MouseEvent.BUTTON1)
 				{
-					if(item.CounterLinked!=null) item.CounterLinked.OddPassed();
+					if(item.CounterLinked!=null)
+					{
+						ACData a = (ACData) item.CounterLinked.getPacket();
+						a.dir = Orientation.Odd;
+						CTCItem.PacketManager.handlePacket(a);
+					}
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON2)
 				{
@@ -80,7 +88,12 @@ public class TrackIcon extends CTCIcon {
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON3)
 				{
-					if(item.CounterLinked!=null) item.CounterLinked.EvenPassed();
+					if(item.CounterLinked!=null)
+					{
+						ACData a = (ACData) item.CounterLinked.getPacket();
+						a.dir = Orientation.Even;
+						CTCItem.PacketManager.handlePacket(a);
+					}
 				}
 			}
 

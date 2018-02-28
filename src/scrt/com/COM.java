@@ -8,6 +8,7 @@ import scrt.Orientation;
 import scrt.com.tcp.Client;
 import scrt.com.tcp.TCP;
 import scrt.ctc.AxleCounter;
+import scrt.ctc.CTCItem;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
 import scrt.ctc.TrackItem;
@@ -43,7 +44,7 @@ public class COM
 		if(o instanceof Packet)
 		{
 			Packet p  = (Packet)o;
-			CTCIcon.handlePacket(p);
+			CTCIcon.PacketManager.handlePacket(p);
 			write(p.getState());
 			return;
 		}
@@ -107,6 +108,8 @@ public class COM
 	}
 	public static void parse(byte[] data)
 	{
+		Packet p = Packet.byState(data);
+		CTCItem.PacketManager.handlePacket(p);
 		data[0] = (byte) (data[0] & 0xEFFF);
 	    if(data[0]==1)
 	    {

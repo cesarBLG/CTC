@@ -135,7 +135,8 @@ public class MainSignal extends Signal{
 		{
 			Timer t = new Timer(30000, new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					UserRequest = false;
+					UserRequest = OverrideRequest = false;
+					setAspect();
 				}
 			});
 			t.setRepeats(false);
@@ -149,11 +150,11 @@ public class MainSignal extends Signal{
 	{
 		if(Linked==null) return;
 		muteEvents(true);
-		List<TrackItem> items = TrackItem.PositiveExploration(Linked, new TrackAvailable(OverrideRequest, false), Direction);
+		List<TrackItem> items = TrackItem.DirectExploration(Linked, new TrackAvailable(OverrideRequest, false), Direction);
 		muteEvents(false);
 		setMonitors();
 		if(items==null) return;
-		TrackItem.PositiveExploration(Linked, new BlockTrack(OverrideRequest), Direction);
+		TrackItem.DirectExploration(Linked, new BlockTrack(OverrideRequest), Direction);
 		Locked = true;
 		Clearing = Clock.time();
 	}
@@ -167,7 +168,7 @@ public class MainSignal extends Signal{
 		if(i==Linked||i==null||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=Direction)
 		{
 			if(Class == SignalType.Exit && i.Station != Linked.Station) return false;
-			if(i.Occupied != Orientation.None) return false;
+			if(i.Occupied != Orientation.None&&(i.Occupied==dir||i.trainStopped())) return false;
 			return true;
 		}
 		return false;
@@ -210,12 +211,12 @@ public class MainSignal extends Signal{
 		@Override
 		public boolean criticalCondition(TrackItem i, Orientation dir, TrackItem p) 
 		{
-			if(Override)
+			/*if(Override)
 			{
 				if(i==null||(i.BlockState!=dir&&(i.BlockState!=Orientation.None||checkBlock))) return false;
 				return junctionState.condition(i, dir, p);
-			}
-			if(i==null||(BlockOccupied.condition(i, dir, p)&&(i.BlockState!=Orientation.None||checkBlock))||(i.Occupied!=Orientation.None&&(i.Occupied!=dir||(!Next&&!allowsOnSight))))
+			}*/
+			if(i==null||(BlockOccupied.condition(i, dir, p)&&(i.BlockState!=Orientation.None||checkBlock))||(i.Occupied!=Orientation.None&&((i.Occupied!=dir && (!Override || !i.trainStopped()))||(!Next&&!allowsOnSight))))
 			{
 				/*if(i!=null&&!checkBlock&&BlockOccupied.condition(i, dir, p))
 				{
@@ -261,7 +262,7 @@ public class MainSignal extends Signal{
 	void setCleared()
 	{
 		Cleared = Override = Switches = Occupied = false;
-		if(ClearRequest && TrackItem.PositiveExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction) != null)
+		if(ClearRequest && TrackItem.DirectExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction) != null)
 		{
 			Override = OverrideRequest;
 			Cleared = true;
@@ -308,7 +309,7 @@ public class MainSignal extends Signal{
 	private void deactivateOverride()
 	{
 		if(Class == SignalType.Shunting) ClearRequest = false;
-		TrackItem.PositiveExploration(Linked, new TrackComparer()
+		TrackItem.DirectExploration(Linked, new TrackComparer()
 		{
 			boolean EndOfLock = true;
 			@Override
@@ -348,7 +349,7 @@ public class MainSignal extends Signal{
 			return;
 		}
 		muteEvents(true);
-		TrackItem.PositiveExploration(Linked, new TrackComparer()
+		TrackItem.DirectExploration(Linked, new TrackComparer()
 				{
 					boolean EndOfLock = true;
 					@Override
@@ -382,7 +383,7 @@ public class MainSignal extends Signal{
 	{
 		if(Linked==null||ForceClose) return;
 		setClearRequest();
-		if(TrackItem.PositiveExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction) != null)
+		if(TrackItem.DirectExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction) != null)
 		{
 			if(!ClearRequest) tryClose();
 			if(!Locked)
@@ -405,7 +406,7 @@ public class MainSignal extends Signal{
 		else
 		{
 			closeTimerValue = 0;
-			TrackItem.NegativeExploration(Linked, new TrackComparer()
+			TrackItem.InverseExploration(Linked, new TrackComparer()
 					{
 						int count = 0;
 						int signalsPassed = 0;
@@ -524,7 +525,7 @@ public class MainSignal extends Signal{
 		{
 			t.listeners.remove(this);
 		}
-		MonitoringItems = TrackItem.PositiveExploration(Linked, new TrackComparer()
+		MonitoringItems = TrackItem.DirectExploration(Linked, new TrackComparer()
 				{
 					@Override
 					public boolean condition(TrackItem i, Orientation dir, TrackItem p) 

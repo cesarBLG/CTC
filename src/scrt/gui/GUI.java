@@ -33,6 +33,7 @@ public class GUI
 	Loader l;
 	public GUI()
 	{
+		//while(!JOptionPane.showInputDialog(null, "Introduzca contraseña").equals("1234"));
 		l = Main.l;
 		frame = new JFrame();
 		frame.setLayout(new BorderLayout());

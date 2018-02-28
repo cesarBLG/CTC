@@ -280,7 +280,7 @@ public class TrackItem extends CTCItem{
 	}
 	public boolean trainStopped()
 	{
-		return (Clock.time() - OccupiedTime) > (Station.AssociatedNumber == 0 ? 30000 : 15000);
+		return (Clock.time() - OccupiedTime) > (Station.AssociatedNumber == 0 ? 20000 : 15000);
 	}
 	public void PerformAction(AxleCounter a, Orientation dir)
 	{
@@ -314,7 +314,7 @@ public class TrackItem extends CTCItem{
 		boolean condition(TrackItem t, Orientation dir, TrackItem p);
 		boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p);
 	}
-	public static List<TrackItem> PositiveExploration(TrackItem start, TrackComparer tc, Orientation dir)
+	public static List<TrackItem> DirectExploration(TrackItem start, TrackComparer tc, Orientation dir)
 	{
 		List<TrackItem> list = new ArrayList<TrackItem>();
 		TrackItem t = start;
@@ -329,7 +329,7 @@ public class TrackItem extends CTCItem{
 		}
 		return list;
 	}
-	public static List<TrackItem> NegativeExploration(TrackItem start, TrackComparer tc, Orientation dir)
+	public static List<TrackItem> InverseExploration(TrackItem start, TrackComparer tc, Orientation dir)
 	{
 		List<TrackItem> list = new ArrayList<TrackItem>();
 		TrackItem t = start;
@@ -344,8 +344,8 @@ public class TrackItem extends CTCItem{
 				Junction j = (Junction)t;
 				if(j.Direction == dir)
 				{
-					if(tc.condition(j.FrontItems[0], dir, prev)) list.addAll(NegativeExploration(j.FrontItems[0], tc, dir));
-					if(tc.condition(j.FrontItems[1], dir, prev)) list.addAll(NegativeExploration(j.FrontItems[1], tc, dir));
+					if(tc.condition(j.FrontItems[0], dir, prev)) list.addAll(InverseExploration(j.FrontItems[0], tc, dir));
+					if(tc.condition(j.FrontItems[1], dir, prev)) list.addAll(InverseExploration(j.FrontItems[1], tc, dir));
 					break;
 				}
 			}

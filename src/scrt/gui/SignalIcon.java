@@ -49,7 +49,7 @@ public class SignalIcon extends CTCIcon {
 					{
 						public void actionPerformed(ActionEvent arg0) {
 							sig.UserRequest = !sig.ClearRequest;
-							CTCItem.handlePacket(sig);
+							CTCItem.PacketManager.handlePacket(sig);
 						}
 				
 					});
@@ -60,13 +60,13 @@ public class SignalIcon extends CTCIcon {
 							{
 								sig.UserRequest = false;
 								sig.OverrideRequest = false;
-								CTCItem.handlePacket(sig);
+								CTCItem.PacketManager.handlePacket(sig);
 							}
 							else
 							{
 								sig.OverrideRequest = true;
 								sig.UserRequest = true;
-								CTCItem.handlePacket(sig);
+								CTCItem.PacketManager.handlePacket(sig);
 							}
 						}
 				
@@ -75,7 +75,7 @@ public class SignalIcon extends CTCIcon {
 					{
 						public void actionPerformed(ActionEvent arg0) {
 							sig.Automatic = !sig.Automatic;
-							CTCItem.handlePacket(sig);
+							CTCItem.PacketManager.handlePacket(sig);
 						}
 				
 					});
@@ -121,7 +121,7 @@ public class SignalIcon extends CTCIcon {
 							if(arg0.getButton()==MouseEvent.BUTTON1)
 							{
 								sig.UserRequest = true;
-								CTCItem.handlePacket(sig);
+								CTCItem.PacketManager.handlePacket(sig);
 							}
 						}
 

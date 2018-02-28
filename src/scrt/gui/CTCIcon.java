@@ -8,6 +8,7 @@ import scrt.ctc.CTCItem;
 import scrt.ctc.packet.Packable;
 import scrt.ctc.packet.Packet;
 import scrt.ctc.packet.Packet.PacketType;
+import scrt.ctc.packet.PacketManager;
 import scrt.ctc.packet.SignalData;
 import scrt.ctc.Signal.Signal;
 import scrt.ctc.Signal.SignalType;
@@ -17,24 +18,23 @@ public abstract class CTCIcon implements Packable {
 	public abstract void update();
 	static List<CTCIcon> items = new ArrayList<CTCIcon>();
 	public Component comp;
-	public static void handlePacket(Packet data)
-	{
-		for(CTCIcon i : items)
-		{
-			if(data.type == PacketType.Signal && i instanceof SignalIcon)
+	public static PacketManager PacketManager = new PacketManager()
 			{
-				SignalIcon sig = (SignalIcon)i;
-				SignalData state = (SignalData)data;
-				if(state.equals(sig.getPacket()))
+				@Override
+				public void handlePacket(Packet p)
 				{
-					sig.load(data);
-					return;
+					for(CTCIcon i : CTCIcon.items)
+					{
+						if(p.equals(i.getPacket()))
+						{
+							i.load(p);
+							return;
+						}
+					}
+					if(p.type == PacketType.Signal)
+					{
+						CTCIcon.items.add(new SignalIcon((SignalData)p));
+					}
 				}
-			}
-		}
-		if(data.type == PacketType.Signal)
-		{
-			items.add(new SignalIcon((SignalData)data));
-		}
-	}
+			};
 }

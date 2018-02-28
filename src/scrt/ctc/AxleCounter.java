@@ -6,10 +6,13 @@ import java.util.*;
 import javax.swing.JOptionPane;
 
 import scrt.Orientation;
+import scrt.ctc.packet.ACData;
+import scrt.ctc.packet.Packable;
+import scrt.ctc.packet.Packet;
 import scrt.event.AxleEvent;
 import scrt.event.SRCTListener;
 
-public class AxleCounter 
+public class AxleCounter implements Packable
 {
 	public Station Station;
 	public int Number;
@@ -17,11 +20,11 @@ public class AxleCounter
 	AxleCounter OddCounter = null;
 	List<SRCTListener> listeners = new ArrayList<SRCTListener>();
 	boolean Working = true;
-	//List<TrackItem> Linked = null;
 	AxleCounter(int num, Station dep)
 	{
 		Number = num;
 		Station = dep;
+		CTCItem.PacketManager.items.add(this);
 	}
 	public void EvenPassed()
 	{
@@ -54,5 +57,19 @@ public class AxleCounter
 	public void addListener(SRCTListener al)
 	{
 		if(!listeners.contains(al)) listeners.add(al);
+	}
+	@Override
+	public Packet getPacket()
+	{
+		ACData a = new ACData();
+		a.stationNumber = Station.AssociatedNumber;
+		a.Num = Number;
+		return a;
+	}
+	@Override
+	public void load(Packet p)
+	{
+		ACData a = (ACData)p;
+		Passed(a.dir);
 	}
 }
