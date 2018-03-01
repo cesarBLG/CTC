@@ -1,4 +1,4 @@
-package scrt.ctc.packet;
+package scrt.com.packet;
 
 public class LinkPacket extends Packet
 {

@@ -18,10 +18,10 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.com.packet.Packet;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
 import scrt.ctc.TrackItem;
-import scrt.ctc.packet.Packet;
 import scrt.ctc.Signal.SignalType;
 import scrt.event.SRCTEvent;
 

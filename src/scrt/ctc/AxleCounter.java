@@ -6,11 +6,11 @@ import java.util.*;
 import javax.swing.JOptionPane;
 
 import scrt.Orientation;
-import scrt.ctc.packet.ACID;
-import scrt.ctc.packet.ACData;
-import scrt.ctc.packet.ID;
-import scrt.ctc.packet.Packable;
-import scrt.ctc.packet.Packet;
+import scrt.com.packet.ACData;
+import scrt.com.packet.ACID;
+import scrt.com.packet.ID;
+import scrt.com.packet.Packable;
+import scrt.com.packet.Packet;
 import scrt.event.AxleEvent;
 import scrt.event.SRCTListener;
 

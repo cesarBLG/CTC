@@ -5,6 +5,7 @@ import java.util.List;
 
 import scrt.Main;
 import scrt.Orientation;
+import scrt.com.packet.Packet;
 import scrt.com.tcp.Client;
 import scrt.com.tcp.TCP;
 import scrt.ctc.AxleCounter;
@@ -12,7 +13,6 @@ import scrt.ctc.CTCItem;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
 import scrt.ctc.TrackItem;
-import scrt.ctc.packet.Packet;
 import scrt.ctc.Signal.Signal;
 import scrt.event.SRCTEvent;
 import scrt.gui.CTCIcon;

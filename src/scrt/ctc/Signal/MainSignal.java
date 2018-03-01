@@ -23,14 +23,14 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.com.packet.Packet;
+import scrt.com.packet.SignalData;
 import scrt.ctc.Clock;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
 import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
 import scrt.ctc.TrackItem.TrackComparer;
-import scrt.ctc.packet.Packet;
-import scrt.ctc.packet.SignalData;
 import scrt.event.AxleEvent;
 import scrt.event.BlockEvent;
 import scrt.event.SRCTEvent;

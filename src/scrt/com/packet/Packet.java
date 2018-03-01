@@ -1,4 +1,4 @@
-package scrt.ctc.packet;
+package scrt.com.packet;
 
 import java.io.Serializable;
 import java.util.ArrayList;

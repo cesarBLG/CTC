@@ -14,11 +14,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import scrt.Orientation;
-import scrt.ctc.packet.ID;
-import scrt.ctc.packet.Packet;
-import scrt.ctc.packet.SignalData;
-import scrt.ctc.packet.SignalID;
-import scrt.ctc.packet.SignalRegister;
+import scrt.com.packet.ID;
+import scrt.com.packet.Packet;
+import scrt.com.packet.SignalData;
+import scrt.com.packet.SignalID;
+import scrt.com.packet.SignalRegister;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Signal.Aspect;
 import scrt.ctc.Signal.ExitIndicator;

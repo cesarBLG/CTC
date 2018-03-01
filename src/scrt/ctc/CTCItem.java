@@ -7,11 +7,11 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import scrt.com.packet.Packable;
+import scrt.com.packet.Packet;
+import scrt.com.packet.PacketManager;
+import scrt.com.packet.SignalData;
 import scrt.ctc.Signal.Signal;
-import scrt.ctc.packet.Packable;
-import scrt.ctc.packet.Packet;
-import scrt.ctc.packet.PacketManager;
-import scrt.ctc.packet.SignalData;
 import scrt.event.SRCTEvent;
 import scrt.event.SRCTListener;
 import scrt.gui.CTCIcon;
