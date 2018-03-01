@@ -25,8 +25,10 @@ import scrt.ctc.CTCItem;
 import scrt.ctc.Itinerary;
 import scrt.ctc.TrackItem;
 import scrt.ctc.packet.ACData;
+import scrt.ctc.packet.ID;
 import scrt.ctc.packet.Packet;
 import scrt.ctc.packet.SignalData;
+import scrt.ctc.packet.TrackItemID;
 import scrt.ctc.Signal.EoT;
 import scrt.ctc.Signal.ExitIndicator;
 import scrt.ctc.Signal.FixedSignal;
@@ -72,7 +74,7 @@ public class TrackIcon extends CTCIcon {
 				{
 					if(item.CounterLinked!=null)
 					{
-						ACData a = (ACData) item.CounterLinked.getPacket();
+						ACData a = new ACData(item.CounterLinked.getId());
 						a.dir = Orientation.Odd;
 						CTCItem.PacketManager.handlePacket(a);
 					}
@@ -90,7 +92,7 @@ public class TrackIcon extends CTCIcon {
 				{
 					if(item.CounterLinked!=null)
 					{
-						ACData a = (ACData) item.CounterLinked.getPacket();
+						ACData a = new ACData(item.CounterLinked.getId());
 						a.dir = Orientation.Even;
 						CTCItem.PacketManager.handlePacket(a);
 					}
@@ -181,7 +183,7 @@ public class TrackIcon extends CTCIcon {
 			if(item.SignalLinked instanceof EoT && (item.EvenItem == null || item.OddItem == null) ) g.anchor = item.SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
 			for(CTCIcon i : CTCIcon.items)
 			{
-				if(i.getPacket().equals(item.SignalLinked.getPacket()))
+				if(i.getId().equals(item.SignalLinked.getId()))
 				{
 					((Container)comp).add(i.comp, g);
 				}
@@ -230,9 +232,8 @@ public class TrackIcon extends CTCIcon {
 		}
 	}
 	@Override
-	public Packet getPacket()
+	public ID getId()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 	@Override

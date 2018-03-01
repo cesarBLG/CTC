@@ -27,6 +27,8 @@ import scrt.ctc.Signal.ExitIndicator;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 import scrt.ctc.packet.Packet;
+import scrt.ctc.packet.TrackItemID;
+import scrt.ctc.packet.ID;
 import scrt.event.AxleEvent;
 import scrt.event.BlockEvent;
 import scrt.event.SRCTEvent;
@@ -197,7 +199,7 @@ public class TrackItem extends CTCItem{
 	public void updateState()
 	{
 		icon.update();
-		COM.send(getPacket());
+		//COM.send(null);
 	}
 	boolean wasFree = true;
 	long OccupiedTime = 0;
@@ -429,11 +431,13 @@ public class TrackItem extends CTCItem{
 		}
 		return l;
 	}
-	@Override
-	public Packet getPacket()
+	public ID getId()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		TrackItemID id = new TrackItemID();
+		id.x = x;
+		id.y = y;
+		id.stationNumber = Station.AssociatedNumber;
+		return id;
 	}
 	@Override
 	public void load(Packet p)

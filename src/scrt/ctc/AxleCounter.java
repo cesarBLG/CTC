@@ -6,7 +6,9 @@ import java.util.*;
 import javax.swing.JOptionPane;
 
 import scrt.Orientation;
+import scrt.ctc.packet.ACID;
 import scrt.ctc.packet.ACData;
+import scrt.ctc.packet.ID;
 import scrt.ctc.packet.Packable;
 import scrt.ctc.packet.Packet;
 import scrt.event.AxleEvent;
@@ -59,9 +61,9 @@ public class AxleCounter implements Packable
 		if(!listeners.contains(al)) listeners.add(al);
 	}
 	@Override
-	public Packet getPacket()
+	public ID getId()
 	{
-		ACData a = new ACData();
+		ACID a = new ACID();
 		a.stationNumber = Station.AssociatedNumber;
 		a.Num = Number;
 		return a;

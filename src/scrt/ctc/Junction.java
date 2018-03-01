@@ -152,8 +152,7 @@ public class Junction extends TrackItem
 	@Override
 	public void updateState()
 	{
-		icon.update();		
-		COM.send(getPacket());
+		icon.update();
 	}
 	@Override
 	public void setCounters(Orientation dir)

@@ -12,7 +12,7 @@ public class PacketManager
 	{
 		for(Packable i : items)
 		{
-			if(p.equals(i.getPacket()))
+			if(p.equals(i.getId()))
 			{
 				i.load(p);
 				return;

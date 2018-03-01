@@ -7,9 +7,10 @@ import java.util.List;
 import scrt.ctc.CTCItem;
 import scrt.ctc.packet.Packable;
 import scrt.ctc.packet.Packet;
-import scrt.ctc.packet.Packet.PacketType;
 import scrt.ctc.packet.PacketManager;
+import scrt.ctc.packet.PacketType;
 import scrt.ctc.packet.SignalData;
+import scrt.ctc.packet.SignalRegister;
 import scrt.ctc.Signal.Signal;
 import scrt.ctc.Signal.SignalType;
 import scrt.event.SRCTEvent;
@@ -25,15 +26,15 @@ public abstract class CTCIcon implements Packable {
 				{
 					for(CTCIcon i : CTCIcon.items)
 					{
-						if(p.equals(i.getPacket()))
+						if(p.equals(i.getId()))
 						{
 							i.load(p);
 							return;
 						}
 					}
-					if(p.type == PacketType.Signal)
+					if(p.id.type == PacketType.Signal && p instanceof SignalRegister)
 					{
-						CTCIcon.items.add(new SignalIcon((SignalData)p));
+						CTCIcon.items.add(new SignalIcon((SignalRegister)p));
 					}
 				}
 			};

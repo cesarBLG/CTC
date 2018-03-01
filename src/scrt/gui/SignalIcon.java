@@ -14,8 +14,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import scrt.Orientation;
+import scrt.ctc.packet.ID;
 import scrt.ctc.packet.Packet;
 import scrt.ctc.packet.SignalData;
+import scrt.ctc.packet.SignalID;
+import scrt.ctc.packet.SignalRegister;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Signal.Aspect;
 import scrt.ctc.Signal.ExitIndicator;
@@ -26,20 +29,24 @@ import scrt.ctc.Signal.SignalType;
 
 public class SignalIcon extends CTCIcon {
 	SignalData sig;
+	SignalID id;
+	SignalRegister reg;
 	JPopupMenu popup;
 	JMenuItem close = new JMenuItem("Abrir señal");
 	JMenuItem override = new JMenuItem("Rebase autorizado");
 	JMenuItem auto = new JMenuItem("Modo automático");
-	public SignalIcon(SignalData s)
+	public SignalIcon(SignalRegister s)
 	{
 		comp = new JLabel();
-		sig = s;
-		if(sig.Fixed || sig.Class == SignalType.Exit_Indicator)
+		reg = s;
+		id = (SignalID) reg.id;
+		sig = new SignalData(id);
+		if(reg.Fixed || id.Class == SignalType.Exit_Indicator)
 		{
 			comp.setForeground(Color.WHITE);
 			((JLabel)comp).setHorizontalTextPosition(JLabel.CENTER);
 			((JLabel)comp).setVerticalTextPosition(JLabel.TOP);
-			((JLabel)comp).setText(sig.Name);
+			((JLabel)comp).setText(id.Name);
 			((JLabel)comp).setFont(new Font("Tahoma", 0, 10));
 		}
 		else
@@ -137,13 +144,12 @@ public class SignalIcon extends CTCIcon {
 					});
 			comp.setForeground(Color.WHITE);
 			((JLabel)comp).setVerticalAlignment(JLabel.BOTTOM);
-			((JLabel)comp).setHorizontalAlignment(sig.Direction == Orientation.Odd ? JLabel.RIGHT : JLabel.LEFT);
+			((JLabel)comp).setHorizontalAlignment(id.Direction == Orientation.Odd ? JLabel.RIGHT : JLabel.LEFT);
 			((JLabel)comp).setHorizontalTextPosition(JLabel.CENTER);
 			((JLabel)comp).setVerticalTextPosition(JLabel.TOP);
-			((JLabel)comp).setText(sig.Name);
+			((JLabel)comp).setText(id.Name);
 			comp.setFont(new Font("Tahoma", 0, 10));
 		}
-		update();
 	}
 	@Override
 	public void load(Packet p)
@@ -152,21 +158,21 @@ public class SignalIcon extends CTCIcon {
 		update();
 	}
 	@Override
-	public Packet getPacket(){return sig;}
+	public ID getId(){return id;}
 	@Override
 	public void update()
 	{
-		if(sig.Class == SignalType.Exit_Indicator)
+		if(id.Class == SignalType.Exit_Indicator)
 		{
-			((JLabel)comp).setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/IS/".concat(sig.SignalAspect.name()).concat("_".concat(sig.Direction.name().concat(".png"))))));
+			((JLabel)comp).setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/IS/".concat(sig.SignalAspect.name()).concat("_".concat(id.Direction.name().concat(".png"))))));
 		}
-		else if(sig.Fixed)
+		else if(reg.Fixed)
 		{
-			((JLabel)comp).setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/Fixed/".concat(sig.SignalAspect.name()).concat("_".concat(sig.Direction.name().concat(".png"))))));
+			((JLabel)comp).setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/Fixed/".concat(sig.SignalAspect.name()).concat("_".concat(id.Direction.name().concat(".png"))))));
 		}
 		else
 		{
-			((JLabel)comp).setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/".concat((sig.SignalAspect==Aspect.Parada&&sig.Automatic ? "Automatic" : sig.SignalAspect.name()).concat("_".concat(sig.Direction.name().concat(".png")))))));
+			((JLabel)comp).setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/".concat((sig.SignalAspect==Aspect.Parada&&sig.Automatic ? "Automatic" : sig.SignalAspect.name()).concat("_".concat(id.Direction.name().concat(".png")))))));
 			close.setText(sig.ClearRequest ? "Cerrar señal" : "Abrir señal");
 			override.setText(sig.OverrideRequest ? "Desactivar rebase" : "Rebase autorizado");
 			auto.setText(!sig.Automatic ? "Modo automático" : "Modo manual");

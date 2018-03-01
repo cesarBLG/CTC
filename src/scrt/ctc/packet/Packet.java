@@ -6,22 +6,10 @@ import java.util.List;
 
 public abstract class Packet implements Serializable
 {
-	public enum PacketType
+	public ID id;
+	public Packet(ID packetID)
 	{
-		Signal,
-		Itinerary,
-		AxleCounter,
-		TrackItem,
-		Switch
-	}
-	public PacketType type;
-	public int stationNumber;
-	public List<Integer> getId()
-	{
-		List<Integer> l = new ArrayList<Integer>();
-		l.add(type.ordinal());
-		l.add(stationNumber);
-		return l;
+		id = packetID;
 	}
 	public abstract byte[] getState();
 	public static Packet byState(byte[] data)
@@ -37,19 +25,13 @@ public abstract class Packet implements Serializable
 		return p;
 	}
 	@Override
-	public boolean equals(Object packet)
+	public boolean equals(Object obj)
 	{
-		if(packet instanceof Packet)
+		if(obj instanceof Packet)
 		{
-			List<Integer> l1 = ((Packet) packet).getId();
-			List<Integer> l2 = getId();
-			if(l1.size()!=l2.size()) return false;
-			for(int i=0; i<l1.size(); i++)
-			{
-				if(l1.get(i)!=l2.get(i)) return false;
-			}
-			return true;
+			return id.equals(((Packet)obj).id);
 		}
-		return super.equals(packet);
+		if(obj instanceof ID) return id.equals(obj);
+		return super.equals(obj);
 	}
 }

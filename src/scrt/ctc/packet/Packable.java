@@ -7,6 +7,6 @@ import scrt.ctc.CTCItem;
 
 public interface Packable
 {
-	Packet getPacket();
+	ID getId();
 	void load(Packet p);
 }

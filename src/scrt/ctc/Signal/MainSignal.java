@@ -546,14 +546,6 @@ public class MainSignal extends Signal{
 		}
 	}
 	@Override
-	public Packet getPacket()
-	{
-		SignalData d = (SignalData) super.getPacket();
-		if(d==null) return null;
-		d.UserRequest = UserRequest;
-		return d;
-	}
-	@Override
 	public void actionPerformed(SRCTEvent e) {
 		if(!EventsMuted)
 		{
