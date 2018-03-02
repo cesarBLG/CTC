@@ -74,7 +74,7 @@ public class Loader {
 					int y = Integer.parseInt(coordinates.substring(coordinates.indexOf(',')+1));
 					if(Number>6)
 					{
-						int SwitchNumber = Integer.parseInt(n.substring(1, 2));
+						int SwitchNumber = Integer.parseInt(n.substring(1));
 						String m = ReadParameter(br.readLine());
 						Junction j = new Junction(SwitchNumber, Workingdep, Number == 7 ? Position.Left : Position.Right, x, y);
 						if(m.contains("Desviada")) j.Muelle = 1;
