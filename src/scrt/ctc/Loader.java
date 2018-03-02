@@ -33,7 +33,7 @@ public class Loader {
 	{
 		COM.initialize();
 		Main.l = this;
-		parseLayoutFile(new File("D:\\cesar\\Documents\\Ferrocarril\\CiMaF\\SRCT\\layout.txt"));
+		parseLayoutFile(new File("layout.txt"));
 		grpManager = new GRPManager(this);
 		new GUI();
 	}
