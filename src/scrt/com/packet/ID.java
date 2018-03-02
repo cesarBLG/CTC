@@ -24,7 +24,7 @@ public abstract class ID
 			if(l1.size()!=l2.size()) return false;
 			for(int i=0; i<l1.size(); i++)
 			{
-				if(l1.get(i)!=l2.get(i)) return false;
+				if(!l1.get(i).equals(l2.get(i))) return false;
 			}
 			return true;
 		}

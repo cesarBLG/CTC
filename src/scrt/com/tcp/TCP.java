@@ -13,7 +13,7 @@ import scrt.com.COM;
 import scrt.com.Device;
 
 public class TCP {
-	List<Client> clients = new ArrayList<Client>();
+	List<ClientListener> clientListeners = new ArrayList<ClientListener>();
 	ServerSocket server;
 	public void initialize()
 	{
@@ -27,8 +27,8 @@ public class TCP {
 					server = new ServerSocket(300);
 					while(true)
 					{
-						Client c = new Client(server.accept());
-						clients.add(c);
+						ClientListener c = new ClientListener(server.accept());
+						clientListeners.add(c);
 						COM.addDevice(c);
 					}
 				} 
@@ -44,7 +44,7 @@ public class TCP {
 	{
 		try
 		{
-			for(Client c : clients)
+			for(ClientListener c : clientListeners)
 			{
 				c.socket.close();
 			}

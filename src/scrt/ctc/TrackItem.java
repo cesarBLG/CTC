@@ -24,8 +24,11 @@ import scrt.Orientation;
 import scrt.com.COM;
 import scrt.com.Serial;
 import scrt.com.packet.ID;
+import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
+import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
+import scrt.com.packet.TrackRegister;
 import scrt.ctc.Signal.ExitIndicator;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
@@ -66,21 +69,27 @@ public class TrackItem extends CTCItem{
 	public void setSignal(Signal sig)
 	{
 		SignalLinked = sig;
-		((TrackIcon)icon).setSignal();
+		COM.send(new LinkPacket(getId(), SignalLinked.getId()));
 	}
 	TrackItem()
 	{
 		
 	}
-	public TrackItem(String label, Station dep, int oddrot, int evenrot)
+	public TrackItem(String label, Station dep, int oddrot, int evenrot, int x, int y)
 	{
+		this.x = x;
+		this.y = y;
 		Station = dep;
 		if(oddrot==2) oddrot = -1;
 		if(evenrot==2) evenrot = -1;
 		OddRotation = oddrot;
 		EvenRotation = evenrot;
 		Name = label;
-		icon = new TrackIcon(this);
+		TrackRegister reg = new TrackRegister((TrackItemID) getId());
+		reg.Name = Name;
+		reg.OddRotation = OddRotation;
+		reg.EvenRotation = EvenRotation;
+		COM.send(reg);
 		updateState();
 	}
 	public void setCounters(Orientation dir)
@@ -198,8 +207,13 @@ public class TrackItem extends CTCItem{
 	}
 	public void updateState()
 	{
-		icon.update();
-		//COM.send(null);
+		TrackData d = new TrackData((TrackItemID) getId());
+		d.Acknowledged = Acknowledged;
+		d.BlockState = BlockState;
+		d.Occupied = Occupied;
+		d.EvenAxles = EvenAxles;
+		d.OddAxles = OddAxles;
+		COM.send(d);
 	}
 	boolean wasFree = true;
 	long OccupiedTime = 0;
@@ -444,5 +458,11 @@ public class TrackItem extends CTCItem{
 	{
 		// TODO Auto-generated method stub
 		
+	}
+	public void setCounterLinked(AxleCounter ac, Orientation dir)
+	{
+		CounterLinked = ac;
+		CounterDir = dir;
+		COM.send(new LinkPacket(getId(), ac.getId()));
 	}
 }

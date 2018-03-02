@@ -28,6 +28,13 @@ import javax.swing.Timer;
 import scrt.Orientation;
 import scrt.com.COM;
 import scrt.com.Serial;
+import scrt.com.packet.ID;
+import scrt.com.packet.JunctionData;
+import scrt.com.packet.JunctionID;
+import scrt.com.packet.JunctionRegister;
+import scrt.com.packet.JunctionSwitch;
+import scrt.com.packet.Packet;
+import scrt.com.packet.TrackItemID;
 import scrt.event.SRCTListener;
 import scrt.event.OccupationEvent;
 import scrt.gui.JunctionIcon;
@@ -46,13 +53,21 @@ public class Junction extends TrackItem
 	List<AxleCounter> StraightOccupier = new ArrayList<AxleCounter>();
 	List<AxleCounter> CurveOccupier = new ArrayList<AxleCounter>();
 	Junction Linked = null;
-	public Junction(int num, Station dep, Position p)
+	public Junction(int num, Station dep, Position p, int x, int y)
 	{
+		this.x = x;
+		this.y = y;
 		Number = num;
 		Station = dep;
 		Class = p;
 		Direction = num%2==0 ? Orientation.Even : Orientation.Odd;
-		icon = new JunctionIcon(this);
+		TrackItemID id = new TrackItemID();
+		id.x = x;
+		id.y = y;
+		JunctionRegister reg = new JunctionRegister((JunctionID) getId(), id);
+		reg.Direction = Direction;
+		reg.Class = Class;
+		icon = new JunctionIcon(reg);
 		updateState();
 	}
 	public void userChangeSwitch()
@@ -152,7 +167,15 @@ public class Junction extends TrackItem
 	@Override
 	public void updateState()
 	{
-		icon.update();
+		JunctionData d = new JunctionData((JunctionID) getId());
+		d.Acknowledged = Acknowledged;
+		d.BlockState = BlockState;
+		d.Occupied = Occupied;
+		d.EvenAxles = EvenAxles;
+		d.OddAxles = OddAxles;
+		d.Locked = Locked;
+		d.Switch = Switch;
+		COM.send(d);
 	}
 	@Override
 	public void setCounters(Orientation dir)
@@ -356,5 +379,19 @@ public class Junction extends TrackItem
 		l.add(this);
 		if(start) Collections.reverse(l);
 		return l;
+	}
+	@Override
+	public void load(Packet p)
+	{
+		if(p instanceof JunctionSwitch) userChangeSwitch();
+	}
+	@Override
+	public ID getId()
+	{
+		JunctionID i = new JunctionID();
+		i.stationNumber = Station.AssociatedNumber;
+		i.Number = Number;
+		i.Name = Name;
+		return i;
 	}
 }

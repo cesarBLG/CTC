@@ -50,12 +50,13 @@ public abstract class Signal extends CTCItem
 	{
 		Linked = t;
 		Linked.SignalLinked = this;
-		SignalRegister r = new SignalRegister(getId());
+		SignalRegister r = new SignalRegister((SignalID) getId());
 		r.Fixed = this instanceof FixedSignal;
 		r.x = Linked.x;
 		r.y = Linked.y;
+		r.EoT = this instanceof EoT;
 		COM.send(r);
-		t.setSignal(this);
+		Linked.setSignal(this);
 	}
 	public void setAspect(){send();};
 	void send()
@@ -64,7 +65,7 @@ public abstract class Signal extends CTCItem
 		if(Linked==null) return;
 		SignalEvent e = new SignalEvent(this);
 		for(SRCTListener l : listeners) l.actionPerformed(e);
-		SignalData d = new SignalData(getId());
+		SignalData d = new SignalData((SignalID) getId());
 		d.Automatic = Automatic;
 		d.SignalAspect = SignalAspect;
 		d.OverrideRequest = OverrideRequest;

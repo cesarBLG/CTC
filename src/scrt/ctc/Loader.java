@@ -76,13 +76,11 @@ public class Loader {
 					{
 						int SwitchNumber = Integer.parseInt(n.substring(1, 2));
 						String m = ReadParameter(br.readLine());
-						Junction j = new Junction(SwitchNumber, Workingdep, Number == 7 ? Position.Left : Position.Right);
+						Junction j = new Junction(SwitchNumber, Workingdep, Number == 7 ? Position.Left : Position.Right, x, y);
 						if(m.contains("Desviada")) j.Muelle = 1;
 						else if(m.contains("Directa")) j.Muelle = 0;
 						else j.Muelle = -1;
 						j.setSwitch(Position.Straight);
-						j.x = x;
-						j.y = y;
 						Workingdep.Items.add(j);
 						items.add(j);
 					}
@@ -114,9 +112,7 @@ public class Loader {
 							default:
 								break;
 						}
-						TrackItem t = new TrackItem(n, Workingdep, o, e);
-						t.x = x;
-						t.y = y;
+						TrackItem t = new TrackItem(n, Workingdep, o, e, x, y);
 						if(sig.charAt(0)!='0')
 						{
 							Signal Sig;
@@ -140,8 +136,7 @@ public class Loader {
 								Ac = new AxleCounter(num, Workingdep);
 								counters.add(Ac);
 							}
-							t.CounterLinked = Ac;
-							t.CounterDir = Ac.Number % 2 == 0 ? Orientation.Even : Orientation.Odd;
+							t.setCounterLinked(Ac, Ac.Number % 2 == 0 ? Orientation.Even : Orientation.Odd);
 						}
 						for(TrackItem at : items)
 						{
@@ -260,13 +255,13 @@ public class Loader {
 				if(a.EvenItem!=null) a.EvenItem.setCounters(Orientation.Even);
 				else
 				{
-					a.setSignal(new EoT(Orientation.Even, a.Station));
+					new EoT(Orientation.Even, a.Station).setLinked(a);
 					a.Station.Signals.add(a.SignalLinked);
 				}
 				if(a.OddItem!=null) a.OddItem.setCounters(Orientation.Odd);
 				else
 				{
-					a.setSignal(new EoT(Orientation.Odd, a.Station));
+					new EoT(Orientation.Odd, a.Station).setLinked(a);
 					a.Station.Signals.add(a.SignalLinked);
 				}
 			}

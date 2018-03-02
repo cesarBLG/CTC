@@ -1,9 +1,13 @@
 package scrt.com.packet;
 
+import scrt.ctc.TrackItem;
+
 public class TrackRegister extends Packet
 {
 	public String Name;
-	public TrackRegister(ID packetID)
+	public int OddRotation;
+	public int EvenRotation;
+	public TrackRegister(TrackItemID packetID)
 	{
 		super(packetID);
 	}

@@ -6,7 +6,7 @@ import java.util.List;
 import scrt.Main;
 import scrt.Orientation;
 import scrt.com.packet.Packet;
-import scrt.com.tcp.Client;
+import scrt.com.tcp.ClientListener;
 import scrt.com.tcp.TCP;
 import scrt.ctc.AxleCounter;
 import scrt.ctc.CTCItem;

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import scrt.com.packet.ID;
 import scrt.com.packet.Packable;
 import scrt.com.packet.Packet;
 import scrt.com.packet.PacketManager;
@@ -25,5 +26,13 @@ public abstract class CTCItem implements SRCTListener, Packable {
 	public CTCItem()
 	{
 		PacketManager.items.add(this);
+	}
+	public static TrackItem findId(ID id)
+	{
+		for(Packable p : PacketManager.items)
+		{
+			if(id.equals(p.getId())) return (TrackItem)p;
+		}
+		return null;
 	}
 }

@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
 import scrt.com.COM;
 import scrt.com.Device;
 
-public class Client implements Device
+public class ClientListener implements Device
 {
 	public Socket socket;
 	static int num = 0;
@@ -19,7 +19,7 @@ public class Client implements Device
 	DataInputStream in;
 	DataOutputStream out;
 	boolean debug = false;
-	public Client(Socket socket)
+	public ClientListener(Socket socket)
 	{
 		id = num++;
 		this.socket = socket;

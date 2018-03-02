@@ -4,12 +4,15 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import scrt.com.packet.ID;
+import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packable;
 import scrt.com.packet.Packet;
 import scrt.com.packet.PacketManager;
 import scrt.com.packet.PacketType;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalRegister;
+import scrt.com.packet.TrackRegister;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Signal.Signal;
 import scrt.ctc.Signal.SignalType;
@@ -29,13 +32,24 @@ public abstract class CTCIcon implements Packable {
 						if(p.equals(i.getId()))
 						{
 							i.load(p);
-							return;
 						}
 					}
-					if(p.id.type == PacketType.Signal && p instanceof SignalRegister)
+					if(p instanceof SignalRegister)
 					{
 						CTCIcon.items.add(new SignalIcon((SignalRegister)p));
 					}
+					if(p instanceof TrackRegister)
+					{
+						CTCIcon.items.add(new TrackIcon((TrackRegister)p));
+					}
 				}
 			};
+	public static CTCIcon findId(ID id)
+	{
+		for(CTCIcon i : CTCIcon.items)
+		{
+			if(id.equals(i.getId())) return i;
+		}
+		return null;
+	}
 }

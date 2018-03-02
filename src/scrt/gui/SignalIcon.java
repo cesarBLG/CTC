@@ -154,8 +154,11 @@ public class SignalIcon extends CTCIcon {
 	@Override
 	public void load(Packet p)
 	{
-		sig = (SignalData)p;
-		update();
+		if(p instanceof SignalData)
+		{
+			sig = (SignalData)p;
+			update();
+		}
 	}
 	@Override
 	public ID getId(){return id;}

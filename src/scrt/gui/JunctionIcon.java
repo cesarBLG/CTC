@@ -18,7 +18,14 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.com.packet.ID;
+import scrt.com.packet.JunctionData;
 import scrt.com.packet.Packet;
+import scrt.com.packet.TrackItemID;
+import scrt.com.packet.JunctionID;
+import scrt.com.packet.JunctionRegister;
+import scrt.com.packet.JunctionSwitch;
+import scrt.ctc.CTCItem;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
 import scrt.ctc.TrackItem;
@@ -26,14 +33,18 @@ import scrt.ctc.Signal.SignalType;
 import scrt.event.SRCTEvent;
 
 public class JunctionIcon extends TrackIcon {
-
-	Junction junction;
+	
 	public JLabel Locking = new JLabel();
 	JLabel Direct = new JLabel();
 	JLabel Desv = new JLabel();
-	public JunctionIcon(Junction item) {
-		this.item = item;
-		junction = item;
+	JunctionData data;
+	JunctionID junctionID;
+	JunctionRegister reg;
+	public JunctionIcon(JunctionRegister reg) {
+		this.reg = reg;
+		id = reg.TrackId;
+		junctionID = (JunctionID) reg.id;
+		CTCIcon.items.add(this);
 		comp.addMouseListener(new MouseListener()
 		{
 
@@ -62,7 +73,7 @@ public class JunctionIcon extends TrackIcon {
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON1)
 				{
-					item.userChangeSwitch();
+					CTCItem.PacketManager.handlePacket(new JunctionSwitch(junctionID));
 				}
 			}
 			@Override
@@ -81,11 +92,11 @@ public class JunctionIcon extends TrackIcon {
 	void setIcon()
 	{
 		GridBagConstraints g = new GridBagConstraints();
-		boolean Upwise = (junction.Direction==Orientation.Even && junction.Class == Position.Right) || (junction.Direction==Orientation.Odd && junction.Class == Position.Left); 
+		boolean Upwise = (reg.Direction==Orientation.Even && reg.Class == Position.Right) || (reg.Direction==Orientation.Odd && reg.Class == Position.Left); 
 		g.fill = GridBagConstraints.BOTH;
 		g.insets = new Insets(0, 1, 0, 1);
 		g.anchor = GridBagConstraints.CENTER;
-		g.gridx = junction.Direction == Orientation.Even ? 0 : 2;
+		g.gridx = reg.Direction == Orientation.Even ? 0 : 2;
 		g.gridy = 1;
 		TrackIcon.setOpaque(true);
 		TrackIcon.setMinimumSize(new Dimension(18, 3));
@@ -97,11 +108,11 @@ public class JunctionIcon extends TrackIcon {
 		JLabel j = new JLabel();
 		j.setVerticalAlignment(JLabel.TOP);
 		j.setForeground(Color.yellow);
-		j.setText("A".concat(Integer.toString(junction.Number)));
+		j.setText("A".concat(Integer.toString(junctionID.Number)));
 		j.setFont(new Font("Tahoma", 0, 10));
 		((Container)comp).add(j, g);
 		g.gridy--;
-		if(junction.Direction == Orientation.Even) g.gridx++;
+		if(reg.Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
 		g.insets = new Insets(0, 0, 0, 0);
 		Locking.setOpaque(true);
@@ -109,7 +120,7 @@ public class JunctionIcon extends TrackIcon {
 		Locking.setPreferredSize(new Dimension(4, 3));
 		Locking.setMaximumSize(new Dimension(4, 3));
 		((Container)comp).add(Locking, g);
-		if(junction.Direction == Orientation.Even) g.gridx++;
+		if(reg.Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
 		g.insets = new Insets(0, 1, 0, 1);
 		Direct.setOpaque(true);
@@ -122,14 +133,14 @@ public class JunctionIcon extends TrackIcon {
 		g.ipady = 2;
 		if(Upwise) g.gridy++;
 		else g.gridy--;
-		if(junction.Direction == Orientation.Even) g.gridx--;
+		if(reg.Direction == Orientation.Even) g.gridx--;
 		g.gridwidth = 2;
 		g.fill = GridBagConstraints.VERTICAL;
 		Desv.setVerticalAlignment(JLabel.TOP);
-		Desv.setHorizontalAlignment(junction.Direction==Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
+		Desv.setHorizontalAlignment(reg.Direction==Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
 		Desv.setBackground(Color.yellow);
 		Desv.setOpaque(true);
-		Desv.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Junction/".concat(junction.Class.name()).concat(".png"))));
+		Desv.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Junction/".concat(reg.Class.name()).concat(".png"))));
 		Desv.setHorizontalAlignment(JLabel.CENTER);
 		Desv.setPreferredSize(new Dimension(7, 33));
 		Desv.setMaximumSize(new Dimension(7, 33));
@@ -165,8 +176,8 @@ public class JunctionIcon extends TrackIcon {
 	@Override
 	public void update()
 	{
-		TrackIcon.setBackground(junction.Occupied != Orientation.None ? (item.Occupied == Orientation.Unknown ? Color.white : Color.red) : junction.BlockState != Orientation.None ? Color.green : Color.yellow);
-		if(junction.BlockState != Orientation.None && junction.Locked == -1)
+		TrackIcon.setBackground(data.Occupied != Orientation.None ? (data.Occupied == Orientation.Unknown ? Color.white : Color.red) : data.BlockState != Orientation.None ? Color.green : Color.yellow);
+		if(data.BlockState != Orientation.None && data.Locked == -1)
 		{
 			FlashingTimer.setRepeats(true);
 			FlashingTimer.start();
@@ -177,17 +188,28 @@ public class JunctionIcon extends TrackIcon {
 		{
 			FlashingTimer.setRepeats(false);
 			FlashingTimer.stop();
-			Locking.setBackground(junction.Locked != -1 ? Color.blue : Color.yellow);
+			Locking.setBackground(data.Locked != -1 ? Color.blue : Color.yellow);
 		}
-		if(junction.Switch==Position.Straight)
+		if(data.Switch==Position.Straight)
 		{
-			Direct.setBackground(junction.Locked==0 ? (junction.Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);
+			Direct.setBackground(data.Locked==0 ? (data.Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);
 			Desv.setBackground(Color.black);
 		}
 		else
 		{
 			Direct.setBackground(Color.black);
-			Desv.setBackground(junction.Locked==1 ? (junction.Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);
+			Desv.setBackground(data.Locked==1 ? (data.Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);
 		}
 	}
+	@Override
+	public void load(Packet p)
+	{
+		if(p instanceof JunctionData)
+		{
+			data = (JunctionData) p;
+			update();
+		}
+	}
+	@Override
+	public ID getId() {return junctionID;}
 }

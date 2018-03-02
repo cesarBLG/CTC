@@ -9,7 +9,7 @@ import scrt.ctc.Signal.SignalType;
 
 public class SignalData extends Packet
 {
-	public SignalData(ID packetID)
+	public SignalData(SignalID packetID)
 	{
 		super(packetID);
 	}

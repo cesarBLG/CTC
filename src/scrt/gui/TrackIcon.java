@@ -21,10 +21,16 @@ import javax.swing.Timer;
 
 import scrt.Orientation;
 import scrt.com.packet.ACData;
+import scrt.com.packet.ACID;
 import scrt.com.packet.ID;
+import scrt.com.packet.ItineraryRegister;
+import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
+import scrt.com.packet.PacketType;
 import scrt.com.packet.SignalData;
+import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
+import scrt.com.packet.TrackRegister;
 import scrt.ctc.AxleCounter;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Itinerary;
@@ -36,18 +42,24 @@ import scrt.ctc.Signal.SignalType;
 import scrt.event.SRCTEvent;
 
 public class TrackIcon extends CTCIcon {
-	TrackItem item;
 	JLabel TrackIcon = new JLabel();
 	JLabel NumAxles = new JLabel();
 	TrackIcon()
 	{
 		comp = new JPanel();
 	}
-	static TrackItem ItineraryStart = null;
-	public TrackIcon(TrackItem item) 
+	TrackRegister reg;
+	TrackItemID id;
+	TrackData data;
+	SignalIcon signal;
+	ACID acid = null;
+	static TrackItemID ItineraryStart = null;
+	public TrackIcon(TrackRegister reg)
 	{
+		CTCIcon.items.add(this);
+		this.reg = reg;
+		id = (TrackItemID) reg.id;
 		comp = new JPanel();
-		this.item = item;
 		comp.addMouseListener(new MouseListener()
 		{
 			@Override
@@ -72,27 +84,29 @@ public class TrackIcon extends CTCIcon {
 				// TODO Auto-generated method stub
 				if(arg0.getButton()==MouseEvent.BUTTON1)
 				{
-					if(item.CounterLinked!=null)
+					if(acid!=null)
 					{
-						ACData a = new ACData(item.CounterLinked.getId());
+						ACData a = new ACData(acid);
 						a.dir = Orientation.Odd;
 						CTCItem.PacketManager.handlePacket(a);
 					}
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON2)
 				{
-					if(ItineraryStart == null) ItineraryStart = item;
+					if(ItineraryStart == null) ItineraryStart = id;
 					else
 					{
-						Itinerary.set(ItineraryStart, item, item.x > ItineraryStart.x ? Orientation.Even : Orientation.Odd, false);
+						ItineraryRegister r = new ItineraryRegister(ItineraryStart, id);
+						r.dir = id.x > ItineraryStart.x ? Orientation.Even : Orientation.Odd;
+						Itinerary.handlePacket(r);
 						ItineraryStart = null;
 					}
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON3)
 				{
-					if(item.CounterLinked!=null)
+					if(acid!=null)
 					{
-						ACData a = new ACData(item.CounterLinked.getId());
+						ACData a = new ACData(acid);
 						a.dir = Orientation.Even;
 						CTCItem.PacketManager.handlePacket(a);
 					}
@@ -113,14 +127,14 @@ public class TrackIcon extends CTCIcon {
 		g.anchor = GridBagConstraints.CENTER;
 		comp.setBackground(Color.black);
 		TrackIcon.setOpaque(true);
-		if(item.OddRotation==item.EvenRotation&&item.EvenRotation==-1)
+		if(reg.OddRotation==reg.EvenRotation&&reg.EvenRotation==-1)
 		{
 			TrackIcon.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Track/Right.png")));
 			TrackIcon.setMinimumSize(new Dimension(30, 73));
 			TrackIcon.setPreferredSize(new Dimension(30, 73));
 			TrackIcon.setMaximumSize(new Dimension(30, 73));
 		}
-		else if(item.OddRotation==item.EvenRotation&&item.EvenRotation==1)
+		else if(reg.OddRotation==reg.EvenRotation&&reg.EvenRotation==1)
 		{
 			TrackIcon.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Track/Left.png")));
 			TrackIcon.setMinimumSize(new Dimension(41, 36));
@@ -135,9 +149,9 @@ public class TrackIcon extends CTCIcon {
 		}
 		g.gridy++;
 		((Container)comp).add(TrackIcon, g);
-		if(item.Name.length()>=1)
+		if(reg.Name.length()>=1)
 		{
-			JLabel j = new JLabel(item.Name.length()== 0 ? " " : item.Name);
+			JLabel j = new JLabel(reg.Name.length()== 0 ? " " : reg.Name);
 			j.setHorizontalAlignment(JLabel.CENTER);
 			j.setVerticalAlignment(JLabel.TOP);
 			j.setForeground(Color.yellow);
@@ -151,7 +165,7 @@ public class TrackIcon extends CTCIcon {
 			NumAxles.setHorizontalTextPosition(JLabel.CENTER);
 			((Container)comp).add(NumAxles, g);
 		}
-		if(item.OddRotation!=item.EvenRotation||item.OddRotation==0)
+		if(reg.OddRotation!=reg.EvenRotation||reg.OddRotation==0)
 		{
 			JPanel jp = new JPanel();
 			g.insets = new Insets(0,0,0,0);
@@ -164,31 +178,22 @@ public class TrackIcon extends CTCIcon {
 			((Container)comp).add(jp,g);
 			jp = new JPanel();
 			g.gridy = 2;
-			if(item.Name.length()>=1) g.gridheight = 2;
+			if(reg.Name.length()>=1) g.gridheight = 2;
 			jp.setMinimumSize(new Dimension(0,35));
 			jp.setPreferredSize(new Dimension(0,35));
 			jp.setMaximumSize(new Dimension(0,35));
 			((Container)comp).add(jp,g);
 		}
 	}
-	public void setSignal()
+	public void setSignal(SignalIcon sig)
 	{
 		GridBagConstraints g = new GridBagConstraints();
 		g.gridx = g.gridy = 0;
 		g.fill = GridBagConstraints.NONE;
-		if(item.SignalLinked!=null)
-		{
-			g.insets = new Insets(5, 0, 3, 0);
-			g.anchor = item.SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHEAST : GridBagConstraints.SOUTHWEST;
-			if(item.SignalLinked instanceof EoT && (item.EvenItem == null || item.OddItem == null) ) g.anchor = item.SignalLinked.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
-			for(CTCIcon i : CTCIcon.items)
-			{
-				if(i.getId().equals(item.SignalLinked.getId()))
-				{
-					((Container)comp).add(i.comp, g);
-				}
-			}
-		}
+		g.insets = new Insets(5, 0, 3, 0);
+		g.anchor = sig.id.Direction == Orientation.Odd ? GridBagConstraints.SOUTHEAST : GridBagConstraints.SOUTHWEST;
+		if(sig.reg.EoT) g.anchor = sig.id.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
+		((Container)comp).add(sig.comp, g);
 	}
 	Timer timer = new Timer(350, new ActionListener()
 			{
@@ -196,7 +201,7 @@ public class TrackIcon extends CTCIcon {
 				@Override
 				public void actionPerformed(ActionEvent arg0) 
 				{
-					if(!item.Acknowledged)
+					if(!data.Acknowledged)
 					{
 						if(t) TrackIcon.setBackground(Color.red);
 						else TrackIcon.setBackground(Color.yellow);
@@ -207,7 +212,7 @@ public class TrackIcon extends CTCIcon {
 	@Override
 	public void update()
 	{
-		TrackItem i = item;
+		TrackData i = data;
 		if(i.Acknowledged)
 		{
 			timer.stop();
@@ -219,7 +224,7 @@ public class TrackIcon extends CTCIcon {
 			timer.setRepeats(true);
 			timer.start();
 		}
-		if(i.Name.length()>=1)
+		if(reg.Name.length()>=1)
 		{
 			String n = i.Occupied.name();
 			if(i.Occupied == Orientation.None && (i.BlockState==Orientation.Odd || i.BlockState==Orientation.Even))
@@ -234,12 +239,26 @@ public class TrackIcon extends CTCIcon {
 	@Override
 	public ID getId()
 	{
-		return null;
+		return id;
 	}
 	@Override
 	public void load(Packet p)
 	{
-		// TODO Auto-generated method stub
-		
+		if(p instanceof LinkPacket)
+		{
+			ID link = id.equals(p.id) ? ((LinkPacket)p).id2 : p.id;
+			if(link.type == PacketType.AxleCounter)
+			{
+				acid = (ACID) link;
+				return;
+			}
+			CTCIcon icon = findId(link);
+			if(icon instanceof SignalIcon) setSignal((SignalIcon) icon);
+		}
+		if(p instanceof TrackData)
+		{
+			data = (TrackData) p;
+			update();
+		}
 	}
 }

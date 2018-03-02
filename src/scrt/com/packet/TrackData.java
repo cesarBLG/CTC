@@ -4,11 +4,12 @@ import scrt.Orientation;
 
 public class TrackData extends Packet
 {
-	public Orientation block;
-	public Orientation occupation;
+	public Orientation BlockState;
+	public Orientation Occupied;
 	public int OddAxles;
 	public int EvenAxles;
-	public TrackData(ID packetID)
+	public boolean Acknowledged;
+	public TrackData(TrackItemID packetID)
 	{
 		super(packetID);
 	}

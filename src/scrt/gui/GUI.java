@@ -62,11 +62,15 @@ public class GUI
 		g.gridx = g.gridy = 0;
 		g.insets = new Insets(0, 0, 0, 0);
 		g.gridheight = 1;
-		for(TrackItem t : l.items)
+		for(CTCIcon i : CTCIcon.items)
 		{
-			g.gridx = t.x + 40;
-			g.gridy = t.y * 2;
-			layout.add(t.icon.comp, g);
+			if(i instanceof TrackIcon)
+			{
+				TrackIcon icon = (TrackIcon) i;
+				g.gridx = icon.id.x + 40;
+				g.gridy = icon.id.y * 2;
+				layout.add(i.comp, g);
+			}
 		}
 		JScrollPane pane = new JScrollPane(layout);
 		pane.getHorizontalScrollBar().setUnitIncrement(20);

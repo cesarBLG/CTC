@@ -7,6 +7,11 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import scrt.Orientation;
+import scrt.com.packet.ID;
+import scrt.com.packet.ItineraryRegister;
+import scrt.com.packet.Packable;
+import scrt.com.packet.Packet;
+import scrt.com.packet.TrackItemID;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 
@@ -23,6 +28,7 @@ public class Itinerary {
 	String Name;
 	Itinerary_Type Class;
 	Station Station;
+	Itinerary(ItineraryRegister r){}
 	Itinerary(String name, Station dep, List<String> sig, Hashtable<Integer, Integer> sw)
 	{
 		Name = name;
@@ -159,6 +165,14 @@ public class Itinerary {
 				t.SignalLinked.OverrideRequest = shunt;
 				((MainSignal)t.SignalLinked).UserRequest(true);
 			}
+		}
+	}
+	public static void handlePacket(Packet p)
+	{
+		if(p instanceof ItineraryRegister)
+		{
+			ItineraryRegister r = (ItineraryRegister) p;
+			set(CTCItem.findId(r.id), CTCItem.findId(r.destination), r.dir, false);
 		}
 	}
 }

@@ -7,7 +7,7 @@ import scrt.Orientation;
 public class ACData extends Packet
 {
 	public Orientation dir = Orientation.None;
-	public ACData(ID id)
+	public ACData(ACID id)
 	{
 		super(id);
 	}
