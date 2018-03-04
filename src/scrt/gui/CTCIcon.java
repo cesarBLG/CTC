@@ -4,12 +4,16 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import scrt.com.packet.ID;
+import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packable;
 import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.com.packet.PacketManager;
-import scrt.com.packet.PacketType;
+import scrt.com.packet.ElementType;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalRegister;
 import scrt.com.packet.TrackRegister;
@@ -27,28 +31,33 @@ public abstract class CTCIcon implements Packable {
 				@Override
 				public void handlePacket(Packet p)
 				{
-					for(CTCIcon i : CTCIcon.items)
-					{
-						if(p.equals(i.getId()))
-						{
-							i.load(p);
-						}
-					}
 					if(p instanceof SignalRegister)
 					{
 						CTCIcon.items.add(new SignalIcon((SignalRegister)p));
+						return;
 					}
 					if(p instanceof TrackRegister)
 					{
 						CTCIcon.items.add(new TrackIcon((TrackRegister)p));
+						return;
+					}
+					if(p instanceof JunctionRegister)
+					{
+						CTCIcon.items.add(new JunctionIcon((JunctionRegister)p));
+						return;
+					}
+					for(CTCIcon i : CTCIcon.items)
+					{
+						i.load(p);
 					}
 				}
 			};
-	public static CTCIcon findId(ID id)
+	public abstract ID getID();
+	public static CTCIcon findID(ID id)
 	{
 		for(CTCIcon i : CTCIcon.items)
 		{
-			if(id.equals(i.getId())) return i;
+			if(id.equals(i.getID())) return i;
 		}
 		return null;
 	}

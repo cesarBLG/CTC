@@ -8,7 +8,7 @@ public class TrackItemID extends ID
 	public int y;
 	public TrackItemID()
 	{
-		type = PacketType.TrackItem;
+		type = ElementType.TrackItem;
 	}
 	@Override
 	public List<Integer> getId()

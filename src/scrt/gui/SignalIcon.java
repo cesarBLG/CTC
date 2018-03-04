@@ -16,6 +16,7 @@ import javax.swing.JPopupMenu;
 import scrt.Orientation;
 import scrt.com.packet.ID;
 import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalID;
 import scrt.com.packet.SignalRegister;
@@ -155,13 +156,15 @@ public class SignalIcon extends CTCIcon {
 	public void load(Packet p)
 	{
 		if(p instanceof SignalData)
-		{
-			sig = (SignalData)p;
+		{			
+			SignalData s = (SignalData)p;
+			if(!s.id.equals(id)) return;
+			sig = s;
 			update();
 		}
 	}
 	@Override
-	public ID getId(){return id;}
+	public SignalID getID(){return id;}
 	@Override
 	public void update()
 	{

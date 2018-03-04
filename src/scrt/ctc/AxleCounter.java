@@ -11,22 +11,22 @@ import scrt.com.packet.ACID;
 import scrt.com.packet.ID;
 import scrt.com.packet.Packable;
 import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.event.AxleEvent;
+import scrt.event.SRCTEvent;
 import scrt.event.SRCTListener;
 
-public class AxleCounter implements Packable
+public class AxleCounter extends CTCItem
 {
 	public Station Station;
 	public int Number;
 	AxleCounter EvenCounter = null;
 	AxleCounter OddCounter = null;
-	List<SRCTListener> listeners = new ArrayList<SRCTListener>();
 	boolean Working = true;
 	AxleCounter(int num, Station dep)
 	{
 		Number = num;
 		Station = dep;
-		CTCItem.PacketManager.items.add(this);
 	}
 	public void EvenPassed()
 	{
@@ -61,17 +61,33 @@ public class AxleCounter implements Packable
 		if(!listeners.contains(al)) listeners.add(al);
 	}
 	@Override
-	public ID getId()
+	public ACID getID()
 	{
-		ACID a = new ACID();
-		a.stationNumber = Station.AssociatedNumber;
-		a.Num = Number;
-		return a;
+		ACID acid = new ACID();
+		acid.stationNumber = Station.AssociatedNumber;
+		acid.Num = Number;
+		return acid;
 	}
 	@Override
 	public void load(Packet p)
 	{
-		ACData a = (ACData)p;
-		Passed(a.dir);
+		if(p instanceof ACData)
+		{
+			ACData a = (ACData)p;
+			if(!a.id.equals(getID())) return;
+			Passed(a.dir);
+		}
+	}
+	@Override
+	public void actionPerformed(SRCTEvent e)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void muteEvents(boolean mute)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

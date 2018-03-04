@@ -9,7 +9,7 @@ import javax.swing.JPanel;
 
 import scrt.com.packet.ID;
 import scrt.com.packet.Packable;
-import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.com.packet.PacketManager;
 import scrt.com.packet.SignalData;
 import scrt.ctc.Signal.Signal;
@@ -21,17 +21,17 @@ public abstract class CTCItem implements SRCTListener, Packable {
 	public List<SRCTListener> listeners = new ArrayList<SRCTListener>();
 	protected List<SRCTEvent> Queue = new ArrayList<SRCTEvent>();
 	protected boolean EventsMuted = false;
-	public CTCIcon icon;
 	public static PacketManager PacketManager = new PacketManager();
 	public CTCItem()
 	{
 		PacketManager.items.add(this);
 	}
+	public abstract ID getID();
 	public static TrackItem findId(ID id)
 	{
 		for(Packable p : PacketManager.items)
 		{
-			if(id.equals(p.getId())) return (TrackItem)p;
+			if(id.equals(((CTCItem)p).getID())) return (TrackItem)p;
 		}
 		return null;
 	}

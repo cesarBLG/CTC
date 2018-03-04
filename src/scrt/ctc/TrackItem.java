@@ -24,8 +24,10 @@ import scrt.Orientation;
 import scrt.com.COM;
 import scrt.com.Serial;
 import scrt.com.packet.ID;
+import scrt.com.packet.JunctionID;
 import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.TrackRegister;
@@ -69,7 +71,7 @@ public class TrackItem extends CTCItem{
 	public void setSignal(Signal sig)
 	{
 		SignalLinked = sig;
-		COM.send(new LinkPacket(getId(), SignalLinked.getId()));
+		COM.send(new LinkPacket(getID(), SignalLinked.getID()));
 	}
 	TrackItem()
 	{
@@ -85,7 +87,7 @@ public class TrackItem extends CTCItem{
 		OddRotation = oddrot;
 		EvenRotation = evenrot;
 		Name = label;
-		TrackRegister reg = new TrackRegister((TrackItemID) getId());
+		TrackRegister reg = new TrackRegister((TrackItemID) getID());
 		reg.Name = Name;
 		reg.OddRotation = OddRotation;
 		reg.EvenRotation = EvenRotation;
@@ -207,7 +209,7 @@ public class TrackItem extends CTCItem{
 	}
 	public void updateState()
 	{
-		TrackData d = new TrackData((TrackItemID) getId());
+		TrackData d = new TrackData((TrackItemID) getID());
 		d.Acknowledged = Acknowledged;
 		d.BlockState = BlockState;
 		d.Occupied = Occupied;
@@ -446,7 +448,8 @@ public class TrackItem extends CTCItem{
 		}
 		return l;
 	}
-	public ID getId()
+	@Override
+	public ID getID()
 	{
 		TrackItemID id = new TrackItemID();
 		id.x = x;
@@ -457,13 +460,12 @@ public class TrackItem extends CTCItem{
 	@Override
 	public void load(Packet p)
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	public void setCounterLinked(AxleCounter ac, Orientation dir)
 	{
 		CounterLinked = ac;
 		CounterDir = dir;
-		COM.send(new LinkPacket(getId(), ac.getId()));
+		COM.send(new LinkPacket(getID(), ac.getID()));
 	}
 }

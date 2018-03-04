@@ -8,7 +8,7 @@ public class JunctionID extends ID
 	public String Name;
 	public JunctionID()
 	{
-		type = PacketType.Switch;
+		type = ElementType.Switch;
 	}
 	public List<Integer> getId()
 	{

@@ -26,7 +26,8 @@ import scrt.com.packet.ID;
 import scrt.com.packet.ItineraryRegister;
 import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
-import scrt.com.packet.PacketType;
+import scrt.com.packet.StatePacket;
+import scrt.com.packet.ElementType;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
@@ -237,7 +238,7 @@ public class TrackIcon extends CTCIcon {
 		}
 	}
 	@Override
-	public ID getId()
+	public ID getID()
 	{
 		return id;
 	}
@@ -246,18 +247,24 @@ public class TrackIcon extends CTCIcon {
 	{
 		if(p instanceof LinkPacket)
 		{
-			ID link = id.equals(p.id) ? ((LinkPacket)p).id2 : p.id;
-			if(link.type == PacketType.AxleCounter)
+			LinkPacket l = (LinkPacket)p;
+			ID link = null;
+			if(l.id1.equals(id)) link = l.id2;
+			else if(l.id2.equals(id)) link = l.id1;
+			else return;
+			if(link.type == ElementType.AxleCounter)
 			{
 				acid = (ACID) link;
 				return;
 			}
-			CTCIcon icon = findId(link);
+			CTCIcon icon = findID(link);
 			if(icon instanceof SignalIcon) setSignal((SignalIcon) icon);
 		}
 		if(p instanceof TrackData)
 		{
-			data = (TrackData) p;
+			TrackData d = (TrackData) p;
+			if(!d.id.equals(id)) return;
+			data = d;
 			update();
 		}
 	}

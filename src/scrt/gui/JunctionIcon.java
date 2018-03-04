@@ -20,11 +20,12 @@ import javax.swing.Timer;
 import scrt.Orientation;
 import scrt.com.packet.ID;
 import scrt.com.packet.JunctionData;
-import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.JunctionID;
 import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.JunctionSwitch;
+import scrt.com.packet.Packet;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
@@ -206,10 +207,12 @@ public class JunctionIcon extends TrackIcon {
 	{
 		if(p instanceof JunctionData)
 		{
-			data = (JunctionData) p;
+			JunctionData d = (JunctionData) p;
+			if(!d.id.equals(junctionID)) return;
+			data = d;
 			update();
 		}
 	}
 	@Override
-	public ID getId() {return junctionID;}
+	public ID getID() {return junctionID;}
 }

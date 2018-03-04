@@ -23,6 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.com.packet.StatePacket;
 import scrt.com.packet.Packet;
 import scrt.com.packet.SignalData;
 import scrt.ctc.Clock;
@@ -626,9 +627,13 @@ public class MainSignal extends Signal{
 	@Override
 	public void load(Packet p)
 	{
-		SignalData d = (SignalData)p;
-		((MainSignal)this).setAutomatic(d.Automatic);
-		OverrideRequest = d.OverrideRequest;
-		((MainSignal)this).UserRequest(d.UserRequest);
+		if(p instanceof SignalData)
+		{
+			SignalData d = (SignalData)p;
+			if(!d.id.equals(getID())) return;
+			((MainSignal)this).setAutomatic(d.Automatic);
+			OverrideRequest = d.OverrideRequest;
+			((MainSignal)this).UserRequest(d.UserRequest);
+		}
 	}
 }

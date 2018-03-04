@@ -1,37 +1,44 @@
 package scrt.com.packet;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
 
 public abstract class Packet implements Serializable
 {
-	public ID id;
-	public Packet(ID packetID)
+	public enum PacketType
 	{
-		id = packetID;
+		EmptyPacket,
+		LinkPacket,
+		SignalData,
+		SignalRegister,
+		TrackData,
+		TrackRegister,
+		JunctionData,
+		JunctionSwitch,
+		JunctionRegister,
+		ItineraryRegister,
+		ACData,
 	}
+	PacketType type;
 	public abstract byte[] getState();
-	public static Packet byState(byte[] data)
+	public Packet()
 	{
-		Packet p = null;
-		switch(PacketType.values()[data[0]])
-		{
-			case Signal:
-				p = SignalData.byState(data);
-			default:
-				break;
-		}
-		return p;
+		type = PacketType.valueOf(this.getClass().getSimpleName());
 	}
-	@Override
-	public boolean equals(Object obj)
+	public static StatePacket byState(byte[] data)
 	{
-		if(obj instanceof Packet)
+		try
 		{
-			return id.equals(((Packet)obj).id);
+			Class<?> c = Class.forName(PacketType.values()[data[0]].name());
+			if(c.isAssignableFrom(Packet.class))
+			{
+				c.getMethod("byState", byte[].class).invoke(data);
+			}
 		}
-		if(obj instanceof ID) return id.equals(obj);
-		return super.equals(obj);
+		catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
+		{
+			
+		}
+		return null;
 	}
 }

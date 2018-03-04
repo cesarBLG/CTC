@@ -7,7 +7,7 @@ public class ACID extends ID
 	public int Num;
 	public ACID()
 	{
-		type = PacketType.AxleCounter;
+		type = ElementType.AxleCounter;
 	}
 	@Override
 	public List<Integer> getId()

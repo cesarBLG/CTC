@@ -10,6 +10,7 @@ import scrt.com.COM;
 import scrt.com.Serial;
 import scrt.com.packet.ID;
 import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalID;
 import scrt.com.packet.SignalRegister;
@@ -46,11 +47,12 @@ public abstract class Signal extends CTCItem
 	public abstract void Unlock();
 	public abstract void setState();
 	Aspect LastAspect = null;
+	SignalID id = null;
 	public void setLinked(TrackItem t)
 	{
 		Linked = t;
 		Linked.SignalLinked = this;
-		SignalRegister r = new SignalRegister((SignalID) getId());
+		SignalRegister r = new SignalRegister(getID());
 		r.Fixed = this instanceof FixedSignal;
 		r.x = Linked.x;
 		r.y = Linked.y;
@@ -65,7 +67,7 @@ public abstract class Signal extends CTCItem
 		if(Linked==null) return;
 		SignalEvent e = new SignalEvent(this);
 		for(SRCTListener l : listeners) l.actionPerformed(e);
-		SignalData d = new SignalData((SignalID) getId());
+		SignalData d = new SignalData(id);
 		d.Automatic = Automatic;
 		d.SignalAspect = SignalAspect;
 		d.OverrideRequest = OverrideRequest;
@@ -76,9 +78,10 @@ public abstract class Signal extends CTCItem
 	}
 	public void update() {setAspect();}
 	@Override
-	public ID getId()
+	public SignalID getID()
 	{
-		SignalID id = new SignalID();
+		if(id!=null) return id;
+		id = new SignalID();
 		id.Class = Class;
 		id.Direction = Direction;
 		id.stationNumber = Station.AssociatedNumber;

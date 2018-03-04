@@ -2,7 +2,7 @@ package scrt.com.packet;
 
 import scrt.Orientation;
 
-public class TrackData extends Packet
+public class TrackData extends StatePacket
 {
 	public Orientation BlockState;
 	public Orientation Occupied;

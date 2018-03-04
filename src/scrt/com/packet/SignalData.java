@@ -7,7 +7,7 @@ import scrt.ctc.Signal.Aspect;
 import scrt.ctc.Signal.Signal;
 import scrt.ctc.Signal.SignalType;
 
-public class SignalData extends Packet
+public class SignalData extends StatePacket
 {
 	public SignalData(SignalID packetID)
 	{
@@ -24,7 +24,7 @@ public class SignalData extends Packet
 		// TODO Auto-generated method stub
 		return null;
 	}
-	public static Packet byState(byte[] data)
+	public static StatePacket byState(byte[] data)
 	{
 		return null;
 	}

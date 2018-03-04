@@ -4,7 +4,7 @@ import scrt.Orientation;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
 
-public class JunctionRegister extends Packet
+public class JunctionRegister extends StatePacket
 {
 	public TrackItemID TrackId;
 	public Orientation Direction;

@@ -14,7 +14,7 @@ public class SignalID extends ID
 	public Orientation Direction;
 	public SignalID()
 	{
-		type = PacketType.Signal;
+		type = ElementType.Signal;
 	}
 	@Override
 	public List<Integer> getId()

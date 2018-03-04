@@ -6,6 +6,7 @@ import java.util.List;
 import scrt.Main;
 import scrt.Orientation;
 import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.com.tcp.ClientListener;
 import scrt.com.tcp.TCP;
 import scrt.ctc.AxleCounter;
@@ -108,7 +109,7 @@ public class COM
 	}
 	public static void parse(byte[] data)
 	{
-		Packet p = Packet.byState(data);
+		StatePacket p = StatePacket.byState(data);
 		CTCItem.PacketManager.handlePacket(p);
 		data[0] = (byte) (data[0] & 0xEFFF);
 	    if(data[0]==1)

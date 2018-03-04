@@ -5,7 +5,7 @@ import java.util.List;
 
 public abstract class ID
 {
-	public PacketType type;
+	public ElementType type;
 	public int stationNumber;
 	public List<Integer> getId()
 	{

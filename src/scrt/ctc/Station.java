@@ -78,27 +78,11 @@ public class Station {
 	public void MandoLocal()
 	{
 		if(AssociatedNumber == 0||ML) return;
-		for(TrackItem t : Items)
-		{
-			t.icon.comp.setVisible(false);
-		}
-		for(Signal s : Signals)
-		{
-			s.icon.comp.setVisible(false);
-		}
 		ML = true;
 	}
 	public void Telemando()
 	{
 		if(!ML) return;
-		for(TrackItem t : Items)
-		{
-			t.icon.comp.setVisible(true);
-		}
-		for(Signal s : Signals)
-		{
-			s.icon.comp.setVisible(true);
-		}
 		ML = false;
 	}
 	public boolean isOpen()

@@ -1,6 +1,6 @@
 package scrt.com.packet;
 
-public enum PacketType
+public enum ElementType
 {
 	Signal,
 	Itinerary,

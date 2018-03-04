@@ -34,6 +34,7 @@ import scrt.com.packet.JunctionID;
 import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.JunctionSwitch;
 import scrt.com.packet.Packet;
+import scrt.com.packet.StatePacket;
 import scrt.com.packet.TrackItemID;
 import scrt.event.SRCTListener;
 import scrt.event.OccupationEvent;
@@ -64,10 +65,10 @@ public class Junction extends TrackItem
 		TrackItemID id = new TrackItemID();
 		id.x = x;
 		id.y = y;
-		JunctionRegister reg = new JunctionRegister((JunctionID) getId(), id);
+		JunctionRegister reg = new JunctionRegister(getID(), id);
 		reg.Direction = Direction;
 		reg.Class = Class;
-		icon = new JunctionIcon(reg);
+		COM.send(reg);
 		updateState();
 	}
 	public void userChangeSwitch()
@@ -167,7 +168,7 @@ public class Junction extends TrackItem
 	@Override
 	public void updateState()
 	{
-		JunctionData d = new JunctionData((JunctionID) getId());
+		JunctionData d = new JunctionData(getID());
 		d.Acknowledged = Acknowledged;
 		d.BlockState = BlockState;
 		d.Occupied = Occupied;
@@ -383,10 +384,14 @@ public class Junction extends TrackItem
 	@Override
 	public void load(Packet p)
 	{
-		if(p instanceof JunctionSwitch) userChangeSwitch();
+		if(p instanceof JunctionSwitch)
+		{
+			if(!((JunctionSwitch)p).id.equals(getID())) return;
+			userChangeSwitch();
+		}
 	}
 	@Override
-	public ID getId()
+	public JunctionID getID()
 	{
 		JunctionID i = new JunctionID();
 		i.stationNumber = Station.AssociatedNumber;

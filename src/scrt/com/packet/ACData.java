@@ -4,7 +4,7 @@ import java.util.List;
 
 import scrt.Orientation;
 
-public class ACData extends Packet
+public class ACData extends StatePacket
 {
 	public Orientation dir = Orientation.None;
 	public ACData(ACID id)

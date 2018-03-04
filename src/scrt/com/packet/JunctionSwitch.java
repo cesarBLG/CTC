@@ -1,6 +1,6 @@
 package scrt.com.packet;
 
-public class JunctionSwitch extends Packet
+public class JunctionSwitch extends StatePacket
 {
 	public JunctionSwitch(JunctionID id)
 	{

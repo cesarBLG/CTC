@@ -2,7 +2,7 @@ package scrt.com.packet;
 
 import scrt.ctc.Signal.SignalType;
 
-public class SignalRegister extends Packet
+public class SignalRegister extends StatePacket
 {
 	public SignalRegister(SignalID packetID)
 	{

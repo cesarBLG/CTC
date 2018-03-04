@@ -2,7 +2,7 @@ package scrt.com.packet;
 
 import scrt.ctc.TrackItem;
 
-public class TrackRegister extends Packet
+public class TrackRegister extends StatePacket
 {
 	public String Name;
 	public int OddRotation;
