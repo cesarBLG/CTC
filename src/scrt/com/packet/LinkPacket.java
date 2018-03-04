@@ -1,5 +1,8 @@
 package scrt.com.packet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JOptionPane;
 
 public class LinkPacket extends Packet
@@ -14,6 +17,10 @@ public class LinkPacket extends Packet
 	@Override
 	public byte[] getState()
 	{
-		return null;
+		List<Integer> data = new ArrayList<Integer>();
+		data.add(type.ordinal());
+		data.addAll(id1.getId());
+		data.addAll(id2.getId());
+		return fromList(data);
 	}
 }

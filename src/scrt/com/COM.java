@@ -40,72 +40,11 @@ public class COM
 	{
 		for(Device dev : devs) dev.write(data);
 	}
-	public static void send(Object o)
+	public static void send(Packet p)
 	{
-		if(o instanceof Packet)
-		{
-			Packet p  = (Packet)o;
-			CTCIcon.PacketManager.handlePacket(p);
-			write(p.getState());
-			return;
-		}
-		ArrayList<Integer> data = new ArrayList<Integer>();
-		if(o instanceof TrackItem)
-		{
-			TrackItem t = (TrackItem)o;
-			data.add(4);
-			data.add(t.Station.AssociatedNumber);
-			data.add(t.x);
-			data.add(t.y);
-			int state = 0;
-			switch(t.Occupied)
-			{
-				case Odd:
-					state += 1;
-					break;
-				case Even:
-					state += 2;
-					break;
-				case Both:
-					state += 3;
-					break;
-			}
-			if(t.Acknowledged) state += 4;
-			switch(t.BlockState)
-			{
-				case Odd:
-					state += 8;
-					break;
-				case Even:
-					state += 16;
-					break;
-			}
-			data.add(state);
-		}
-		if(o instanceof Junction)
-		{
-			Junction j = (Junction)o;
-			data.add(3);
-			data.add(j.Station.AssociatedNumber);
-			data.add(j.Number);
-			data.add(0);
-			int state = j.Switch == Position.Straight ? 0 : 1;
-			state += j.Locked == -1 ? 0 : 2;
-			state += j.Locked == 1 ? 4 : 0;
-			state += j.Occupied == Orientation.None ? 8 : 0;
-			data.add(state);
-		}
-		byte[] send = new byte[data.size() + 1];
-		int control = 0;
-		for(int i=0; i<data.size(); i++)
-		{
-			control += data.get(i) * ((i%2) + 1);
-			send[i] = data.get(i).byteValue();
-		}
-		control = 255 - (control % 255);
-		send[send.length - 1] = (byte) control;
-		write(send);
-		
+		CTCIcon.PacketManager.handlePacket(p);
+		write(p.getState());
+		return;
 	}
 	public static void parse(byte[] data)
 	{

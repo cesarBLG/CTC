@@ -1,5 +1,8 @@
 package scrt.com.packet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import scrt.ctc.Signal.SignalType;
 
 public class SignalRegister extends StatePacket
@@ -15,8 +18,13 @@ public class SignalRegister extends StatePacket
 	@Override
 	public byte[] getState()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Integer> data = new ArrayList<Integer>();
+		data.add(type.ordinal());
+		data.addAll(id.getId());
+		data.add(Fixed ? 1 : 0);
+		data.add(x);
+		data.add(y);
+		return fromList(data);
 	}
 	
 }

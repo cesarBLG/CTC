@@ -1,5 +1,6 @@
 package scrt.com.packet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import scrt.Orientation;
@@ -21,8 +22,15 @@ public class SignalData extends StatePacket
 	@Override
 	public byte[] getState()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Integer> data = new ArrayList<Integer>();
+		data.add(type.ordinal());
+		data.addAll(id.getId());
+		data.add(SignalAspect.ordinal());
+		data.add(Automatic ? 1 : 0);
+		data.add(UserRequest ? 1 : 0);
+		data.add(OverrideRequest ? 1 : 0);
+		data.add(ClearRequest ? 1 : 0);
+		return fromList(data);
 	}
 	public static StatePacket byState(byte[] data)
 	{

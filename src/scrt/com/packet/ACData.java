@@ -1,8 +1,11 @@
 package scrt.com.packet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import scrt.Orientation;
+import scrt.gui.CTCIcon;
+import scrt.gui.TrackIcon;
 
 public class ACData extends StatePacket
 {
@@ -14,8 +17,11 @@ public class ACData extends StatePacket
 	@Override
 	public byte[] getState()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Integer> data = new ArrayList<Integer>();
+		data.add(type.ordinal());
+		data.addAll(id.getId());
+		data.add(dir.ordinal());
+		return fromList(data);
 	}
 
 }

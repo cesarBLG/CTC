@@ -2,6 +2,7 @@ package scrt.com.packet;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 public abstract class Packet implements Serializable
 {
@@ -40,5 +41,14 @@ public abstract class Packet implements Serializable
 			
 		}
 		return null;
+	}
+	static byte[] fromList(List<Integer> l)
+	{
+		byte[] data = new byte[l.size()];
+		for(int i=0; i<l.size(); i++)
+		{
+			data[i] = l.get(i).byteValue();
+		}
+		return data;
 	}
 }

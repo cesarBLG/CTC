@@ -1,5 +1,8 @@
 package scrt.com.packet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import scrt.Orientation;
 
 public class TrackData extends StatePacket
@@ -16,8 +19,15 @@ public class TrackData extends StatePacket
 	@Override
 	public byte[] getState()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Integer> data = new ArrayList<Integer>();
+		data.add(type.ordinal());
+		data.addAll(id.getId());
+		data.add(BlockState.ordinal());
+		data.add(Occupied.ordinal());
+		data.add(OddAxles);
+		data.add(EvenAxles);
+		data.add(Acknowledged ? 1 : 0);
+		return fromList(data);
 	}
 
 }

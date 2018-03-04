@@ -169,11 +169,8 @@ public class Junction extends TrackItem
 	public void updateState()
 	{
 		JunctionData d = new JunctionData(getID());
-		d.Acknowledged = Acknowledged;
 		d.BlockState = BlockState;
 		d.Occupied = Occupied;
-		d.EvenAxles = EvenAxles;
-		d.OddAxles = OddAxles;
 		d.Locked = Locked;
 		d.Switch = Switch;
 		COM.send(d);

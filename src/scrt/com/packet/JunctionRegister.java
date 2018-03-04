@@ -1,5 +1,8 @@
 package scrt.com.packet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import scrt.Orientation;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
@@ -17,8 +20,13 @@ public class JunctionRegister extends StatePacket
 	@Override
 	public byte[] getState()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Integer> data = new ArrayList<Integer>();
+		data.add(type.ordinal());
+		data.addAll(id.getId());
+		data.addAll(TrackId.getId());
+		data.add(Direction.ordinal());
+		data.add(Class.ordinal());
+		return fromList(data);
 	}
 
 }

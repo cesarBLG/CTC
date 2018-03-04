@@ -1,5 +1,8 @@
 package scrt.com.packet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JunctionSwitch extends StatePacket
 {
 	public JunctionSwitch(JunctionID id)
@@ -9,7 +12,9 @@ public class JunctionSwitch extends StatePacket
 	@Override
 	public byte[] getState()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Integer> data = new ArrayList<Integer>();
+		data.add(type.ordinal());
+		data.addAll(id.getId());
+		return fromList(data);
 	}
 }
