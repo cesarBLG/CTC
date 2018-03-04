@@ -76,6 +76,11 @@ public class JunctionIcon extends TrackIcon {
 				{
 					CTCItem.PacketManager.handlePacket(new JunctionSwitch(junctionID));
 				}
+				if(arg0.getButton()==MouseEvent.BUTTON1 && arg0.isControlDown())
+				{
+					data.BlockState = Orientation.None;
+					CTCItem.PacketManager.handlePacket(data);
+				}
 			}
 			@Override
 			public void mouseReleased(MouseEvent arg0) {

@@ -35,6 +35,7 @@ import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.JunctionSwitch;
 import scrt.com.packet.Packet;
 import scrt.com.packet.StatePacket;
+import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
 import scrt.event.SRCTListener;
 import scrt.event.OccupationEvent;
@@ -385,6 +386,12 @@ public class Junction extends TrackItem
 		{
 			if(!((JunctionSwitch)p).id.equals(getID())) return;
 			userChangeSwitch();
+		}
+		if(p instanceof JunctionData)
+		{
+			JunctionData d = (JunctionData)p;
+			if(!d.id.equals(getID())) return;
+			if(d.BlockState == Orientation.None && BlockState == Orientation.Unknown) setBlock(Orientation.None);
 		}
 	}
 	@Override

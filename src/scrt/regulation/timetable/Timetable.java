@@ -88,7 +88,6 @@ public class Timetable
 			list.sort((o1, o2) -> o1.startTime.compareTo(o2.startTime));
 			Overlap o = list.get(0);
 			Loader.g.updateData(Loader.t);
-			JOptionPane.showMessageDialog(null, "");
 			o.track.solveOverlap(o);
 			solveOverlaps();
 		}

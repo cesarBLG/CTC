@@ -21,6 +21,17 @@ public class Menu extends JMenuBar {
 		super();
 		JMenu Monitor = new JMenu("Estado");
 		add(Monitor);
+		JMenuItem Traffic = new JMenuItem("Gestor de tráfico...");
+		Monitor.add(Traffic);
+		Traffic.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
+		Traffic.addActionListener(new ActionListener()
+				{
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						new scrt.regulation.Loader();
+					}
+					
+				});
 		JMenuItem Stations = new JMenuItem("Estaciones...");
 		Monitor.add(Stations);
 		Stations.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));

@@ -16,6 +16,5 @@ public class Main {
 	public static void main(String[] args)
 	{
 		l = new Loader();
-		//new scrt.regulation.Loader();
 	}
 }

@@ -41,6 +41,7 @@ import scrt.event.EventType;
 import scrt.event.OccupationEvent;
 import scrt.event.SignalEvent;
 import scrt.gui.SignalIcon;
+import scrt.log.Logger;
 
 public class MainSignal extends Signal{
 	MainSignal NextSignal = null;
@@ -574,7 +575,7 @@ public class MainSignal extends Signal{
 					{
 						if(SignalAspect==Aspect.Parada&&(Automatic || Clock.time() > lastPass + 10000))
 						{
-							//JOptionPane.showMessageDialog(null, "Señal " + Name + " de " + Station.FullName + " rebasada");
+							Logger.trace("Señal " + Name + " de " + Station.FullName + " rebasada");
 							TrackItem.DirectExploration(Linked, new TrackComparer()
 									{
 										@Override

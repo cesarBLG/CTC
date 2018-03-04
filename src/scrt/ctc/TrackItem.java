@@ -460,7 +460,12 @@ public class TrackItem extends CTCItem{
 	@Override
 	public void load(Packet p)
 	{
-		
+		if(p instanceof TrackData)
+		{
+			TrackData d = (TrackData)p;
+			if(!d.id.equals(getID())) return;
+			if(d.BlockState == Orientation.None && BlockState == Orientation.Unknown) setBlock(Orientation.None);
+		}
 	}
 	public void setCounterLinked(AxleCounter ac, Orientation dir)
 	{

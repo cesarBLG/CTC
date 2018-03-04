@@ -85,6 +85,12 @@ public class TrackIcon extends CTCIcon {
 				// TODO Auto-generated method stub
 				if(arg0.getButton()==MouseEvent.BUTTON1)
 				{
+					if(arg0.isControlDown())
+					{
+						data.BlockState = Orientation.None;
+						CTCItem.PacketManager.handlePacket(data);
+						return;
+					}
 					if(acid!=null)
 					{
 						ACData a = new ACData(acid);
