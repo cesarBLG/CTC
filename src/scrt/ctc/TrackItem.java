@@ -320,6 +320,7 @@ public class TrackItem extends CTCItem{
 	boolean Done = false;
 	private void tryToFree()
 	{
+		if(BlockState==Orientation.Unknown) return;
 		if(BlockingTime<=OccupiedTime&&(BlockingSignal==null||!BlockingSignal.ClearRequest||!BlockingSignal.listeners.contains(this)))
 		{
 			setBlock(Orientation.None);

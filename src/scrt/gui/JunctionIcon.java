@@ -176,7 +176,7 @@ public class JunctionIcon extends TrackIcon {
 	@Override
 	public void update()
 	{
-		TrackIcon.setBackground(data.Occupied != Orientation.None ? (data.Occupied == Orientation.Unknown ? Color.white : Color.red) : data.BlockState != Orientation.None ? Color.green : Color.yellow);
+		TrackIcon.setBackground(data.Occupied != Orientation.None ? (data.Occupied == Orientation.Unknown ? Color.white : Color.red) : data.BlockState != Orientation.None ? (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green) : Color.yellow);
 		if(data.BlockState != Orientation.None && data.Locked == -1)
 		{
 			FlashingTimer.setRepeats(true);
@@ -192,13 +192,13 @@ public class JunctionIcon extends TrackIcon {
 		}
 		if(data.Switch==Position.Straight)
 		{
-			Direct.setBackground(data.Locked==0 ? (data.Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);
+			Direct.setBackground(data.Locked==0 ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
 			Desv.setBackground(Color.black);
 		}
 		else
 		{
 			Direct.setBackground(Color.black);
-			Desv.setBackground(data.Locked==1 ? (data.Occupied != Orientation.None ? Color.red : Color.green) : Color.yellow);
+			Desv.setBackground(data.Locked==1 ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
 		}
 	}
 	@Override

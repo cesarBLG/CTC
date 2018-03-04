@@ -26,6 +26,7 @@ import scrt.Orientation;
 import scrt.com.packet.Packet;
 import scrt.com.packet.SignalData;
 import scrt.ctc.Clock;
+import scrt.ctc.Config;
 import scrt.ctc.Junction;
 import scrt.ctc.Position;
 import scrt.ctc.Station;
@@ -115,7 +116,7 @@ public class MainSignal extends Signal{
 		Number = Integer.parseInt(Name.substring(start1, end1));
 		if(start2!=0) Track = Integer.parseInt(Name.substring(start2));
 		else Track = 0;
-		allowsOnSight = Class != SignalType.Entry;
+		allowsOnSight = Config.allowOnSight && Class != SignalType.Entry;
 		set(Number%2 == 0 ? Orientation.Even : Orientation.Odd);
 	}
 	void set(Orientation dir)
@@ -545,6 +546,7 @@ public class MainSignal extends Signal{
 			if(t!=null&&!t.listeners.contains(this)) t.listeners.add(this);
 		}
 	}
+	long lastPass = 0;
 	@Override
 	public void actionPerformed(SRCTEvent e) {
 		if(!EventsMuted)
@@ -569,8 +571,37 @@ public class MainSignal extends Signal{
 					AxleEvent ae = (AxleEvent)e;
 					if(Direction==ae.dir)
 					{
-						UserRequest = false;
-						//if(!Automatic) Locked = false;
+						if(SignalAspect==Aspect.Parada&&(Automatic || Clock.time() > lastPass + 10000))
+						{
+							//JOptionPane.showMessageDialog(null, "Señal " + Name + " de " + Station.FullName + " rebasada");
+							TrackItem.DirectExploration(Linked, new TrackComparer()
+									{
+										@Override
+										public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+										{
+											if(!nextSignal.condition(t, dir, p))
+											{
+												t.setBlock(Orientation.Unknown, MainSignal.this);
+												if(t instanceof Junction)
+												{
+													((Junction)t).lock(p);
+												}
+											}
+											else return false;
+											return true;
+										}
+										@Override
+										public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+										{
+											return true;
+										}
+									}, ae.dir);
+						}
+						if(UserRequest)
+						{
+							lastPass = Clock.time();
+							UserRequest = false;
+						}
 					}
 				}
 			}
