@@ -74,7 +74,9 @@ public class JunctionIcon extends TrackIcon {
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON1)
 				{
-					CTCItem.PacketManager.handlePacket(new JunctionSwitch(junctionID));
+					JunctionSwitch j = new JunctionSwitch(junctionID);
+					if(arg0.isAltDown()) j.force = true;
+					CTCItem.PacketManager.handlePacket(j);
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON1 && arg0.isControlDown())
 				{

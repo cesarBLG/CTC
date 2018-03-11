@@ -58,7 +58,6 @@ public class MainSignal extends Signal{
 		if(Name.charAt(0)=='S')
 		{
 			Class = SignalType.Exit;
-			Aspects.add(Aspect.Apagado);
 			Aspects.add(Aspect.Parada);
 			Aspects.add(Aspect.Anuncio_parada);
 			Aspects.add(Aspect.Anuncio_precaucion);
@@ -69,7 +68,6 @@ public class MainSignal extends Signal{
 		else if(Name.charAt(0)=='E' && Name.charAt(1)!='\'')
 		{
 			Class = SignalType.Entry;
-			Aspects.add(Aspect.Apagado);
 			Aspects.add(Aspect.Rebase);
 			Aspects.add(Aspect.Parada);
 			Aspects.add(Aspect.Anuncio_parada);
@@ -80,7 +78,6 @@ public class MainSignal extends Signal{
 		{
 			Class = SignalType.Advanced;
 			Automatic = true;
-			Aspects.add(Aspect.Apagado);
 			Aspects.add(Aspect.Parada);
 			Aspects.add(Aspect.Anuncio_parada);
 			Aspects.add(Aspect.Anuncio_precaucion);
@@ -90,7 +87,6 @@ public class MainSignal extends Signal{
 		else if(Name.charAt(0)=='M')
 		{
 			Class = SignalType.Shunting;
-			Aspects.add(Aspect.Apagado);
 			Aspects.add(Aspect.Parada);
 			Aspects.add(Aspect.Rebase);
 		}
@@ -98,7 +94,6 @@ public class MainSignal extends Signal{
 		{
 			Class = SignalType.Block;
 			Automatic = true;
-			Aspects.add(Aspect.Apagado);
 			Aspects.add(Aspect.Parada);
 			Aspects.add(Aspect.Anuncio_parada);
 			Aspects.add(Aspect.Precaucion);
@@ -138,7 +133,8 @@ public class MainSignal extends Signal{
 		{
 			Timer t = new Timer(30000, new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					UserRequest = OverrideRequest = false;
+					setCleared();
+					if(!Cleared) UserRequest = OverrideRequest = false;
 					setAspect();
 				}
 			});
@@ -152,11 +148,16 @@ public class MainSignal extends Signal{
 	public void Lock()
 	{
 		if(Linked==null) return;
+		if(Clearing!=0 && Clearing + 5000 > Clock.time()) return;
 		muteEvents(true);
 		List<TrackItem> items = TrackItem.DirectExploration(Linked, new TrackAvailable(OverrideRequest, false), Direction);
 		muteEvents(false);
 		setMonitors();
-		if(items==null) return;
+		if(items==null)
+		{
+			if(Locked) Unlock();
+			return;
+		}
 		TrackItem.DirectExploration(Linked, new BlockTrack(OverrideRequest), Direction);
 		Locked = true;
 		Clearing = Clock.time();
@@ -171,7 +172,7 @@ public class MainSignal extends Signal{
 		if(i==Linked||i==null||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=Direction)
 		{
 			if(Class == SignalType.Exit && i.Station != Linked.Station) return false;
-			if(i.Occupied != Orientation.None&&(i.Occupied==dir||i.trainStopped())) return false;
+			if(i.Occupied != Orientation.None && i.Occupied != Orientation.Unknown &&(i.Occupied==dir||i.trainStopped())) return false;
 			return true;
 		}
 		return false;
@@ -181,7 +182,6 @@ public class MainSignal extends Signal{
 		if(i instanceof Junction)
 		{
 			Junction j = (Junction)i;
-			if(j.Switch != Position.Straight && j.Direction==dir) Switches = true;
 			if(p!=null && !j.LockedFor(p)) return false;
 		}
 		return true;
@@ -207,6 +207,11 @@ public class MainSignal extends Signal{
 			{
 				if(nextSignal.condition(i, dir, p)) Next = true;
 				if(i.Occupied==dir&&!Next) Occupied = true;
+				if(!Next && i instanceof Junction)
+				{
+					Junction j = (Junction)i;
+					if(j.Switch != Position.Straight && j.Direction==dir) Switches = true;
+				}
 				return true;
 			}
 			return false;
@@ -219,7 +224,7 @@ public class MainSignal extends Signal{
 				if(i==null||(i.BlockState!=dir&&(i.BlockState!=Orientation.None||checkBlock))) return false;
 				return junctionState.condition(i, dir, p);
 			}*/
-			if(i==null||(BlockOccupied.condition(i, dir, p)&&(i.BlockState!=Orientation.None||checkBlock))||(i.Occupied!=Orientation.None&&((i.Occupied!=dir && (!Override || !i.trainStopped()))||(!Next&&!allowsOnSight))))
+			if(i==null||(BlockOccupied.condition(i, dir, p)&&(i.BlockState!=Orientation.None||checkBlock))||(i.Occupied!=Orientation.None && (!OverrideRequest || i.Occupied != Orientation.Unknown) &&((i.Occupied!=dir && (!OverrideRequest || !i.trainStopped()))||(!Next&&!allowsOnSight))))
 			{
 				/*if(i!=null&&!checkBlock&&BlockOccupied.condition(i, dir, p))
 				{
@@ -298,14 +303,21 @@ public class MainSignal extends Signal{
 		{
 			if(SignalAspect == Aspect.Via_libre||SignalAspect == Aspect.Anuncio_precaucion) SignalAspect = Aspect.Anuncio_parada;
 			else if(SignalAspect == Aspect.Anuncio_parada||SignalAspect == Aspect.Precaucion) SignalAspect = Aspect.Rebase;
-			else if(SignalAspect == Aspect.Rebase)
-			{
-				if(BlockSignal) SignalAspect = Aspect.Apagado;
-				else SignalAspect = Aspect.Parada;
-			}
+			else if(SignalAspect == Aspect.Rebase) SignalAspect = Aspect.Parada;
 			else if(SignalAspect == Aspect.Parada) SignalAspect = Aspect.Apagado;
-			else if(Aspects.size()!=0) SignalAspect = Aspects.get(0);
-			else SignalAspect = Aspect.Apagado;
+			else if(Aspects.size()!=0)
+			{
+				SignalAspect = Aspects.get(0);
+				for(Aspect a : Aspects)
+				{
+					if(a.ordinal()<SignalAspect.ordinal()) SignalAspect = a;
+				}
+			}
+			else
+			{
+				SignalAspect = Aspect.Apagado;
+				break;
+			}
 		}
 		super.setAspect();
 	}
@@ -568,12 +580,12 @@ public class MainSignal extends Signal{
 			}
 			if(e.type == EventType.AxleCounter)
 			{
-				if(e.creator == Linked.CounterLinked)
+				if(e.creator == Linked.CounterLinked && Linked.CounterLinked.Working)
 				{
 					AxleEvent ae = (AxleEvent)e;
 					if(Direction==ae.dir)
 					{
-						if(SignalAspect==Aspect.Parada&&(Automatic || Clock.time() > lastPass + 10000))
+						if(SignalAspect==Aspect.Parada&&Clock.time() > lastPass + 10000)
 						{
 							Logger.trace("Señal " + Name + " de " + Station.FullName + " rebasada");
 							TrackItem.DirectExploration(Linked, new TrackComparer()
@@ -599,11 +611,8 @@ public class MainSignal extends Signal{
 										}
 									}, ae.dir);
 						}
-						if(UserRequest)
-						{
-							lastPass = Clock.time();
-							UserRequest = false;
-						}
+						if(SignalAspect != Aspect.Parada) lastPass = Clock.time();
+						if(UserRequest) UserRequest = false;
 					}
 				}
 			}

@@ -66,6 +66,7 @@ public class Junction extends TrackItem
 		TrackItemID id = new TrackItemID();
 		id.x = x;
 		id.y = y;
+		id.stationNumber = Station.AssociatedNumber;
 		JunctionRegister reg = new JunctionRegister(getID(), id);
 		reg.Direction = Direction;
 		reg.Class = Class;
@@ -129,22 +130,15 @@ public class Junction extends TrackItem
 	@Override
 	public void setBlock(Orientation o) 
 	{
-		if(o==Orientation.None&&Occupied==Orientation.None) Locked = -1;
+		if(o==Orientation.None&&(Occupied==Orientation.None||Occupied==Orientation.Unknown)) Locked = -1;
 		super.setBlock(o);
-	}
-	boolean wasFree = true;
-	@Override
-	public void AxleDetected(AxleCounter c, Orientation dir)
-	{
-		wasFree = Occupied == Orientation.None;
-		super.AxleDetected(c, dir);
 	}
 	@Override
 	public void PerformAction(AxleCounter c, Orientation dir)
 	{
 		super.PerformAction(c, dir);
 		if(Occupied==Direction) Locked = Switch==Position.Straight ? 0 : 1;
-		else if(Occupied!=Orientation.None)
+		else if(Occupied==Orientation.OppositeDir(Direction))
 		{
 			if(wasFree)
 			{
@@ -163,7 +157,7 @@ public class Junction extends TrackItem
 			}
 		}
 		if(Occupied==Orientation.None && Muelle!=-1) setSwitch(Muelle == 0 ? Position.Straight : Class);
-		if(BlockState==Orientation.None&&Occupied==Orientation.None) Locked = -1;
+		if(BlockState==Orientation.None&&(Occupied==Orientation.None||Occupied==Orientation.Unknown)) Locked = -1;
 		updateState();
 	}
 	@Override
@@ -385,7 +379,12 @@ public class Junction extends TrackItem
 		if(p instanceof JunctionSwitch)
 		{
 			if(!((JunctionSwitch)p).id.equals(getID())) return;
-			userChangeSwitch();
+			if(((JunctionSwitch) p).force)
+			{
+				Switch = Switch == Position.Straight ? Class : Position.Straight;
+				updatePosition();
+			}
+			else userChangeSwitch();
 		}
 		if(p instanceof JunctionData)
 		{

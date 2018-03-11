@@ -76,8 +76,22 @@ public class StationWindow extends JDialog {
 						{
 							if(combo[0].getSelectedIndex() == 0) s.Open();
 							else s.Close();
-							if(combo[1].getSelectedIndex() == 0) s.MandoLocal();
-							else s.Telemando();
+							if(combo[1].getSelectedIndex() == 0)
+							{
+								for(CTCIcon i : CTCIcon.items)
+								{
+									if(i instanceof TrackIcon && ((TrackIcon)i).id.stationNumber == s.AssociatedNumber) i.comp.setVisible(false);
+								}
+								s.MandoLocal();
+							}
+							else
+							{
+								for(CTCIcon i : CTCIcon.items)
+								{
+									if(i instanceof TrackIcon && ((TrackIcon)i).id.stationNumber == s.AssociatedNumber) i.comp.setVisible(true);
+								}
+								s.Telemando();
+							}
 							if(s.grp != null)
 							{
 								s.grp.Activated = combo[2].getSelectedIndex() == 0;

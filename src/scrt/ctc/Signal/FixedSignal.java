@@ -23,13 +23,13 @@ public class FixedSignal extends MainSignal {
 		else if(Name.charAt(1)=='M') Class = SignalType.Shunting;
 		else */Class = SignalType.Entry;
 		Automatic = true;
-		BlockSignal = false;
 		Direction = dir;
 		Aspects.add(a);
 		Station = dep;
 		allowsOnSight = true;
 		Cleared = a != Aspect.Parada;
 		prevClear = !Cleared;
+		setState();
 		setAspect();
 	}
 	@Override
@@ -37,7 +37,6 @@ public class FixedSignal extends MainSignal {
 	boolean prevClear = false;
 	@Override
 	public void setAspect() {
-		if(Linked!=null) setCleared();
 		SignalAspect = Aspects.get(0);
 		send();
 	}

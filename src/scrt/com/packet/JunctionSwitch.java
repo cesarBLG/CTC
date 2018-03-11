@@ -5,6 +5,7 @@ import java.util.List;
 
 public class JunctionSwitch extends StatePacket
 {
+	public boolean force = false;
 	public JunctionSwitch(JunctionID id)
 	{
 		super(id);

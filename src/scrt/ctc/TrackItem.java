@@ -222,24 +222,51 @@ public class TrackItem extends CTCItem{
 	public void AxleDetected(AxleCounter a, Orientation dir) 
 	{
 		wasFree = Occupied == Orientation.None;
-		if(!a.Working && (EvenOccupier.contains(a)||OddOccupier.contains(a)))
+		if(!a.Working)
 		{
-			OddAxles = EvenAxles = 0;
-			Occupied = Orientation.Unknown;
-			updateOccupancy();
+			if((EvenOccupier.contains(a) || dir==Orientation.Odd) && (OddOccupier.contains(a) || dir == Orientation.Even))
+			{
+				OddAxles = EvenAxles = 0;
+				Occupied = Orientation.Unknown;
+				updateState();
+			}
 			return;
 		}
 		if(EvenRelease==a&&dir==Orientation.Even)
 		{
 			if(EvenAxles>0) EvenAxles--;
 			else if(OddAxles>0) OddAxles--;
-			//else throw(new CounterFailException())
+			else
+			{
+				if(getNext(dir)==null || getNext(dir).getReleaseCounter(dir) != a)
+				{
+					List<AxleCounter> acs = new ArrayList<AxleCounter>(getOccupierCounter(dir));
+					for(AxleCounter ac : acs)
+					{
+						ac.Working = false;
+						ac.Passed(dir);
+					}
+					return;
+				}
+			}
 		}
 		else if(OddRelease==a&&dir==Orientation.Odd)
 		{
 			if(OddAxles>0) OddAxles--;
 			else if(EvenAxles>0) EvenAxles--;
-			//else throw(new CounterFailException())
+			else
+			{
+				if(getNext(dir)==null || getNext(dir).getReleaseCounter(dir) != a)
+				{
+					List<AxleCounter> acs = new ArrayList<AxleCounter>(getOccupierCounter(dir));
+					for(AxleCounter ac : acs)
+					{
+						ac.Working = false;
+						ac.Passed(dir);
+					}
+					return;
+				}
+			}
 		}
 		if(EvenOccupier.contains(a)&&dir==Orientation.Even)
 		{
@@ -258,7 +285,7 @@ public class TrackItem extends CTCItem{
 		if(EvenAxles>0&&OddAxles>0) Occupied = Orientation.Both;
 		else if(EvenAxles>0) Occupied = Orientation.Even;
 		else if(OddAxles>0) Occupied = Orientation.Odd;
-		else if(Occupied!=Orientation.None) Occupied = Orientation.None;
+		else if(Occupied!=Orientation.None && Occupied!=Orientation.Unknown) Occupied = Orientation.None;
 		if(wasFree && ((Occupied == Orientation.Even && EvenItem!=null && !EvenItem.Station.equals(Station) && EvenItem.Station.isOpen())||(Occupied == Orientation.Odd && OddItem!=null && !OddItem.Station.equals(Station) && OddItem.Station.isOpen())))
 		{
 			/*if(!trains.isEmpty())

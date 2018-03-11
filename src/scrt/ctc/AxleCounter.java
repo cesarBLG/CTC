@@ -22,7 +22,7 @@ public class AxleCounter extends CTCItem
 	public int Number;
 	AxleCounter EvenCounter = null;
 	AxleCounter OddCounter = null;
-	boolean Working = true;
+	public boolean Working = true;
 	AxleCounter(int num, Station dep)
 	{
 		Number = num;
@@ -30,15 +30,16 @@ public class AxleCounter extends CTCItem
 	}
 	public void EvenPassed()
 	{
+		Working = true;
 		Passed(Orientation.Even);
 	}
 	public void OddPassed()
 	{
+		Working = true;
 		Passed(Orientation.Odd);
 	}
 	public void Passed(Orientation dir)
 	{
-		Working = true;
 		List<SRCTListener> c = new ArrayList<SRCTListener>();
 		c.addAll(listeners);
 		for(SRCTListener l  : c)
@@ -75,7 +76,8 @@ public class AxleCounter extends CTCItem
 		{
 			ACData a = (ACData)p;
 			if(!a.id.equals(getID())) return;
-			Passed(a.dir);
+			if(a.dir == Orientation.Odd) OddPassed();
+			else EvenPassed();
 		}
 	}
 	@Override

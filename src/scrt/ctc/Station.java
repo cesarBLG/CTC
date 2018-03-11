@@ -24,7 +24,7 @@ public class Station {
 		if(Name.equals("Cen"))
 		{
 			FullName = "Central";
-			AssociatedNumber = 0;
+			AssociatedNumber = 1;
 		}
 		if(Name.equals("TmB"))
 		{
