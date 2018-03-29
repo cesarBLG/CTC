@@ -80,7 +80,7 @@ public class Loader {
 						if(m.contains("Desviada")) j.Muelle = 1;
 						else if(m.contains("Directa")) j.Muelle = 0;
 						else j.Muelle = -1;
-						j.setSwitch(Position.Straight);
+						j.updatePosition(Position.Straight);
 						Workingdep.Items.add(j);
 						items.add(j);
 					}
@@ -137,14 +137,6 @@ public class Loader {
 								counters.add(Ac);
 							}
 							t.setCounterLinked(Ac, Ac.Number % 2 == 0 ? Orientation.Even : Orientation.Odd);
-						}
-						for(TrackItem at : items)
-						{
-							if(at.x==t.x && at.y == t.y)
-							{
-								t.CrossingLinked = at;
-								at.CrossingLinked = t;
-							}
 						}
 						Workingdep.Items.add(t);
 						items.add(t);
@@ -230,6 +222,11 @@ public class Loader {
 							if(b.connectsTo(j.Direction, a)) j.FrontItems[0] = b;
 							if(b.connectsTo(j.Direction, a.x, a.y, j.Class == Position.Right ? -1 : 1)) j.FrontItems[1] = b;
 							if(b.connectsTo(Orientation.OppositeDir(j.Direction), a)) j.BackItem = b;
+							if(a.x == b.x && a.y + 1 == b.y && j.Class == Position.Right && k.Class == Position.Left)
+							{
+								j.CrossingLinked = k;
+								k.CrossingLinked = j;
+							}
 						}
 					}
 					else
@@ -256,12 +253,14 @@ public class Loader {
 				else
 				{
 					new EoT(Orientation.Even, a.Station).setLinked(a);
+					signals.add(a.SignalLinked);
 					a.Station.Signals.add(a.SignalLinked);
 				}
 				if(a.OddItem!=null) a.OddItem.setCounters(Orientation.Odd);
 				else
 				{
 					new EoT(Orientation.Odd, a.Station).setLinked(a);
+					signals.add(a.SignalLinked);
 					a.Station.Signals.add(a.SignalLinked);
 				}
 			}

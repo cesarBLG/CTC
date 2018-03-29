@@ -17,6 +17,7 @@ public abstract class Packet implements Serializable
 		JunctionData,
 		JunctionSwitch,
 		JunctionRegister,
+		JunctionLock,
 		ItineraryRegister,
 		ACData,
 	}

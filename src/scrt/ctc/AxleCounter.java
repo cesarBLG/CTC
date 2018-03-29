@@ -67,6 +67,7 @@ public class AxleCounter extends CTCItem
 		ACID acid = new ACID();
 		acid.stationNumber = Station.AssociatedNumber;
 		acid.Num = Number;
+		acid.dir = (Number % 2 == 0) ? Orientation.Even : Orientation.Odd;
 		return acid;
 	}
 	@Override

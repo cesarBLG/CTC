@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import scrt.com.packet.ID;
 import scrt.com.packet.JunctionRegister;
@@ -25,7 +26,7 @@ import scrt.event.SRCTEvent;
 public abstract class CTCIcon implements Packable {
 	public abstract void update();
 	static List<CTCIcon> items = new ArrayList<CTCIcon>();
-	public Component comp;
+	public JPanel comp;
 	public static PacketManager PacketManager = new PacketManager()
 			{
 				@Override

@@ -13,11 +13,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import javax.swing.border.EmptyBorder;
 
 import scrt.Orientation;
 import scrt.com.packet.ACData;
@@ -57,7 +60,6 @@ public class TrackIcon extends CTCIcon {
 	static TrackItemID ItineraryStart = null;
 	public TrackIcon(TrackRegister reg)
 	{
-		CTCIcon.items.add(this);
 		this.reg = reg;
 		id = (TrackItemID) reg.id;
 		comp = new JPanel();
@@ -126,36 +128,50 @@ public class TrackIcon extends CTCIcon {
 			}
 	
 		});
-		((Container) comp).setLayout(new GridBagLayout());
-		GridBagConstraints g = new GridBagConstraints();
-		g.gridx = g.gridy = 0;
-		g.insets = new Insets(0,0,0,0);
-		g.fill = GridBagConstraints.BOTH;
-		g.anchor = GridBagConstraints.CENTER;
+		comp.setLayout(null);
 		comp.setBackground(Color.black);
 		TrackIcon.setOpaque(true);
-		if(reg.OddRotation==reg.EvenRotation&&reg.EvenRotation==-1)
+		if(reg.OddRotation==reg.EvenRotation&&reg.EvenRotation!=0)
 		{
-			TrackIcon.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Track/Right.png")));
-			TrackIcon.setMinimumSize(new Dimension(30, 73));
-			TrackIcon.setPreferredSize(new Dimension(30, 73));
-			TrackIcon.setMaximumSize(new Dimension(30, 73));
-		}
-		else if(reg.OddRotation==reg.EvenRotation&&reg.EvenRotation==1)
-		{
-			TrackIcon.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Track/Left.png")));
-			TrackIcon.setMinimumSize(new Dimension(41, 36));
-			TrackIcon.setPreferredSize(new Dimension(41, 36));
-			TrackIcon.setMaximumSize(new Dimension(41, 36));
+			Icon ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/".concat(reg.EvenRotation == 1 ? "Left" : "Right").concat(".png")));
+			TrackIcon.setIcon(ic);
+			TrackIcon.setBounds(0, 0, 30, 73);
 		}
 		else
 		{
-			TrackIcon.setMinimumSize(new Dimension(30, 3));
-			TrackIcon.setPreferredSize(new Dimension(30, 3));
-			TrackIcon.setMaximumSize(new Dimension(30, 3));
+			if(reg.OddRotation == reg.EvenRotation)
+			{
+				TrackIcon.setBounds(0, 35, 30, 3);
+			}
+			else
+			{
+				Icon ic = null;
+				if(reg.OddRotation == 1 && reg.EvenRotation == 0)
+				{
+					ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/UpLeft.png"));
+					TrackIcon.setBounds(0, 35, 30, 38);
+				}
+				if(reg.OddRotation == -1 && reg.EvenRotation == 0)
+				{
+					ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/DownLeft.png"));
+					TrackIcon.setBounds(0, 0, 30, 38);
+				}
+				if(reg.EvenRotation == -1 && reg.OddRotation == 0)
+				{
+					TrackIcon.setHorizontalAlignment(JLabel.RIGHT);
+					ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/UpRight.png"));
+					TrackIcon.setBounds(0, 35, 30, 38);
+				}
+				if(reg.EvenRotation == 1 && reg.OddRotation == 0)
+				{
+					TrackIcon.setHorizontalAlignment(JLabel.RIGHT);
+					ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/DownRight.png"));
+					TrackIcon.setBounds(0, 0, 30, 38);
+				}
+				TrackIcon.setIcon(ic);
+			}
 		}
-		g.gridy++;
-		((Container)comp).add(TrackIcon, g);
+		comp.add(TrackIcon);
 		if(reg.Name.length()>=1)
 		{
 			JLabel j = new JLabel(reg.Name.length()== 0 ? " " : reg.Name);
@@ -163,44 +179,21 @@ public class TrackIcon extends CTCIcon {
 			j.setVerticalAlignment(JLabel.TOP);
 			j.setForeground(Color.yellow);
 			j.setFont(new Font("Tahoma", 0, 10));
-			g.gridy++;
-			((Container)comp).add(j, g);
-			g.gridy++;
+			j.setBounds(0, 38, 30, 12);
+			comp.add(j);
 			NumAxles.setFont(new Font("Tahoma", 0, 10));
 			NumAxles.setHorizontalAlignment(JLabel.CENTER);
 			NumAxles.setVerticalAlignment(JLabel.TOP);
 			NumAxles.setHorizontalTextPosition(JLabel.CENTER);
-			((Container)comp).add(NumAxles, g);
-		}
-		if(reg.OddRotation!=reg.EvenRotation||reg.OddRotation==0)
-		{
-			JPanel jp = new JPanel();
-			g.insets = new Insets(0,0,0,0);
-			g.gridx++;
-			g.gridy = 0;
-			g.fill = GridBagConstraints.BOTH;
-			jp.setMinimumSize(new Dimension(0,35));
-			jp.setPreferredSize(new Dimension(0,35));
-			jp.setMaximumSize(new Dimension(0,35));
-			((Container)comp).add(jp,g);
-			jp = new JPanel();
-			g.gridy = 2;
-			if(reg.Name.length()>=1) g.gridheight = 2;
-			jp.setMinimumSize(new Dimension(0,35));
-			jp.setPreferredSize(new Dimension(0,35));
-			jp.setMaximumSize(new Dimension(0,35));
-			((Container)comp).add(jp,g);
+			NumAxles.setBounds(0, 50, 30, 12);
+			comp.add(NumAxles);
 		}
 	}
 	public void setSignal(SignalIcon sig)
 	{
-		GridBagConstraints g = new GridBagConstraints();
-		g.gridx = g.gridy = 0;
-		g.fill = GridBagConstraints.NONE;
-		g.insets = new Insets(5, 0, 3, 0);
-		g.anchor = sig.id.Direction == Orientation.Odd ? GridBagConstraints.SOUTHEAST : GridBagConstraints.SOUTHWEST;
-		if(sig.reg.EoT) g.anchor = sig.id.Direction == Orientation.Odd ? GridBagConstraints.SOUTHWEST : GridBagConstraints.SOUTHEAST;
-		((Container)comp).add(sig.comp, g);
+		signal = sig;
+		signal.comp.setBounds(0, 10, 30, 25);
+		comp.add(signal.comp, 0);
 	}
 	Timer timer = new Timer(350, new ActionListener()
 			{
@@ -242,6 +235,7 @@ public class TrackIcon extends CTCIcon {
 			NumAxles.setForeground(i.OddAxles + i.EvenAxles == 0 ? Color.YELLOW : Color.red);
 			NumAxles.setText(Integer.toString(i.EvenAxles + i.OddAxles));
 		}
+		comp.repaint();
 	}
 	@Override
 	public ID getID()
@@ -261,6 +255,7 @@ public class TrackIcon extends CTCIcon {
 			if(link.type == ElementType.AxleCounter)
 			{
 				acid = (ACID) link;
+				TrackIcon.setBorder(BorderFactory.createMatteBorder(0, acid.dir == Orientation.Odd ? 2 : 0, 0, acid.dir == Orientation.Odd ? 0 : 2, Color.black));
 				return;
 			}
 			CTCIcon icon = findID(link);

@@ -45,7 +45,6 @@ public class JunctionIcon extends TrackIcon {
 		this.reg = reg;
 		id = reg.TrackId;
 		junctionID = (JunctionID) reg.id;
-		CTCIcon.items.add(this);
 		comp.addMouseListener(new MouseListener()
 		{
 
@@ -101,15 +100,15 @@ public class JunctionIcon extends TrackIcon {
 	{
 		GridBagConstraints g = new GridBagConstraints();
 		boolean Upwise = (reg.Direction==Orientation.Even && reg.Class == Position.Right) || (reg.Direction==Orientation.Odd && reg.Class == Position.Left); 
-		g.fill = GridBagConstraints.BOTH;
-		g.insets = new Insets(0, 1, 0, 1);
+		g.fill = GridBagConstraints.HORIZONTAL;
+		g.insets = new Insets(0, 0, 0, 0);
 		g.anchor = GridBagConstraints.CENTER;
 		g.gridx = reg.Direction == Orientation.Even ? 0 : 2;
 		g.gridy = 1;
 		TrackIcon.setOpaque(true);
-		TrackIcon.setMinimumSize(new Dimension(18, 3));
-		TrackIcon.setPreferredSize(new Dimension(18, 3));
-		TrackIcon.setMaximumSize(new Dimension(18, 3));
+		TrackIcon.setMinimumSize(new Dimension(20, 3));
+		TrackIcon.setPreferredSize(new Dimension(20, 3));
+		TrackIcon.setMaximumSize(new Dimension(20, 3));
 		((Container)comp).add(TrackIcon, g);
 		g.gridy++;
 		g.insets = new Insets(0,0,0,0);
@@ -122,7 +121,7 @@ public class JunctionIcon extends TrackIcon {
 		g.gridy--;
 		if(reg.Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
-		g.insets = new Insets(0, 0, 0, 0);
+		g.insets = new Insets(1, 1, 1, 1);
 		Locking.setOpaque(true);
 		Locking.setMinimumSize(new Dimension(4, 3));
 		Locking.setPreferredSize(new Dimension(4, 3));
@@ -130,30 +129,29 @@ public class JunctionIcon extends TrackIcon {
 		((Container)comp).add(Locking, g);
 		if(reg.Direction == Orientation.Even) g.gridx++;
 		else g.gridx--;
-		g.insets = new Insets(0, 1, 0, 1);
+		g.insets = new Insets(0, 0, 0, 0);
 		Direct.setOpaque(true);
 		Direct.setMinimumSize(new Dimension(4, 3));
 		Direct.setPreferredSize(new Dimension(4, 3));
 		Direct.setMaximumSize(new Dimension(4, 3));
 		Direct.setBackground(Color.yellow);
 		((Container)comp).add(Direct, g);
-		g.insets = new Insets(Upwise ? 1 : 0, 0, Upwise ? 0 : 1, 0);
+		g.insets = new Insets(0, 0, 0, 0);
 		g.ipady = 2;
 		if(Upwise) g.gridy++;
 		else g.gridy--;
 		if(reg.Direction == Orientation.Even) g.gridx--;
 		g.gridwidth = 2;
-		g.fill = GridBagConstraints.VERTICAL;
-		Desv.setVerticalAlignment(JLabel.TOP);
-		Desv.setHorizontalAlignment(reg.Direction==Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
+		g.fill = GridBagConstraints.NONE;
+		g.anchor = reg.Direction == Orientation.Even ? GridBagConstraints.EAST : GridBagConstraints.WEST;
 		Desv.setBackground(Color.yellow);
 		Desv.setOpaque(true);
 		Desv.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Junction/".concat(reg.Class.name()).concat(".png"))));
-		Desv.setHorizontalAlignment(JLabel.CENTER);
-		Desv.setPreferredSize(new Dimension(7, 33));
-		Desv.setMaximumSize(new Dimension(7, 33));
-		Desv.setMinimumSize(new Dimension(7, 33));
+		Desv.setPreferredSize(new Dimension(9, 33));
+		Desv.setMaximumSize(new Dimension(9, 33));
+		Desv.setMinimumSize(new Dimension(9, 33));
 		((Container)comp).add(Desv, g);
+		g.anchor = GridBagConstraints.CENTER;
 		g.ipady = 0;
 		JPanel jp = new JPanel();
 		g.gridx = 4;
@@ -177,7 +175,7 @@ public class JunctionIcon extends TrackIcon {
 		@Override
 		public void actionPerformed(ActionEvent e) 
 		{
-			Locking.setBackground(a ? Color.blue : Color.yellow);
+			Locking.setBackground(a ? Color.blue : Color.white);
 			a = !a;
 		}
 	});
@@ -185,7 +183,7 @@ public class JunctionIcon extends TrackIcon {
 	public void update()
 	{
 		TrackIcon.setBackground(data.Occupied != Orientation.None ? (data.Occupied == Orientation.Unknown ? Color.white : Color.red) : data.BlockState != Orientation.None ? (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green) : Color.yellow);
-		if(data.BlockState != Orientation.None && data.Locked == -1)
+		if(data.locking)
 		{
 			FlashingTimer.setRepeats(true);
 			FlashingTimer.start();
@@ -196,17 +194,23 @@ public class JunctionIcon extends TrackIcon {
 		{
 			FlashingTimer.setRepeats(false);
 			FlashingTimer.stop();
-			Locking.setBackground(data.Locked != -1 ? Color.blue : Color.yellow);
+			Locking.setBackground(data.Locked != -1 ? Color.blue : Color.white);
 		}
 		if(data.Switch==Position.Straight)
 		{
-			Direct.setBackground(data.Locked==0 ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
-			Desv.setBackground(Color.black);
+			Desv.setOpaque(false);
+			Desv.repaint();
+			Direct.setOpaque(true);
+			Direct.setBackground((data.blockPosition==0&&(data.BlockState!=Orientation.None || data.Occupied != Orientation.None)) ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
+			Direct.repaint();
 		}
 		else
 		{
-			Direct.setBackground(Color.black);
-			Desv.setBackground(data.Locked==1 ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
+			Direct.setOpaque(false);
+			Direct.repaint();
+			Desv.setOpaque(true);
+			Desv.setBackground((data.blockPosition==1&&(data.BlockState!=Orientation.None || data.Occupied != Orientation.None)) ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
+			Desv.repaint();
 		}
 	}
 	@Override

@@ -13,6 +13,8 @@ public class JunctionData extends StatePacket
 	public Orientation Occupied;
 	public Position Switch;
 	public int Locked;
+	public int blockPosition;
+	public boolean locking;
 	public JunctionData(JunctionID id)
 	{
 		super(id);

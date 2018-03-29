@@ -11,6 +11,10 @@ import scrt.com.Serial;
 import scrt.com.packet.ID;
 import scrt.com.packet.Packet;
 import scrt.com.packet.StatePacket;
+import scrt.com.packet.TrackData;
+import scrt.com.packet.TrackItemID;
+import scrt.com.packet.TrackRegister;
+import scrt.com.packet.Packet.PacketType;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalID;
 import scrt.com.packet.SignalRegister;
@@ -52,31 +56,26 @@ public abstract class Signal extends CTCItem
 	{
 		Linked = t;
 		Linked.SignalLinked = this;
-		SignalRegister r = new SignalRegister(getID());
-		r.Fixed = this instanceof FixedSignal;
-		r.x = Linked.x;
-		r.y = Linked.y;
-		r.EoT = this instanceof EoT;
-		COM.send(r);
+		send(PacketType.SignalRegister);
 		Linked.setSignal(this);
+		send(PacketType.SignalData);
 	}
 	public void setAspect(){send();};
 	void send()
 	{
 		//if(LastAspect==SignalAspect&&LastAuto.equals(Automatic)) return;
 		if(Linked==null) return;
-		SignalEvent e = new SignalEvent(this);
-		for(SRCTListener l : listeners) l.actionPerformed(e);
-		SignalData d = new SignalData(id);
-		d.Automatic = Automatic;
-		d.SignalAspect = SignalAspect;
-		d.OverrideRequest = OverrideRequest;
-		d.ClearRequest = ClearRequest;
-		if(this instanceof MainSignal) d.UserRequest = ((MainSignal)this).UserRequest;
-		COM.send(d);
+		if(LastAspect!=SignalAspect)
+		{
+			SignalEvent e = new SignalEvent(this);
+			List<SRCTListener> list = new ArrayList<SRCTListener>(listeners);
+			for(SRCTListener l : list) l.actionPerformed(e);
+		}
+		send(PacketType.SignalData);
 		LastAspect = SignalAspect;
 	}
 	public void update() {setAspect();}
+	public boolean protects() {return false;}
 	@Override
 	public SignalID getID()
 	{
@@ -93,5 +92,32 @@ public abstract class Signal extends CTCItem
 	@Override
 	public void load(Packet p)
 	{
+	}
+	void send(PacketType type)
+	{
+		Packet p;
+		switch(type)
+		{
+			case SignalRegister:
+				SignalRegister reg = new SignalRegister(getID());
+				reg.Fixed = this instanceof FixedSignal;
+				reg.x = Linked.x;
+				reg.y = Linked.y;
+				reg.EoT = this instanceof EoT;
+				p = reg;
+				break;
+			case SignalData:
+				SignalData d = new SignalData(id);
+				d.Automatic = Automatic;
+				d.SignalAspect = SignalAspect;
+				d.OverrideRequest = OverrideRequest;
+				d.ClearRequest = ClearRequest;
+				if(this instanceof MainSignal) d.UserRequest = ((MainSignal)this).UserRequest;
+				p = d;
+				break;
+			default:
+				return;
+		}
+		COM.send(p);
 	}
 }

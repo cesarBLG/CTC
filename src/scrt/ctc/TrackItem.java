@@ -1,6 +1,7 @@
 package scrt.ctc;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -24,9 +25,12 @@ import scrt.Orientation;
 import scrt.com.COM;
 import scrt.com.Serial;
 import scrt.com.packet.ID;
+import scrt.com.packet.JunctionData;
 import scrt.com.packet.JunctionID;
+import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
+import scrt.com.packet.Packet.PacketType;
 import scrt.com.packet.StatePacket;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
@@ -55,7 +59,6 @@ public class TrackItem extends CTCItem{
 	Orientation CounterDir = Orientation.None;
 	public TrackItem EvenItem = null;
 	public TrackItem OddItem = null;
-	public TrackItem CrossingLinked;
 	public int EvenAxles = 0;
 	public int OddAxles = 0;
 	AxleCounter EvenRelease = null;
@@ -87,11 +90,7 @@ public class TrackItem extends CTCItem{
 		OddRotation = oddrot;
 		EvenRotation = evenrot;
 		Name = label;
-		TrackRegister reg = new TrackRegister((TrackItemID) getID());
-		reg.Name = Name;
-		reg.OddRotation = OddRotation;
-		reg.EvenRotation = EvenRotation;
-		COM.send(reg);
+		send(PacketType.TrackRegister);
 		updateState();
 	}
 	public void setCounters(Orientation dir)
@@ -188,9 +187,12 @@ public class TrackItem extends CTCItem{
 	}
 	public void setBlock(Orientation o)
 	{
-		if(CrossingLinked!=null) CrossingLinked.setBlock(o, BlockingSignal);
 		if(BlockState == o) return;
 		BlockState = o;
+		blockChanged();
+	}
+	void blockChanged()
+	{
 		if(EvenItem != null && EvenItem.SignalLinked!=null)
 		{
 			EvenItem.SignalLinked.actionPerformed(new BlockEvent(this, BlockState));
@@ -209,13 +211,7 @@ public class TrackItem extends CTCItem{
 	}
 	public void updateState()
 	{
-		TrackData d = new TrackData((TrackItemID) getID());
-		d.Acknowledged = Acknowledged;
-		d.BlockState = BlockState;
-		d.Occupied = Occupied;
-		d.EvenAxles = EvenAxles;
-		d.OddAxles = OddAxles;
-		COM.send(d);
+		send(PacketType.TrackData);
 	}
 	boolean wasFree = true;
 	long OccupiedTime = 0;
@@ -236,37 +232,13 @@ public class TrackItem extends CTCItem{
 		{
 			if(EvenAxles>0) EvenAxles--;
 			else if(OddAxles>0) OddAxles--;
-			else
-			{
-				if(getNext(dir)==null || getNext(dir).getReleaseCounter(dir) != a)
-				{
-					List<AxleCounter> acs = new ArrayList<AxleCounter>(getOccupierCounter(dir));
-					for(AxleCounter ac : acs)
-					{
-						ac.Working = false;
-						ac.Passed(dir);
-					}
-					return;
-				}
-			}
+			else if(getNext(dir)==null || getNext(dir).getReleaseCounter(dir) != a) OddAxles = EvenAxles = -1;
 		}
 		else if(OddRelease==a&&dir==Orientation.Odd)
 		{
 			if(OddAxles>0) OddAxles--;
 			else if(EvenAxles>0) EvenAxles--;
-			else
-			{
-				if(getNext(dir)==null || getNext(dir).getReleaseCounter(dir) != a)
-				{
-					List<AxleCounter> acs = new ArrayList<AxleCounter>(getOccupierCounter(dir));
-					for(AxleCounter ac : acs)
-					{
-						ac.Working = false;
-						ac.Passed(dir);
-					}
-					return;
-				}
-			}
+			else if(getNext(dir)==null || getNext(dir).getReleaseCounter(dir) != a) OddAxles = EvenAxles = -1;
 		}
 		if(EvenOccupier.contains(a)&&dir==Orientation.Even)
 		{
@@ -329,6 +301,17 @@ public class TrackItem extends CTCItem{
 	}
 	public void PerformAction(AxleCounter a, Orientation dir)
 	{
+		if(OddAxles == -1 && EvenAxles == -1)
+		{
+			OddAxles = EvenAxles = 0;
+			List<AxleCounter> acs = new ArrayList<AxleCounter>(getOccupierCounter(dir));
+			for(AxleCounter ac : acs)
+			{
+				ac.Working = false;
+				ac.Passed(dir);
+			}
+			return;
+		}
 		tryToFree();
 		List<SRCTListener> list = new ArrayList<SRCTListener>();
 		list.addAll(listeners);
@@ -336,23 +319,49 @@ public class TrackItem extends CTCItem{
 		{
 			l.actionPerformed(new OccupationEvent(this, dir, (dir == Orientation.Even ? EvenAxles : OddAxles)));
 		}
-		if(EvenItem != null && EvenItem.SignalLinked!=null)
 		{
-			EvenItem.SignalLinked.actionPerformed(new OccupationEvent(this, dir, (dir == Orientation.Even ? EvenAxles : OddAxles)));
-		}
-		if(OddItem != null && OddItem.SignalLinked!=null)
-		{
-			OddItem.SignalLinked.actionPerformed(new OccupationEvent(this, dir, (dir == Orientation.Even ? EvenAxles : OddAxles)));
+			OccupationEvent ev = new OccupationEvent(this, dir, (dir == Orientation.Even ? EvenAxles : OddAxles));
+			if(EvenItem != null && EvenItem.SignalLinked!=null && EvenItem.SignalLinked instanceof MainSignal)
+			{
+				EvenItem.SignalLinked.actionPerformed(ev);
+				/*MainSignal s = ((MainSignal)EvenItem.SignalLinked).NextSignal;
+				if(s!=null) s.actionPerformed(ev);*/
+			}
+			if(OddItem != null && OddItem.SignalLinked!=null)
+			{
+				OddItem.SignalLinked.actionPerformed(ev);
+				/*MainSignal s = ((MainSignal)OddItem.SignalLinked).NextSignal;
+				if(s!=null) s.actionPerformed(ev);*/
+			}
 		}
 		updateState();
 	}
 	boolean Done = false;
-	private void tryToFree()
+	void tryToFree()
 	{
-		if(BlockState==Orientation.Unknown) return;
-		if(BlockingTime<=OccupiedTime&&(BlockingSignal==null||!BlockingSignal.ClearRequest||!BlockingSignal.listeners.contains(this)))
+		if(BlockState!=Orientation.Odd && BlockState!=Orientation.Even) return;
+		if(BlockingSignal==null||!BlockingSignal.ClearRequest||!BlockingSignal.listeners.contains(this))
 		{
-			setBlock(Orientation.None);
+			if(BlockingTime<=OccupiedTime || BlockingSignal == null)
+			{
+				setBlock(Orientation.None);
+				return;
+			}
+			/*if(TrackItem.InverseExploration(this, new TrackComparer()
+					{
+						@Override
+						public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+						{
+							if(t==null||(t.SignalLinked!=null&&t.SignalLinked instanceof MainSignal&&t.SignalLinked.Direction == BlockState)) return false;
+							return true;
+						}
+						@Override
+						public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+						{
+							if(t.Occupied != BlockState && t.Occupied != Orientation.Both) return false;
+							return true;
+						}
+					}, Orientation.OppositeDir(BlockState)) != null) setBlock(Orientation.None);*/
 		}
 	}
 	public interface TrackComparer
@@ -493,6 +502,32 @@ public class TrackItem extends CTCItem{
 			if(!d.id.equals(getID())) return;
 			if(d.BlockState == Orientation.None && BlockState == Orientation.Unknown) setBlock(Orientation.None);
 		}
+	}
+	void send(PacketType type)
+	{
+		Packet p;
+		switch(type)
+		{
+			case TrackRegister:
+				TrackRegister reg = new TrackRegister((TrackItemID) getID());
+				reg.Name = Name;
+				reg.OddRotation = OddRotation;
+				reg.EvenRotation = EvenRotation;
+				p = reg;
+				break;
+			case TrackData:
+				TrackData d = new TrackData((TrackItemID) getID());
+				d.Acknowledged = Acknowledged;
+				d.BlockState = BlockState;
+				d.Occupied = Occupied;
+				d.EvenAxles = EvenAxles;
+				d.OddAxles = OddAxles;
+				p = d;
+				break;
+			default:
+				return;
+		}
+		COM.send(p);
 	}
 	public void setCounterLinked(AxleCounter ac, Orientation dir)
 	{

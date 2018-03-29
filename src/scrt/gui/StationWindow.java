@@ -18,6 +18,8 @@ import javax.swing.JPanel;
 
 import scrt.*;
 import scrt.ctc.Station;
+import scrt.ctc.Signal.MainSignal;
+import scrt.ctc.Signal.Signal;
 
 public class StationWindow extends JDialog {
 	public StationWindow()
@@ -37,6 +39,7 @@ public class StationWindow extends JDialog {
 		list.add(new JLabel("Mando"), g);
 		g.gridx++;
 		list.add(new JLabel("GRP"), g);
+		g.gridx++;
 		g.gridy++;
 		Hashtable<Station, JComboBox<String>[]>  state = new Hashtable<Station, JComboBox<String>[]>();
 		for(Station s : Main.l.stations)
@@ -62,6 +65,19 @@ public class StationWindow extends JDialog {
 			grp.addItem("Desactivado");
 			grp.setSelectedItem(s.grp != null && s.grp.Activated ? "Activado" : "Desactivado");
 			list.add(grp, g);
+			g.gridx++;
+			JButton sa = new JButton("Sucesión Automática");
+			sa.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					for(Signal sig : s.Signals)
+					{
+						if(sig instanceof MainSignal) ((MainSignal) sig).setAutomatic(true);
+					}
+				}
+			});
+			list.add(sa, g);
 			g.gridy++;
 			state.put(s, new JComboBox[] {estado, mando, grp});
 		}

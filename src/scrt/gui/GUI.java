@@ -56,6 +56,7 @@ public class GUI
 		layout.setBackground(Color.black);
 		layout.setLayout(new GridBagLayout());
 		layout.setBorder(new EmptyBorder(20,20,20,20));
+		//layout.setLayout(null);
 		GridBagConstraints g = new GridBagConstraints();
 		g.fill = GridBagConstraints.BOTH;
 		g.anchor = GridBagConstraints.CENTER;
@@ -68,7 +69,27 @@ public class GUI
 			{
 				TrackIcon icon = (TrackIcon) i;
 				g.gridx = icon.id.x + 40;
-				g.gridy = icon.id.y * 2;
+				g.gridy = icon.id.y;
+				i.comp.setMinimumSize(new Dimension(30, 73));
+				i.comp.setPreferredSize(new Dimension(30, 73));
+				i.comp.setMaximumSize(new Dimension(30, 73));
+				/*if(icon instanceof JunctionIcon)
+				{
+					JunctionIcon j = (JunctionIcon) icon;
+					if(j.reg.Direction == Orientation.Even)
+					{
+						i.comp.setBounds((icon.id.x + 10) * 30, (icon.id.y - 6) * 73, 38, 73);
+						layout.add(i.comp);
+						continue;
+					}
+					if(j.reg.Direction == Orientation.Odd)
+					{
+						i.comp.setBounds((icon.id.x + 10) * 30 - 8, (icon.id.y - 6) * 73, 38, 73);
+						layout.add(i.comp);
+						continue;
+					}
+				}
+				i.comp.setBounds((icon.id.x + 10) * 30, (icon.id.y - 6) * 73, 30, 73);*/
 				layout.add(i.comp, g);
 			}
 		}
@@ -115,7 +136,7 @@ public class GUI
 				});
 		frame.add(itinerary, BorderLayout.SOUTH);
 	}
-	public void onSendCommand()
+	void onSendCommand()
 	{
 		String s = cajaTexto.getText();
 		cajaTexto.setText("");

@@ -31,13 +31,17 @@ import scrt.com.Serial;
 import scrt.com.packet.ID;
 import scrt.com.packet.JunctionData;
 import scrt.com.packet.JunctionID;
+import scrt.com.packet.JunctionLock;
 import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.JunctionSwitch;
 import scrt.com.packet.Packet;
+import scrt.com.packet.Packet.PacketType;
 import scrt.com.packet.StatePacket;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
+import scrt.ctc.Signal.MainSignal;
 import scrt.event.SRCTListener;
+import scrt.event.BlockEvent;
 import scrt.event.OccupationEvent;
 import scrt.gui.JunctionIcon;
 
@@ -47,10 +51,12 @@ public class Junction extends TrackItem
 	public Orientation Direction;
 	public Position Switch = Position.Straight;
 	public Position Class;
+	public int blockPosition = -1;
 	public int Locked = -1;
 	public int Muelle = -1;
 	TrackItem BackItem;
 	TrackItem FrontItems[] = new TrackItem[2];
+	public Junction CrossingLinked = null;
 	AxleCounter ReleaseCounter[] = new AxleCounter[2];
 	List<AxleCounter> StraightOccupier = new ArrayList<AxleCounter>();
 	List<AxleCounter> CurveOccupier = new ArrayList<AxleCounter>();
@@ -63,20 +69,48 @@ public class Junction extends TrackItem
 		Station = dep;
 		Class = p;
 		Direction = num%2==0 ? Orientation.Even : Orientation.Odd;
-		TrackItemID id = new TrackItemID();
-		id.x = x;
-		id.y = y;
-		id.stationNumber = Station.AssociatedNumber;
-		JunctionRegister reg = new JunctionRegister(getID(), id);
-		reg.Direction = Direction;
-		reg.Class = Class;
-		COM.send(reg);
+		send(PacketType.JunctionRegister);
 		updateState();
+	}
+	void send(PacketType type)
+	{
+		Packet p;
+		switch(type)
+		{
+			case JunctionRegister:
+				TrackItemID id = new TrackItemID();
+				id.x = x;
+				id.y = y;
+				id.stationNumber = Station.AssociatedNumber;
+				JunctionRegister reg = new JunctionRegister(getID(), id);
+				reg.Direction = Direction;
+				reg.Class = Class;
+				p = reg;
+				break;
+			case JunctionData:
+				JunctionData d = new JunctionData(getID());
+				d.BlockState = BlockState;
+				d.Occupied = Occupied;
+				d.Locked = Locked;
+				d.blockPosition = blockPosition;
+				d.Switch = Switch;
+				d.locking = locking;
+				p = d;
+				break;
+			default:
+				return;
+		}
+		COM.send(p);
 	}
 	public void userChangeSwitch()
 	{
 		if(Locked!=-1) return;
-		if(Muelle!=-1) Muelle = 1-Muelle;
+		if(Muelle!=-1)
+		{
+			Muelle = 1-Muelle;
+			updatePosition(Position.Straight);
+			return;
+		}
 		if(Switch==Position.Straight) setSwitch(Class);
 		else setSwitch(Position.Straight);
 	}
@@ -93,82 +127,149 @@ public class Junction extends TrackItem
 		if(t==BackItem) return FrontItems[Switch==Position.Straight ? 0 : 1];
 		return null;
 	}
-	public boolean LockedFor(TrackItem t)
+	public boolean canGetFrom(TrackItem prev)
 	{
-		if(BlockState == Orientation.None&&Locked == -1) return true;
+		if(prev == BackItem) return true;
+		if((prev == FrontItems[0]) ^ (Switch==Position.Straight)) return false;
+		return true;
+	}
+	public boolean blockedFor(TrackItem t, boolean check)
+	{
+		if(blockPosition == -1 && !check) return true;
+		if(blockPosition!=-1&&((t==FrontItems[0]&&blockPosition==0)||(t==FrontItems[1]&&blockPosition==1)||t==BackItem)) return true;
+		return false;
+	}
+	public boolean LockedFor(TrackItem t, boolean check)
+	{
+		if(Locked == -1 && !check) return true;
 		if(Locked!=-1&&((t==FrontItems[0]&&Locked==0)||(t==FrontItems[1]&&Locked==1)||t==BackItem)) return true;
 		return false;
 	}
 	boolean locking = false;
+	public void block(TrackItem t)
+	{
+		if(blockPosition == -1)
+		{
+			if(t==BackItem) blockPosition = Switch==Position.Straight ? 0 : 1;
+			else
+			{
+				if(FrontItems[0]==t) blockPosition = 0;
+				else blockPosition = 1;
+			}
+		}
+	}
 	public void lock(TrackItem t)
+	{
+		int val;
+		if(t==BackItem) val = Switch==Position.Straight ? 0 : 1;
+		else
+		{
+			if(FrontItems[0]==t) val = 0;
+			else val = 1;
+		}
+		lock(val);
+	}
+	public void lock(int val)
 	{
 		if(Locked == -1)
 		{
 			if(locking) return;
 			locking = true;
-			Timer timer = new Timer(2000, new ActionListener()
+			sendLockOrder(val);
+			if(val == 0 && Linked != null) Linked.lock(val);
+			updateState();
+		}
+	}
+	void sendLockOrder(int val)
+	{
+		Timer timer = new Timer(1000, new ActionListener()
+				{
+					@Override
+					public void actionPerformed(ActionEvent arg0)
 					{
-						@Override
-						public void actionPerformed(ActionEvent arg0)
-						{
-							if(t==BackItem) Locked = Switch==Position.Straight ? 0 : 1;
-							else
-							{
-								if(FrontItems[0]==t) Locked = 0;
-								else Locked = 1;
-							}
-							locking = false;
-							Orientation o = BlockState;
-							BlockState = Orientation.None;
-							setBlock(o);
-						}
-					});
-			timer.setRepeats(false);
-			timer.start();
+						JunctionLock l = new JunctionLock(getID());
+						l.order = false;
+						l.value = val;
+						load(l);
+					}
+				});
+		timer.setRepeats(false);
+		timer.start();
+	}
+	void updateLock(int lock)
+	{
+		if(Locked == lock) return;
+		locking = false;
+		Locked = lock;
+		blockChanged();
+	}
+	void tryToUnlock()
+	{
+		if(Locked == -1) return;
+		if(BlockState==Orientation.None&&(Occupied==Orientation.None||Occupied==Orientation.Unknown))
+		{
+			if(Linked == null || (Linked.BlockState==Orientation.None&&(Linked.Occupied==Orientation.None||Linked.Occupied==Orientation.Unknown)))
+			{
+				Locked = -1;
+				if(Linked != null) Linked.tryToUnlock();
+				blockChanged();
+			}
 		}
 	}
 	@Override
 	public void setBlock(Orientation o) 
 	{
-		if(o==Orientation.None&&(Occupied==Orientation.None||Occupied==Orientation.Unknown)) Locked = -1;
+		if(o == Orientation.None && Occupied == Orientation.None) blockPosition = -1;
 		super.setBlock(o);
+		tryToUnlock();
+	}
+	@Override
+	public void blockChanged()
+	{
+		super.blockChanged();
+		if(CrossingLinked!=null)
+		{
+			List<SRCTListener> list = new ArrayList<SRCTListener>(); 
+			list.addAll(CrossingLinked.listeners);
+			for(SRCTListener l : list)
+			{
+				l.actionPerformed(new BlockEvent(this, BlockState));
+			}
+		}
 	}
 	@Override
 	public void PerformAction(AxleCounter c, Orientation dir)
 	{
-		super.PerformAction(c, dir);
-		if(Occupied==Direction) Locked = Switch==Position.Straight ? 0 : 1;
+		if(Occupied==Direction)
+		{
+			blockPosition = Switch==Position.Straight ? 0 : 1;
+		}
 		else if(Occupied==Orientation.OppositeDir(Direction))
 		{
 			if(wasFree)
 			{
 				if(StraightOccupier.contains(c) && dir != Direction)
 				{
-					Switch = Position.Straight;
-					updatePosition();
-					Locked = 0;
+					blockPosition = 0;
+					updatePosition(Position.Straight);
 				}
 				else if(CurveOccupier.contains(c) && dir != Direction)
 				{
-					Switch = Class;
-					updatePosition();
-					Locked = 1;
+					blockPosition = 1;
+					updatePosition(Class);
 				}
 			}
 		}
-		if(Occupied==Orientation.None && Muelle!=-1) setSwitch(Muelle == 0 ? Position.Straight : Class);
-		if(BlockState==Orientation.None&&(Occupied==Orientation.None||Occupied==Orientation.Unknown)) Locked = -1;
+		super.PerformAction(c, dir);
+		if(Occupied==Orientation.None && Muelle!=-1) updatePosition(Muelle == 0 ? Position.Straight : Class);
+		if(Occupied==Orientation.None && BlockState == Orientation.None) blockPosition = -1;
+		tryToUnlock();
 		updateState();
 	}
 	@Override
 	public void updateState()
 	{
-		JunctionData d = new JunctionData(getID());
-		d.BlockState = BlockState;
-		d.Occupied = Occupied;
-		d.Locked = Locked;
-		d.Switch = Switch;
-		COM.send(d);
+		send(PacketType.JunctionData);
 	}
 	@Override
 	public void setCounters(Orientation dir)
@@ -299,8 +400,10 @@ public class Junction extends TrackItem
 			if(BackItem!=null) BackItem.setCounters(dir);
 		}
 	}
-	public void updatePosition()
+	public void updatePosition(Position p)
 	{
+		if(Occupied==Orientation.None&&Muelle!=-1) Switch = Muelle == 0 ? Position.Straight : Class;
+		else Switch = p;
 		updateState();
 		setCounters(Orientation.Both);
 		List<SRCTListener> list = new ArrayList<SRCTListener>();
@@ -313,14 +416,9 @@ public class Junction extends TrackItem
 	public boolean setSwitch(Position p)
 	{
 		//if(!Station.Opened) return false;
-		if(Occupied==Orientation.None&&Muelle!=-1) Switch = Muelle == 0 ? Position.Straight : Class;
-		else if(Switch!=p&&Occupied==Orientation.None&&BlockState==Orientation.None&&Locked==-1)
-		{
-			Switch = p;
-			if(Linked!=null&&Linked.Switch != Switch) Linked.setSwitch(p);
-		}
-		else return false;
-		updatePosition();
+		if(!(Switch!=p&&Occupied==Orientation.None&&BlockState==Orientation.None&&Locked==-1)) return false;
+		updatePosition(p);
+		if(Linked!=null&&Linked.Switch != p) Linked.setSwitch(p);
 		return true;
 	}
 	public boolean connectsTo(Orientation dir, TrackItem t)
@@ -376,21 +474,27 @@ public class Junction extends TrackItem
 	@Override
 	public void load(Packet p)
 	{
-		if(p instanceof JunctionSwitch)
+		if(p instanceof StatePacket)
 		{
-			if(!((JunctionSwitch)p).id.equals(getID())) return;
-			if(((JunctionSwitch) p).force)
+			if(!((StatePacket)p).id.equals(getID())) return;
+			if(p instanceof JunctionLock)
 			{
-				Switch = Switch == Position.Straight ? Class : Position.Straight;
-				updatePosition();
+				JunctionLock l = (JunctionLock)p;
+				if(!l.order) updateLock(l.value);
 			}
-			else userChangeSwitch();
-		}
-		if(p instanceof JunctionData)
-		{
-			JunctionData d = (JunctionData)p;
-			if(!d.id.equals(getID())) return;
-			if(d.BlockState == Orientation.None && BlockState == Orientation.Unknown) setBlock(Orientation.None);
+			if(p instanceof JunctionSwitch)
+			{
+				if(((JunctionSwitch) p).force)
+				{
+					updatePosition(Switch == Position.Straight ? Class : Position.Straight);
+				}
+				else userChangeSwitch();
+			}
+			if(p instanceof JunctionData)
+			{
+				JunctionData d = (JunctionData)p;
+				if(d.BlockState == Orientation.None && BlockState == Orientation.Unknown) setBlock(Orientation.None);
+			}
 		}
 	}
 	@Override

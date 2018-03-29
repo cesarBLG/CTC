@@ -13,7 +13,7 @@ public class Station {
 	public String FullName;
 	public int AssociatedNumber = 0;
 	public boolean Opened = true;
-	List<Signal> Signals = new ArrayList<Signal>();
+	public List<Signal> Signals = new ArrayList<Signal>();
 	public List<TrackItem> Items = new ArrayList<TrackItem>();
 	List<Train> Trains = new ArrayList<Train>();
 	public boolean ML = false;

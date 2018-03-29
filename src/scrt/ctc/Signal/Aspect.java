@@ -8,5 +8,7 @@ Rebase,
 Precaucion,
 Anuncio_parada,
 Anuncio_precaucion,
+Preanuncio,
+Via_libre_condicional,
 Via_libre
 }
