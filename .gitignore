@@ -5,3 +5,5 @@ lib/
 *.class
 
 .DS_Store
+/nbproject/private/
+/dist/
