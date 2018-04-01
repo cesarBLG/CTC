@@ -1,28 +1,20 @@
 package scrt.gui;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 
-import scrt.Main;
-import scrt.Orientation;
 import scrt.ctc.CommandParser;
 import scrt.ctc.Loader;
-import scrt.ctc.TrackItem;
-import scrt.ctc.Signal.FixedSignal;
-
-import javax.swing.JFrame;
 
 public class GUI
 {
@@ -31,10 +23,10 @@ public class GUI
 	private JLabel etiqueta;
 	private JFrame frame;
 	Loader l;
-	public GUI()
+	public GUI(Loader l)
 	{
 		//while(!JOptionPane.showInputDialog(null, "Introduzca contraseña").equals("1234"));
-		l = Main.l;
+		this.l = l;
 		frame = new JFrame();
 		frame.setLayout(new BorderLayout());
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -44,58 +36,11 @@ public class GUI
 	void Start()
 	{
 		frame.setJMenuBar(new Menu(l));
-		setTrackLayout();
+		new TrackLayout(frame);
 		setItineraryFrame();
 		frame.pack();
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setVisible(true);
-	}
-	void setTrackLayout()
-	{
-		JPanel layout = new JPanel();
-		layout.setBackground(Color.black);
-		layout.setLayout(new GridBagLayout());
-		layout.setBorder(new EmptyBorder(20,20,20,20));
-		//layout.setLayout(null);
-		GridBagConstraints g = new GridBagConstraints();
-		g.fill = GridBagConstraints.BOTH;
-		g.anchor = GridBagConstraints.CENTER;
-		g.gridx = g.gridy = 0;
-		g.insets = new Insets(0, 0, 0, 0);
-		g.gridheight = 1;
-		for(CTCIcon i : CTCIcon.items)
-		{
-			if(i instanceof TrackIcon)
-			{
-				TrackIcon icon = (TrackIcon) i;
-				g.gridx = icon.id.x + 40;
-				g.gridy = icon.id.y;
-				i.comp.setMinimumSize(new Dimension(30, 73));
-				i.comp.setPreferredSize(new Dimension(30, 73));
-				i.comp.setMaximumSize(new Dimension(30, 73));
-				/*if(icon instanceof JunctionIcon)
-				{
-					JunctionIcon j = (JunctionIcon) icon;
-					if(j.reg.Direction == Orientation.Even)
-					{
-						i.comp.setBounds((icon.id.x + 10) * 30, (icon.id.y - 6) * 73, 38, 73);
-						layout.add(i.comp);
-						continue;
-					}
-					if(j.reg.Direction == Orientation.Odd)
-					{
-						i.comp.setBounds((icon.id.x + 10) * 30 - 8, (icon.id.y - 6) * 73, 38, 73);
-						layout.add(i.comp);
-						continue;
-					}
-				}
-				i.comp.setBounds((icon.id.x + 10) * 30, (icon.id.y - 6) * 73, 30, 73);*/
-				layout.add(i.comp, g);
-			}
-		}
-		JScrollPane pane = new JScrollPane(layout);
-		pane.getHorizontalScrollBar().setUnitIncrement(20);
-		frame.add(pane);
 	}
 	void setItineraryFrame()
 	{
@@ -110,6 +55,7 @@ public class GUI
 		itinerary.add(botonEnviar);
 		cajaTexto.addKeyListener(new KeyListener()
 				{
+					@Override
 					public void keyPressed(KeyEvent k)
 					{
 						if(k.getKeyCode()==KeyEvent.VK_ENTER) botonEnviar.doClick();
@@ -129,6 +75,7 @@ public class GUI
 				});
 		botonEnviar.addActionListener(new ActionListener()
 				{
+					@Override
 					public void actionPerformed(ActionEvent e)
 					{
 						onSendCommand();

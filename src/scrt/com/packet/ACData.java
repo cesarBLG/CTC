@@ -1,13 +1,13 @@
 package scrt.com.packet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import scrt.Orientation;
-import scrt.gui.CTCIcon;
-import scrt.gui.TrackIcon;
 
-public class ACData extends StatePacket
+public class ACData extends StatePacket implements DataPacket
 {
 	public Orientation dir = Orientation.None;
 	public ACData(ACID id)
@@ -23,5 +23,11 @@ public class ACData extends StatePacket
 		data.add(dir.ordinal());
 		return fromList(data);
 	}
-
+	public static ACData byState(InputStream i) throws IOException
+	{
+		i.read();
+		ACData ac = new ACData(new ACID(i));
+		ac.dir = Orientation.values()[i.read()];
+		return ac;
+	}
 }

@@ -1,16 +1,9 @@
 package scrt.ctc.Signal;
 
-import java.awt.Color;
-import java.awt.Font;
-
-import javax.swing.ImageIcon;
-
 import scrt.Orientation;
 import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
 import scrt.event.SRCTEvent;
-import scrt.gui.CTCIcon;
-import scrt.gui.SignalIcon;
 
 public class ExitIndicator extends Signal{
 	MainSignal MainSignal = null;

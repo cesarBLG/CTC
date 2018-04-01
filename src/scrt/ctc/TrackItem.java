@@ -1,52 +1,26 @@
 package scrt.ctc;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-
 import scrt.Orientation;
 import scrt.com.COM;
-import scrt.com.Serial;
 import scrt.com.packet.ID;
-import scrt.com.packet.JunctionData;
-import scrt.com.packet.JunctionID;
-import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
 import scrt.com.packet.Packet.PacketType;
-import scrt.com.packet.StatePacket;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.TrackRegister;
-import scrt.ctc.Signal.ExitIndicator;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 import scrt.event.AxleEvent;
 import scrt.event.BlockEvent;
-import scrt.event.SRCTEvent;
-import scrt.event.SRCTListener;
 import scrt.event.EventType;
 import scrt.event.OccupationEvent;
-import scrt.gui.TrackIcon;
-import scrt.regulation.Place;
-import scrt.regulation.grp.GRP;
+import scrt.event.SRCTEvent;
+import scrt.event.SRCTListener;
 import scrt.regulation.train.Train;
 
 public class TrackItem extends CTCItem{
@@ -74,7 +48,7 @@ public class TrackItem extends CTCItem{
 	public void setSignal(Signal sig)
 	{
 		SignalLinked = sig;
-		COM.send(new LinkPacket(getID(), SignalLinked.getID()));
+		COM.toSend(new LinkPacket(getID(), SignalLinked.getID()));
 	}
 	TrackItem()
 	{
@@ -527,12 +501,12 @@ public class TrackItem extends CTCItem{
 			default:
 				return;
 		}
-		COM.send(p);
+		COM.toSend(p);
 	}
 	public void setCounterLinked(AxleCounter ac, Orientation dir)
 	{
 		CounterLinked = ac;
 		CounterDir = dir;
-		COM.send(new LinkPacket(getID(), ac.getID()));
+		COM.toSend(new LinkPacket(getID(), ac.getID()));
 	}
 }

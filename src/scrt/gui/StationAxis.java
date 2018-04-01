@@ -3,16 +3,13 @@ package scrt.gui;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTick;
 import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.axis.Tick;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.text.TextUtilities;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.TextAnchor;
 

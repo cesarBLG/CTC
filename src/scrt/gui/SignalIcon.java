@@ -3,47 +3,27 @@ package scrt.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 import scrt.Orientation;
-import scrt.com.packet.ID;
 import scrt.com.packet.Packet;
-import scrt.com.packet.StatePacket;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalID;
 import scrt.com.packet.SignalRegister;
-import scrt.ctc.CTCItem;
 import scrt.ctc.Signal.Aspect;
-import scrt.ctc.Signal.ExitIndicator;
-import scrt.ctc.Signal.FixedSignal;
-import scrt.ctc.Signal.MainSignal;
-import scrt.ctc.Signal.Signal;
 import scrt.ctc.Signal.SignalType;
 
 public class SignalIcon extends CTCIcon {
@@ -70,7 +50,7 @@ public class SignalIcon extends CTCIcon {
 		comp = new JPanel();
 		comp.setLayout(new BorderLayout());
 		comp.setOpaque(false);
-		name = new JLabel(id.Name);
+		name = new JLabel(reg.Name);
 		name.setHorizontalAlignment(id.Direction == Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
 		name.setFont(new Font("Tahoma", 0, 10));
 		name.setForeground(Color.WHITE);
@@ -129,45 +109,49 @@ public class SignalIcon extends CTCIcon {
 				sigIcon.add(pie);
 			}
 			popup = new JPopupMenu();
-			popup.add(id.Name);
+			popup.add(reg.Name);
 			popup.addSeparator();
 			close.addActionListener(new ActionListener()
 					{
+						@Override
 						public void actionPerformed(ActionEvent arg0) {
 							sig.UserRequest = !sig.ClearRequest;
-							CTCItem.PacketManager.handlePacket(sig);
+							reader.send(sig);
 						}
 				
 					});
 			override.addActionListener(new ActionListener()
 					{
+						@Override
 						public void actionPerformed(ActionEvent arg0) {
 							if(sig.OverrideRequest && sig.ClearRequest)
 							{
 								sig.UserRequest = false;
 								sig.OverrideRequest = false;
-								CTCItem.PacketManager.handlePacket(sig);
+								reader.send(sig);
 							}
 							else
 							{
 								sig.OverrideRequest = true;
 								sig.UserRequest = true;
-								CTCItem.PacketManager.handlePacket(sig);
+								reader.send(sig);
 							}
 						}
 				
 					});
 			auto.addActionListener(new ActionListener()
 					{
+						@Override
 						public void actionPerformed(ActionEvent arg0) {
 							sig.Automatic = !sig.Automatic;
-							CTCItem.PacketManager.handlePacket(sig);
+							reader.send(sig);
 						}
 				
 					});
 			JMenuItem config = new JMenuItem("Configuración");
 			config.addActionListener(new ActionListener()
 			{
+				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					
 				}
@@ -210,7 +194,7 @@ public class SignalIcon extends CTCIcon {
 							if(arg0.getButton()==MouseEvent.BUTTON1)
 							{
 								sig.UserRequest = true;
-								CTCItem.PacketManager.handlePacket(sig);
+								reader.send(sig);
 							}
 						}
 

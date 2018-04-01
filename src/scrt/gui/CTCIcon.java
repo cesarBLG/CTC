@@ -1,32 +1,27 @@
 package scrt.gui;
 
-import java.awt.Component;
+import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import scrt.com.packet.ID;
 import scrt.com.packet.JunctionRegister;
-import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packable;
 import scrt.com.packet.Packet;
-import scrt.com.packet.StatePacket;
 import scrt.com.packet.PacketManager;
-import scrt.com.packet.ElementType;
-import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalRegister;
 import scrt.com.packet.TrackRegister;
-import scrt.ctc.CTCItem;
-import scrt.ctc.Signal.Signal;
-import scrt.ctc.Signal.SignalType;
-import scrt.event.SRCTEvent;
 
 public abstract class CTCIcon implements Packable {
 	public abstract void update();
 	static List<CTCIcon> items = new ArrayList<CTCIcon>();
 	public JPanel comp;
+	public static Reader reader;
+	public static CTCIcon icon;
+	public static GridBagConstraints gbc;
+	public static JPanel layout;
 	public static PacketManager PacketManager = new PacketManager()
 			{
 				@Override

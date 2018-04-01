@@ -8,9 +8,9 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 import scrt.FunctionalList;
+import scrt.event.ListEvent;
 import scrt.event.SRCTEvent;
 import scrt.event.SRCTListener;
-import scrt.event.ListEvent;
 
 public class FunctionalListModel<E> implements ListModel<E>, SRCTListener {
 	List<E> list;

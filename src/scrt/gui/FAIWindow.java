@@ -2,19 +2,12 @@ package scrt.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
 
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,7 +17,6 @@ import javax.swing.JTabbedPane;
 import scrt.regulation.grp.GRP;
 import scrt.regulation.grp.GRPManager;
 import scrt.regulation.grp.GRPRule;
-import scrt.regulation.train.Train.TrainClass;
 
 public class FAIWindow extends JFrame {
 	public FAIWindow(GRPManager grpManager)

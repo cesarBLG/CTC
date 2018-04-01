@@ -3,42 +3,29 @@ package scrt.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.SwingConstants;
-import javax.swing.JRadioButton;
 import java.awt.GridLayout;
-import javax.swing.JLabel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JCheckBox;
-import javax.swing.AbstractAction;
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import java.awt.event.ActionListener;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.border.EmptyBorder;
 
 import scrt.Orientation;
 import scrt.ctc.TrackItem;
 import scrt.regulation.grp.GRP;
 import scrt.regulation.grp.GRPRule;
-import scrt.regulation.grp.TrainCondition;
-import scrt.regulation.train.Train;
 import scrt.regulation.train.Train.TrainClass;
-
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultListModel;
-import javax.swing.AbstractListModel;
-import javax.swing.ListModel;
-import java.awt.Rectangle;
-import java.awt.ComponentOrientation;
 
 public class FAIRuleCreator extends JDialog {
 

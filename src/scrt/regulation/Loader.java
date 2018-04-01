@@ -1,15 +1,9 @@
 package scrt.regulation;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
-
 import scrt.FunctionalList;
-import scrt.Orientation;
 import scrt.gui.TrafficGraph;
 import scrt.regulation.train.Train;
 

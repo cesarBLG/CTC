@@ -5,17 +5,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 
-import javax.swing.JOptionPane;
-
-import gnu.io.*;
-import scrt.Main;
-import scrt.Orientation;
-import scrt.com.tcp.TCP;
-import scrt.ctc.AxleCounter;
-import scrt.ctc.Junction;
-import scrt.ctc.Position;
-import scrt.ctc.TrackItem;
-import scrt.ctc.Signal.Signal;
+import gnu.io.CommPortIdentifier;
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 
 public class Serial implements Device {
 	private SerialPort sp;
@@ -49,6 +42,7 @@ public class Serial implements Device {
 			Input = sp.getInputStream();
 			sp.addEventListener(new SerialPortEventListener()
 					{
+						@Override
 						public void serialEvent(SerialPortEvent e)
 						{
 							Receive();
@@ -80,6 +74,7 @@ public class Serial implements Device {
 		}
 		catch(IOException e){}
 	}
+	@Override
 	public void write(int a)
 	{
 		if(!Connected) return;
@@ -93,12 +88,7 @@ public class Serial implements Device {
 	{
 		try
 		{
-			if(Input.available() >= 5)
-			{
-				byte data[] = new byte[5];
-				Input.read(data, 0, 5);
-				COM.parse(data);
-			}
+			parse(Input);
 		}
 		catch(IOException e){}
 	}
@@ -111,7 +101,6 @@ public class Serial implements Device {
 		} 
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

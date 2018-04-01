@@ -1,22 +1,20 @@
 package scrt.gui;
 
-import java.awt.EventQueue;
-
-import javax.swing.JDialog;
-import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import javax.swing.JList;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import java.awt.GridBagLayout;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
-import javax.swing.border.EmptyBorder;
+
+import javax.swing.BoxLayout;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
-import java.awt.Dimension;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 
 public class TrainWindow extends JDialog
 {

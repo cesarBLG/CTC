@@ -1,14 +1,13 @@
 package scrt.com.packet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import scrt.Orientation;
 import scrt.ctc.Signal.Aspect;
-import scrt.ctc.Signal.Signal;
-import scrt.ctc.Signal.SignalType;
 
-public class SignalData extends StatePacket
+public class SignalData extends StatePacket implements DataPacket
 {
 	public SignalData(SignalID packetID)
 	{
@@ -32,8 +31,15 @@ public class SignalData extends StatePacket
 		data.add(ClearRequest ? 1 : 0);
 		return fromList(data);
 	}
-	public static StatePacket byState(byte[] data)
+	public static SignalData byState(InputStream d) throws IOException
 	{
-		return null;
+		d.read();
+		var s = new SignalData(new SignalID(d));
+		s.SignalAspect = Aspect.values()[d.read()];
+		s.Automatic = d.read() == 1;
+		s.UserRequest = d.read() == 1;
+		s.OverrideRequest = d.read() == 1;
+		s.ClearRequest = d.read() == 1;
+		return s;
 	}
 }

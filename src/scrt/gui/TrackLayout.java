@@ -1,0 +1,47 @@
+package scrt.gui;
+
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
+
+public class TrackLayout
+{
+	public static boolean external = false;
+	public static void main(String[] args) 
+	{
+		external = true;
+		JFrame frame = new JFrame();
+		new TrackLayout(frame);
+		frame.pack();
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+	}
+	public TrackLayout(Container c)
+	{
+		JPanel layout = new JPanel();
+		layout.setBackground(Color.black);
+		layout.setLayout(new GridBagLayout());
+		layout.setBorder(new EmptyBorder(20,20,20,20));
+		GridBagConstraints g = new GridBagConstraints();
+		g.fill = GridBagConstraints.BOTH;
+		g.anchor = GridBagConstraints.CENTER;
+		g.gridx = g.gridy = 0;
+		g.insets = new Insets(0, 0, 0, 0);
+		g.gridheight = 1;
+		CTCIcon.gbc = g;
+		CTCIcon.layout = layout;
+		CTCIcon.reader = new Reader();
+		JScrollPane pane = new JScrollPane(layout);
+		pane.getHorizontalScrollBar().setUnitIncrement(20);
+		c.add(pane);
+	}
+}

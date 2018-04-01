@@ -7,12 +7,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
-import scrt.Main;
 import scrt.Orientation;
 import scrt.com.COM;
-import scrt.com.tcp.TCP;
 import scrt.ctc.Signal.Aspect;
 import scrt.ctc.Signal.EoT;
 import scrt.ctc.Signal.ExitIndicator;
@@ -32,10 +28,9 @@ public class Loader {
 	public Loader()
 	{
 		COM.initialize();
-		Main.l = this;
 		parseLayoutFile(new File("layout.txt"));
 		grpManager = new GRPManager(this);
-		new GUI();
+		new GUI(this);
 	}
 	void parseLayoutFile(File layout)
 	{

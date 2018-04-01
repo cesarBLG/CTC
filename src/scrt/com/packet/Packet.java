@@ -1,10 +1,11 @@
 package scrt.com.packet;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-public abstract class Packet implements Serializable
+public abstract class Packet
 {
 	public enum PacketType
 	{
@@ -27,19 +28,16 @@ public abstract class Packet implements Serializable
 	{
 		type = PacketType.valueOf(this.getClass().getSimpleName());
 	}
-	public static StatePacket byState(byte[] data)
+	public static Packet byState(InputStream in) throws IOException
 	{
 		try
 		{
-			Class<?> c = Class.forName(PacketType.values()[data[0]].name());
-			if(c.isAssignableFrom(Packet.class))
-			{
-				c.getMethod("byState", byte[].class).invoke(data);
-			}
+			Class<?> c = Class.forName("scrt.com.packet.".concat(PacketType.values()[in.read()].name()));
+			return (Packet) c.getMethod("byState", InputStream.class).invoke(null, in);
 		}
 		catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
 		{
-			
+			e.printStackTrace();
 		}
 		return null;
 	}

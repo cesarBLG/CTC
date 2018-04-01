@@ -1,9 +1,9 @@
 package scrt.com.packet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.JOptionPane;
 
 public class LinkPacket extends Packet
 {
@@ -22,5 +22,9 @@ public class LinkPacket extends Packet
 		data.addAll(id1.getId());
 		data.addAll(id2.getId());
 		return fromList(data);
+	}
+	public static LinkPacket byState(InputStream i) throws IOException
+	{
+		return new LinkPacket(ID.byState(i), ID.byState(i));
 	}
 }

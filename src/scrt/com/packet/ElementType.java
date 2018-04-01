@@ -3,8 +3,7 @@ package scrt.com.packet;
 public enum ElementType
 {
 	Signal,
-	Itinerary,
-	AxleCounter,
+	AC,
 	TrackItem,
-	Switch
+	Junction
 }

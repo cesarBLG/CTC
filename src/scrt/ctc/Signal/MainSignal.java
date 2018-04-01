@@ -1,29 +1,13 @@
 package scrt.ctc.Signal;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Image;
-import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
 import javax.swing.Timer;
 
 import scrt.Orientation;
-import scrt.com.packet.StatePacket;
 import scrt.com.packet.Packet;
 import scrt.com.packet.SignalData;
 import scrt.ctc.Clock;
@@ -34,13 +18,8 @@ import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
 import scrt.ctc.TrackItem.TrackComparer;
 import scrt.event.AxleEvent;
-import scrt.event.BlockEvent;
-import scrt.event.SRCTEvent;
-import scrt.event.SRCTListener;
 import scrt.event.EventType;
-import scrt.event.OccupationEvent;
-import scrt.event.SignalEvent;
-import scrt.gui.SignalIcon;
+import scrt.event.SRCTEvent;
 import scrt.log.Logger;
 
 public class MainSignal extends Signal{

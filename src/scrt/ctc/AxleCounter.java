@@ -1,17 +1,12 @@
 package scrt.ctc;
 
-import java.awt.event.ActionListener;
-import java.util.*;
-
-import javax.swing.JOptionPane;
+import java.util.ArrayList;
+import java.util.List;
 
 import scrt.Orientation;
 import scrt.com.packet.ACData;
 import scrt.com.packet.ACID;
-import scrt.com.packet.ID;
-import scrt.com.packet.Packable;
 import scrt.com.packet.Packet;
-import scrt.com.packet.StatePacket;
 import scrt.event.AxleEvent;
 import scrt.event.SRCTEvent;
 import scrt.event.SRCTListener;

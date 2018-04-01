@@ -4,13 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import scrt.FunctionalList;
-import scrt.Orientation;
-import scrt.event.SRCTEvent;
-import scrt.event.SRCTListener;
-import scrt.event.ListEvent;
 import scrt.regulation.timetable.TimetableEntry;
 import scrt.regulation.train.Train;
 

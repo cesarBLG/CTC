@@ -3,11 +3,10 @@ package scrt.regulation.train;
 import java.util.ArrayList;
 import java.util.List;
 
-import scrt.*;
+import scrt.Orientation;
 import scrt.ctc.TrackItem;
 import scrt.regulation.timetable.Timetable;
-import scrt.regulation.timetable.TimetableEntry;
-import scrt.regulation.train.Engine.*;
+import scrt.regulation.train.Engine.PowerClass;
 
 public class Train {
 	public enum TrainClass

@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import scrt.event.SRCTListener;
 import scrt.event.ListEvent;
+import scrt.event.SRCTListener;
 
 public class FunctionalList<E> implements List<E>{
 	List<E> list;

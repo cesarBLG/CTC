@@ -13,7 +13,6 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import scrt.ctc.Loader;
-import scrt.regulation.grp.GRPManager;
 
 public class Menu extends JMenuBar {
 	public Menu(Loader l)
@@ -39,7 +38,7 @@ public class Menu extends JMenuBar {
 				{
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						new StationWindow();
+						new StationWindow(l);
 					}
 					
 				});

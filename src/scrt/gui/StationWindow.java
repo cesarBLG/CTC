@@ -12,17 +12,15 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import scrt.*;
+import scrt.ctc.Loader;
 import scrt.ctc.Station;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 
 public class StationWindow extends JDialog {
-	public StationWindow()
+	public StationWindow(Loader l)
 	{
 		super();
 		setTitle("Estaciones");
@@ -42,7 +40,7 @@ public class StationWindow extends JDialog {
 		g.gridx++;
 		g.gridy++;
 		Hashtable<Station, JComboBox<String>[]>  state = new Hashtable<Station, JComboBox<String>[]>();
-		for(Station s : Main.l.stations)
+		for(Station s : l.stations)
 		{
 			if(s.AssociatedNumber==0) continue;
 			g.gridx = 0;

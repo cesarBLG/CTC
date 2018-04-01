@@ -3,26 +3,23 @@ package scrt.com;
 import java.util.ArrayList;
 import java.util.List;
 
-import scrt.Main;
-import scrt.Orientation;
+import scrt.com.packet.DataPacket;
+import scrt.com.packet.ItineraryRegister;
+import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
+import scrt.com.packet.RegisterPacket;
 import scrt.com.packet.StatePacket;
-import scrt.com.tcp.ClientListener;
 import scrt.com.tcp.TCP;
-import scrt.ctc.AxleCounter;
 import scrt.ctc.CTCItem;
-import scrt.ctc.Junction;
-import scrt.ctc.Position;
-import scrt.ctc.TrackItem;
-import scrt.ctc.Signal.Signal;
-import scrt.event.SRCTEvent;
-import scrt.gui.CTCIcon;
+import scrt.ctc.Itinerary;
 
 public class COM
 {
 	static List<Device> devs = new ArrayList<Device>();
 	public static void initialize()
 	{
+		com1.start();
+		com2.start();
 		new TCP().initialize();
 		/*Serial serial = new Serial();
 		serial.begin(9600);
@@ -31,6 +28,18 @@ public class COM
 	public static void addDevice(Device d)
 	{
 		devs.add(d);
+		for(Packet p : registers)
+		{
+			d.write(p.getState());
+		}
+		for(Packet p : linkers)
+		{
+			d.write(p.getState());
+		}
+		for(Packet p : data)
+		{
+			d.write(p.getState());
+		}
 	}
 	public static void write(int a)
 	{
@@ -40,41 +49,85 @@ public class COM
 	{
 		for(Device dev : devs) dev.write(data);
 	}
+	static List<Packet> registers = new ArrayList<Packet>();
+	static List<LinkPacket> linkers = new ArrayList<LinkPacket>();
+	static List<Packet> data = new ArrayList<Packet>();
+	public static void toSend(Packet p)
+	{
+		synchronized(outQueue)
+		{
+			outQueue.add(p);
+			outQueue.notify();
+		}
+	}
 	public static void send(Packet p)
 	{
-		CTCIcon.PacketManager.handlePacket(p);
+		if(p instanceof RegisterPacket) registers.add(p);
+		else if(p instanceof LinkPacket) linkers.add((LinkPacket) p);
+		else if(p instanceof DataPacket)
+		{
+			data.removeIf((packet) -> packet instanceof StatePacket && ((StatePacket)packet).id == ((StatePacket)p).id);
+			data.add(p);
+		}
 		write(p.getState());
 		return;
 	}
-	public static void parse(byte[] data)
+	static List<Packet> inQueue = new ArrayList<Packet>();
+	static List<Packet> outQueue = new ArrayList<Packet>();
+	static Thread com1 = new Thread(new Runnable()
 	{
-		StatePacket p = StatePacket.byState(data);
-		CTCItem.PacketManager.handlePacket(p);
-		data[0] = (byte) (data[0] & 0xEFFF);
-	    if(data[0]==1)
-	    {
-	       for(AxleCounter ac : Main.l.counters)
-	       {
-	    	   if(ac.Station.AssociatedNumber == data[1] && ac.Number == data[2])
-	    	   {
-    			   if(data[4]==0) ac.EvenPassed();
-    			   else ac.OddPassed();
-	    	   }
-	       }
-	    }
-	    if(data[0]==4)
-	    {
-	    	for(TrackItem t : Main.l.items)
-	    	{
-	    		if(t.Station.AssociatedNumber == data[1] && t.x == data[2] && t.y == data[3])
-	    		{
-	    			if(data[4]==4 && !t.Acknowledged)
-	    			{
-	    				t.Acknowledged = true;
-	    				t.updateState();
-	    			}
-	    		}
-	    	}
-	    }
-	}
+		@Override
+		public void run()
+		{
+			while(true)
+			{
+				synchronized(outQueue)
+				{
+					if(outQueue.size()!=0)
+					{
+						send(outQueue.remove(0));
+					}
+					else
+						try
+						{
+							outQueue.wait();
+						}
+						catch (InterruptedException e)
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+				}
+			}
+		}
+	});
+	static Thread com2 = new Thread(new Runnable()
+	{
+		@Override
+		public void run()
+		{
+			while(true)
+			{
+				synchronized(inQueue)
+				{
+					if(inQueue.size()!=0)
+					{
+						Packet p = inQueue.remove(0);
+						if(p instanceof ItineraryRegister) Itinerary.handlePacket(p);
+						else CTCItem.PacketManager.handlePacket(p);
+					}
+					else
+						try
+						{
+							inQueue.wait();
+						}
+						catch (InterruptedException e)
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+				}
+			}
+		}
+	});
 }

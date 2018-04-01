@@ -1,12 +1,7 @@
 package scrt.ctc.Signal;
 
 import scrt.Orientation;
-import scrt.com.COM;
 import scrt.ctc.Station;
-import scrt.event.SRCTListener;
-import scrt.event.SignalEvent;
-import scrt.gui.CTCIcon;
-import scrt.gui.SignalIcon;
 
 public class FixedSignal extends MainSignal {
 	public FixedSignal(String s, Orientation dir, Aspect a, Station dep) {

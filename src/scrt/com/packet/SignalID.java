@@ -1,5 +1,7 @@
 package scrt.com.packet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import scrt.Orientation;
@@ -10,12 +12,16 @@ public class SignalID extends ID
 	public SignalType Class;
 	public int Number;
 	public int Track;
-	public String Name;
 	public Orientation Direction;
-	public SignalID()
+	public SignalID(InputStream b) throws IOException
 	{
-		type = ElementType.Signal;
+		super(b);
+		Class = SignalType.values()[b.read()];
+		Number = b.read();
+		Track = b.read();
+		Direction = ((Number % 2) == 0) ? Orientation.Even : Orientation.Odd;
 	}
+	public SignalID(){}
 	@Override
 	public List<Integer> getId()
 	{

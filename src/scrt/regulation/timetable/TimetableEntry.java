@@ -1,13 +1,7 @@
 package scrt.regulation.timetable;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
 
-import javax.swing.JOptionPane;
-
-import scrt.ctc.TrackItem;
 import scrt.regulation.OccupationInterval;
 import scrt.regulation.Place;
 import scrt.regulation.Track;

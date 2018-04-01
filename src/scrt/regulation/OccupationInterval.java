@@ -2,8 +2,6 @@ package scrt.regulation;
 
 import java.util.Date;
 
-import scrt.Orientation;
-
 public class OccupationInterval {
 	Date entryTime;
 	Date exitTime;

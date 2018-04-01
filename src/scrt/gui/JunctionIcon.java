@@ -20,18 +20,11 @@ import javax.swing.Timer;
 import scrt.Orientation;
 import scrt.com.packet.ID;
 import scrt.com.packet.JunctionData;
-import scrt.com.packet.StatePacket;
-import scrt.com.packet.TrackItemID;
 import scrt.com.packet.JunctionID;
 import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.JunctionSwitch;
 import scrt.com.packet.Packet;
-import scrt.ctc.CTCItem;
-import scrt.ctc.Junction;
 import scrt.ctc.Position;
-import scrt.ctc.TrackItem;
-import scrt.ctc.Signal.SignalType;
-import scrt.event.SRCTEvent;
 
 public class JunctionIcon extends TrackIcon {
 	
@@ -42,8 +35,8 @@ public class JunctionIcon extends TrackIcon {
 	JunctionID junctionID;
 	JunctionRegister reg;
 	public JunctionIcon(JunctionRegister reg) {
+		super(reg.TrackId);
 		this.reg = reg;
-		id = reg.TrackId;
 		junctionID = (JunctionID) reg.id;
 		comp.addMouseListener(new MouseListener()
 		{
@@ -75,12 +68,12 @@ public class JunctionIcon extends TrackIcon {
 				{
 					JunctionSwitch j = new JunctionSwitch(junctionID);
 					if(arg0.isAltDown()) j.force = true;
-					CTCItem.PacketManager.handlePacket(j);
+					reader.send(j);
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON1 && arg0.isControlDown())
 				{
 					data.BlockState = Orientation.None;
-					CTCItem.PacketManager.handlePacket(data);
+					reader.send(data);
 				}
 			}
 			@Override

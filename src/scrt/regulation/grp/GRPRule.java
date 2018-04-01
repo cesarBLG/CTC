@@ -2,7 +2,6 @@ package scrt.regulation.grp;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
 import scrt.FunctionalList;
 import scrt.Orientation;

@@ -3,8 +3,6 @@ package scrt.com.packet;
 import java.util.ArrayList;
 import java.util.List;
 
-import scrt.gui.CTCIcon;
-
 public class PacketManager
 {
 	public List<Packable> items = new ArrayList<Packable>();

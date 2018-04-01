@@ -3,17 +3,9 @@ package scrt.ctc.Signal;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JLabel;
-
 import scrt.Orientation;
 import scrt.com.COM;
-import scrt.com.Serial;
-import scrt.com.packet.ID;
 import scrt.com.packet.Packet;
-import scrt.com.packet.StatePacket;
-import scrt.com.packet.TrackData;
-import scrt.com.packet.TrackItemID;
-import scrt.com.packet.TrackRegister;
 import scrt.com.packet.Packet.PacketType;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalID;
@@ -21,11 +13,8 @@ import scrt.com.packet.SignalRegister;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
-import scrt.event.SRCTEvent;
 import scrt.event.SRCTListener;
 import scrt.event.SignalEvent;
-import scrt.gui.CTCIcon;
-import scrt.gui.SignalIcon;
 
 public abstract class Signal extends CTCItem
 {
@@ -84,7 +73,6 @@ public abstract class Signal extends CTCItem
 		id.Class = Class;
 		id.Direction = Direction;
 		id.stationNumber = Station.AssociatedNumber;
-		id.Name = Name;
 		id.Number = Number;
 		id.Track = Track;
 		return id;
@@ -100,6 +88,7 @@ public abstract class Signal extends CTCItem
 		{
 			case SignalRegister:
 				SignalRegister reg = new SignalRegister(getID());
+				reg.Name = Name;
 				reg.Fixed = this instanceof FixedSignal;
 				reg.x = Linked.x;
 				reg.y = Linked.y;
@@ -118,6 +107,6 @@ public abstract class Signal extends CTCItem
 			default:
 				return;
 		}
-		COM.send(p);
+		COM.toSend(p);
 	}
 }

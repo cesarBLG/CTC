@@ -2,8 +2,6 @@ package scrt.event;
 
 import java.util.List;
 
-import scrt.*;
-
 public class SRCTEvent{
 	public EventType type;
 	public Object creator;

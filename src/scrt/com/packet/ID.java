@@ -1,5 +1,8 @@
 package scrt.com.packet;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +16,18 @@ public abstract class ID
 		l.add(type.ordinal());
 		l.add(stationNumber);
 		return l;
+	}
+	public ID() 
+	{
+		String name = this.getClass().getSimpleName();
+		type = ElementType.valueOf(name.substring(0, name.length() - 2));
+	}
+	public ID(InputStream b) throws IOException
+	{
+		//type = ElementType.values()[b.read()];
+		String name = this.getClass().getSimpleName();
+		type = ElementType.valueOf(name.substring(0, name.length() - 2));
+		stationNumber = b.read();
 	}
 	@Override
 	public boolean equals(Object packet)
@@ -29,5 +44,21 @@ public abstract class ID
 			return true;
 		}
 		return super.equals(packet);
+	}
+	public static ID byState(InputStream i) throws IOException
+	{
+		ID id = null;
+		try
+		{
+			Class<?> c = Class.forName("scrt.com.packet." + ElementType.values()[i.read()].name() + "ID");
+			id = (ID) c.getConstructor(InputStream.class).newInstance(i);
+		}
+		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException | ClassNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return id;
 	}
 }

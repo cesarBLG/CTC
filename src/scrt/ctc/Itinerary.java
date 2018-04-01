@@ -4,15 +4,9 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import scrt.Orientation;
-import scrt.com.packet.ID;
 import scrt.com.packet.ItineraryRegister;
-import scrt.com.packet.Packable;
 import scrt.com.packet.Packet;
-import scrt.com.packet.StatePacket;
-import scrt.com.packet.TrackItemID;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 

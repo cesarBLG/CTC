@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import scrt.FunctionalList;
 import scrt.Orientation;
 import scrt.regulation.timetable.TimetableEntry;

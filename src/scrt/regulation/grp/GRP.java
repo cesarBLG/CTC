@@ -1,19 +1,11 @@
 package scrt.regulation.grp;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.function.Predicate;
 
-import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
-import javax.swing.event.ListDataListener;
-
-import scrt.*;
+import scrt.FunctionalList;
 import scrt.ctc.Station;
-import scrt.event.SRCTEvent;
 import scrt.regulation.train.Train;
-import scrt.regulation.train.Train.TrainClass;
 
 public class GRP {
 	public Station station;

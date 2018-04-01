@@ -1,13 +1,8 @@
 package scrt.gui;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -17,44 +12,35 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-import javax.swing.border.EmptyBorder;
 
 import scrt.Orientation;
 import scrt.com.packet.ACData;
 import scrt.com.packet.ACID;
+import scrt.com.packet.ElementType;
 import scrt.com.packet.ID;
 import scrt.com.packet.ItineraryRegister;
 import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
-import scrt.com.packet.StatePacket;
-import scrt.com.packet.ElementType;
-import scrt.com.packet.SignalData;
+import scrt.com.packet.SignalID;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.TrackRegister;
-import scrt.ctc.AxleCounter;
-import scrt.ctc.CTCItem;
-import scrt.ctc.Itinerary;
-import scrt.ctc.TrackItem;
-import scrt.ctc.Signal.EoT;
-import scrt.ctc.Signal.ExitIndicator;
-import scrt.ctc.Signal.FixedSignal;
-import scrt.ctc.Signal.SignalType;
-import scrt.event.SRCTEvent;
 
 public class TrackIcon extends CTCIcon {
 	JLabel TrackIcon = new JLabel();
 	JLabel NumAxles = new JLabel();
-	TrackIcon()
+	TrackIcon(TrackItemID id)
 	{
+		this.id = id;
 		comp = new JPanel();
+		paint();
 	}
 	TrackRegister reg;
 	TrackItemID id;
 	TrackData data;
+	SignalID sigId;
 	SignalIcon signal;
 	ACID acid = null;
 	static TrackItemID ItineraryStart = null;
@@ -90,14 +76,14 @@ public class TrackIcon extends CTCIcon {
 					if(arg0.isControlDown())
 					{
 						data.BlockState = Orientation.None;
-						CTCItem.PacketManager.handlePacket(data);
+						reader.send(data);
 						return;
 					}
 					if(acid!=null)
 					{
 						ACData a = new ACData(acid);
 						a.dir = Orientation.Odd;
-						CTCItem.PacketManager.handlePacket(a);
+						reader.send(a);
 					}
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON2)
@@ -107,7 +93,7 @@ public class TrackIcon extends CTCIcon {
 					{
 						ItineraryRegister r = new ItineraryRegister(ItineraryStart, id);
 						r.dir = id.x > ItineraryStart.x ? Orientation.Even : Orientation.Odd;
-						Itinerary.handlePacket(r);
+						reader.send(r);
 						ItineraryStart = null;
 					}
 				}
@@ -117,7 +103,7 @@ public class TrackIcon extends CTCIcon {
 					{
 						ACData a = new ACData(acid);
 						a.dir = Orientation.Even;
-						CTCItem.PacketManager.handlePacket(a);
+						reader.send(a);
 					}
 				}
 			}
@@ -188,6 +174,7 @@ public class TrackIcon extends CTCIcon {
 			NumAxles.setBounds(0, 50, 30, 12);
 			comp.add(NumAxles);
 		}
+		paint();
 	}
 	public void setSignal(SignalIcon sig)
 	{
@@ -252,7 +239,7 @@ public class TrackIcon extends CTCIcon {
 			if(l.id1.equals(id)) link = l.id2;
 			else if(l.id2.equals(id)) link = l.id1;
 			else return;
-			if(link.type == ElementType.AxleCounter)
+			if(link.type == ElementType.AC)
 			{
 				acid = (ACID) link;
 				TrackIcon.setBorder(BorderFactory.createMatteBorder(0, acid.dir == Orientation.Odd ? 2 : 0, 0, acid.dir == Orientation.Odd ? 0 : 2, Color.black));
@@ -268,5 +255,14 @@ public class TrackIcon extends CTCIcon {
 			data = d;
 			update();
 		}
+	}
+	public void paint()
+	{
+		gbc.gridx = id.x + 40;
+		gbc.gridy = id.y;
+		comp.setMinimumSize(new Dimension(30, 73));
+		comp.setPreferredSize(new Dimension(30, 73));
+		comp.setMaximumSize(new Dimension(30, 73));
+		layout.add(comp, gbc);
 	}
 }

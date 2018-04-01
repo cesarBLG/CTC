@@ -3,12 +3,9 @@ package scrt.com.tcp;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
-import scrt.com.COM;
 import scrt.com.Device;
 
 public class ClientListener implements Device
@@ -25,7 +22,7 @@ public class ClientListener implements Device
 		this.socket = socket;
 		try
 		{
-			debug = socket.getInetAddress().equals(InetAddress.getByName(/*"192.168.2.3"*/"localhost"));
+			debug = socket.getInetAddress().equals(InetAddress.getByName("192.168.2.3"));
 			in = new DataInputStream(socket.getInputStream());
 			out = new DataOutputStream(socket.getOutputStream());
 		}
@@ -55,12 +52,7 @@ public class ClientListener implements Device
 					while(!socket.isClosed())
 					{
 						if(debug) System.out.print((char)in.readByte());
-						else if(in.available()>=5)
-						{
-							byte data[] = new byte[5];
-							in.read(data, 0, 5);
-							COM.parse(data);
-						}
+						else parse(in);
 					}
 				} 
 				catch (IOException e)
@@ -71,6 +63,7 @@ public class ClientListener implements Device
 			}
 		}).start();
 	}
+	@Override
 	public void write(int data)
 	{
 		try
@@ -83,6 +76,7 @@ public class ClientListener implements Device
 			//e.printStackTrace();
 		}
 	}
+	@Override
 	public void write(byte[] b)
 	{
 		try

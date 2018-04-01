@@ -1,34 +1,15 @@
 package scrt.ctc;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import scrt.Orientation;
 import scrt.com.COM;
-import scrt.com.Serial;
-import scrt.com.packet.ID;
 import scrt.com.packet.JunctionData;
 import scrt.com.packet.JunctionID;
 import scrt.com.packet.JunctionLock;
@@ -37,13 +18,10 @@ import scrt.com.packet.JunctionSwitch;
 import scrt.com.packet.Packet;
 import scrt.com.packet.Packet.PacketType;
 import scrt.com.packet.StatePacket;
-import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
-import scrt.ctc.Signal.MainSignal;
-import scrt.event.SRCTListener;
 import scrt.event.BlockEvent;
 import scrt.event.OccupationEvent;
-import scrt.gui.JunctionIcon;
+import scrt.event.SRCTListener;
 
 public class Junction extends TrackItem 
 {
@@ -100,7 +78,7 @@ public class Junction extends TrackItem
 			default:
 				return;
 		}
-		COM.send(p);
+		COM.toSend(p);
 	}
 	public void userChangeSwitch()
 	{

@@ -1,5 +1,7 @@
 package scrt.com.packet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,5 +19,11 @@ public class JunctionSwitch extends StatePacket
 		data.add(type.ordinal());
 		data.addAll(id.getId());
 		return fromList(data);
+	}
+	public static JunctionSwitch byState(InputStream i) throws IOException
+	{
+		i.read();
+		var js = new JunctionSwitch(new JunctionID(i));
+		return js;
 	}
 }
