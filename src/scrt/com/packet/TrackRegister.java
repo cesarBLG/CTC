@@ -15,7 +15,7 @@ public class TrackRegister extends StatePacket implements RegisterPacket
 		super(packetID);
 	}
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
@@ -27,7 +27,7 @@ public class TrackRegister extends StatePacket implements RegisterPacket
 		data.add(0);
 		data.add(OddRotation);
 		data.add(EvenRotation);
-		return fromList(data);
+		return data;
 	}
 	public static TrackRegister byState(InputStream i) throws IOException
 	{

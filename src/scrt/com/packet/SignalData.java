@@ -19,7 +19,7 @@ public class SignalData extends StatePacket implements DataPacket
 	public boolean OverrideRequest;
 	public boolean ClearRequest;
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
@@ -29,7 +29,7 @@ public class SignalData extends StatePacket implements DataPacket
 		data.add(UserRequest ? 1 : 0);
 		data.add(OverrideRequest ? 1 : 0);
 		data.add(ClearRequest ? 1 : 0);
-		return fromList(data);
+		return data;
 	}
 	public static SignalData byState(InputStream d) throws IOException
 	{

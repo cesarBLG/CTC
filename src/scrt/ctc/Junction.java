@@ -50,6 +50,7 @@ public class Junction extends TrackItem
 		send(PacketType.JunctionRegister);
 		updateState();
 	}
+	@Override
 	void send(PacketType type)
 	{
 		Packet p;
@@ -399,10 +400,12 @@ public class Junction extends TrackItem
 		if(Linked!=null&&Linked.Switch != p) Linked.setSwitch(p);
 		return true;
 	}
+	@Override
 	public boolean connectsTo(Orientation dir, TrackItem t)
 	{
 		return connectsTo(dir, t.x, t.y, dir == Orientation.Even ? t.EvenRotation : t.OddRotation);
 	}
+	@Override
 	public boolean connectsTo(Orientation dir, int objx, int objy, int objrot)
 	{
 		if(super.connectsTo(dir, objx, objy, objrot)) return true;

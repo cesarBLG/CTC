@@ -13,12 +13,12 @@ public class JunctionSwitch extends StatePacket
 		super(id);
 	}
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
 		data.addAll(id.getId());
-		return fromList(data);
+		return data;
 	}
 	public static JunctionSwitch byState(InputStream i) throws IOException
 	{

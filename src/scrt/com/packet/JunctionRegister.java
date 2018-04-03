@@ -19,7 +19,7 @@ public class JunctionRegister extends StatePacket implements RegisterPacket
 		TrackId = id2;
 	}
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
@@ -27,7 +27,7 @@ public class JunctionRegister extends StatePacket implements RegisterPacket
 		data.addAll(TrackId.getId());
 		data.add(Direction.ordinal());
 		data.add(Class.ordinal());
-		return fromList(data);
+		return data;
 	}
 	public static JunctionRegister byState(InputStream i) throws IOException
 	{

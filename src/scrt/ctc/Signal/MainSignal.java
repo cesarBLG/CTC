@@ -81,7 +81,6 @@ public class MainSignal extends Signal{
 		}
 		if(Config.sigsAhead<2) Aspects.remove(Aspect.Anuncio_parada);
 		if(Config.anuncioPrecaución == 0) Aspects.remove(Aspect.Anuncio_precaucion);
-		int num = 0;
 		int start1 = -1;
 		int end1 = 0;
 		int start2 = 0;
@@ -114,6 +113,7 @@ public class MainSignal extends Signal{
 		if(!Cleared&&UserRequest)
 		{
 			Timer t = new Timer(30000, new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					setCleared();
 					if(!Cleared) UserRequest = OverrideRequest = false;
@@ -159,7 +159,7 @@ public class MainSignal extends Signal{
 			{
 				Next = true;
 				NextSignal = (MainSignal)i.SignalLinked;
-				if(!NextSignal.listeners.contains(this)) NextSignal.listeners.add(MainSignal.this);
+				if(!NextSignal.listeners.contains(MainSignal.this)) NextSignal.listeners.add(MainSignal.this);
 				checkBlock = false;
 			}
 			if(end.condition(i, dir, p))
@@ -349,6 +349,7 @@ public class MainSignal extends Signal{
 		}
 		super.setAspect();
 	}
+	@Override
 	public void setState()
 	{
 		boolean prev = BlockSignal;
@@ -457,6 +458,7 @@ public class MainSignal extends Signal{
 		if(Class == SignalType.Shunting) OverrideRequest = true;
 		else if(!UserRequest) OverrideRequest = false;
 	}
+	@Override
 	public void update()
 	{
 		if(Linked==null||ForceClose) return;
@@ -555,6 +557,7 @@ public class MainSignal extends Signal{
 		if(ClosingTimer==null)
 		{
 			ClosingTimer = new Timer(time, new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if(!Cleared)
 					{

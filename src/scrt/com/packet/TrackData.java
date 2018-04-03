@@ -19,7 +19,7 @@ public class TrackData extends StatePacket implements DataPacket
 		super(packetID);
 	}
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
@@ -29,7 +29,7 @@ public class TrackData extends StatePacket implements DataPacket
 		data.add(OddAxles);
 		data.add(EvenAxles);
 		data.add(Acknowledged ? 1 : 0);
-		return fromList(data);
+		return data;
 	}
 	public static TrackData byState(InputStream i) throws IOException
 	{

@@ -21,7 +21,7 @@ public class JunctionData extends StatePacket implements DataPacket
 		super(id);
 	}
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
@@ -32,7 +32,7 @@ public class JunctionData extends StatePacket implements DataPacket
 		data.add(Locked);
 		data.add(blockPosition);
 		data.add(locking ? 1 : 0);
-		return fromList(data);
+		return data;
 	}
 	public static JunctionData byState(InputStream i) throws IOException
 	{

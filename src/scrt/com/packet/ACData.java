@@ -15,13 +15,13 @@ public class ACData extends StatePacket implements DataPacket
 		super(id);
 	}
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
 		data.addAll(id.getId());
 		data.add(dir.ordinal());
-		return fromList(data);
+		return data;
 	}
 	public static ACData byState(InputStream i) throws IOException
 	{

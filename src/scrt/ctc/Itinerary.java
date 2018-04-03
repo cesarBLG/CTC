@@ -136,6 +136,7 @@ public class Itinerary {
 			}
 		}*/
 	}
+	@Override
 	public String toString()
 	{
 		return Name.concat("/").concat(Station.Name);

@@ -41,14 +41,6 @@ public class COM
 			d.write(p.getState());
 		}
 	}
-	public static void write(int a)
-	{
-		for(Device dev : devs) dev.write(a);
-	}
-	public static void write(byte[] data)
-	{
-		for(Device dev : devs) dev.write(data);
-	}
 	static List<Packet> registers = new ArrayList<Packet>();
 	static List<LinkPacket> linkers = new ArrayList<LinkPacket>();
 	static List<Packet> data = new ArrayList<Packet>();
@@ -69,7 +61,8 @@ public class COM
 			data.removeIf((packet) -> packet instanceof StatePacket && ((StatePacket)packet).id == ((StatePacket)p).id);
 			data.add(p);
 		}
-		write(p.getState());
+		byte[] data = p.getState();
+		for(Device dev : devs) dev.write(data);
 		return;
 	}
 	static List<Packet> inQueue = new ArrayList<Packet>();

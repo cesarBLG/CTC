@@ -21,9 +21,10 @@ public abstract class Packet
 		JunctionLock,
 		ItineraryRegister,
 		ACData,
+		RequestPacket
 	}
 	PacketType type;
-	public abstract byte[] getState();
+	public abstract List<Integer> getListState();
 	public Packet()
 	{
 		type = PacketType.valueOf(this.getClass().getSimpleName());
@@ -41,8 +42,9 @@ public abstract class Packet
 		}
 		return null;
 	}
-	static byte[] fromList(List<Integer> l)
+	public byte[] getState()
 	{
+		var l = getListState();
 		byte[] data = new byte[l.size()];
 		for(int i=0; i<l.size(); i++)
 		{

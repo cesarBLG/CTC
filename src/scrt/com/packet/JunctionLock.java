@@ -14,14 +14,14 @@ public class JunctionLock extends StatePacket
 		super(id);
 	}
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
 		data.addAll(id.getId());
 		data.add(order ? 1 :0);
 		data.add(value);
-		return fromList(data);
+		return data;
 	}
 	public static JunctionLock byState(InputStream i) throws IOException
 	{

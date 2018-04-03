@@ -18,14 +18,14 @@ public class ItineraryRegister extends Packet
 		this.destination = destination;
 	}
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
 		data.addAll(start.getId());
 		data.addAll(destination.getId());
 		data.add(dir.ordinal());
-		return fromList(data);
+		return data;
 	}
 	public static ItineraryRegister byState(InputStream i) throws IOException
 	{

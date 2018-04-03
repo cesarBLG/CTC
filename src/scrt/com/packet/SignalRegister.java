@@ -17,7 +17,7 @@ public class SignalRegister extends StatePacket implements RegisterPacket
 	public int x;
 	public int y;
 	@Override
-	public byte[] getState()
+	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.add(type.ordinal());
@@ -31,7 +31,7 @@ public class SignalRegister extends StatePacket implements RegisterPacket
 		data.add(EoT ? 1 : 0);
 		data.add(x);
 		data.add(y);
-		return fromList(data);
+		return data;
 	}
 	public static SignalRegister byState(InputStream i) throws IOException
 	{
