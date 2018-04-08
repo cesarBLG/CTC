@@ -17,7 +17,6 @@ public class JunctionLock extends StatePacket
 	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
-		data.add(type.ordinal());
 		data.addAll(id.getId());
 		data.add(order ? 1 :0);
 		data.add(value);

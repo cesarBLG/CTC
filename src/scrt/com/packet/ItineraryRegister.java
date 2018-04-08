@@ -21,7 +21,6 @@ public class ItineraryRegister extends Packet
 	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
-		data.add(type.ordinal());
 		data.addAll(start.getId());
 		data.addAll(destination.getId());
 		data.add(dir.ordinal());

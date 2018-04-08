@@ -22,7 +22,6 @@ public class TrackData extends StatePacket implements DataPacket
 	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
-		data.add(type.ordinal());
 		data.addAll(id.getId());
 		data.add(BlockState.ordinal());
 		data.add(Occupied.ordinal());

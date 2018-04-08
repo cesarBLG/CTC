@@ -21,9 +21,7 @@ public class COM
 		com1.start();
 		com2.start();
 		new TCP().initialize();
-		/*Serial serial = new Serial();
-		serial.begin(9600);
-		devs.add(serial);*/
+		new Serial().begin(9600);
 	}
 	public static void addDevice(Device d)
 	{

@@ -7,8 +7,6 @@ import java.util.Enumeration;
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 
 public class Serial implements Device {
 	private SerialPort sp;
@@ -40,15 +38,25 @@ public class Serial implements Device {
 			sp.setDTR(true);
 			Output = sp.getOutputStream();
 			Input = sp.getInputStream();
-			sp.addEventListener(new SerialPortEventListener()
+			new Thread(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					try
 					{
-						@Override
-						public void serialEvent(SerialPortEvent e)
+						while(true)
 						{
-							Receive();
+							parse(Input);
 						}
-					});
-			sp.notifyOnDataAvailable(true);
+					} 
+					catch (IOException e)
+					{
+						// TODO Auto-generated catch block
+						//e.printStackTrace();
+					}
+				}
+			}).start();
 		}
 		catch(Exception e){return;}
 		Connected = true;
@@ -95,6 +103,7 @@ public class Serial implements Device {
 	@Override
 	public void write(byte[] b)
 	{
+		if(!Connected) return;
 		try
 		{
 			Output.write(b);

@@ -18,7 +18,6 @@ public class TrackRegister extends StatePacket implements RegisterPacket
 	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
-		data.add(type.ordinal());
 		data.addAll(id.getId());
 		for(int i=0;  i<Name.length(); i++)
 		{

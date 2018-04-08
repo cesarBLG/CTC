@@ -16,7 +16,6 @@ public class JunctionSwitch extends StatePacket
 	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
-		data.add(type.ordinal());
 		data.addAll(id.getId());
 		return data;
 	}

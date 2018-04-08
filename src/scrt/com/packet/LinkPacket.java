@@ -18,7 +18,6 @@ public class LinkPacket extends Packet
 	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
-		data.add(type.ordinal());
 		data.addAll(id1.getId());
 		data.addAll(id2.getId());
 		return data;

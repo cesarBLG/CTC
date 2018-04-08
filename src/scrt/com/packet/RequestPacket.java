@@ -14,7 +14,6 @@ public class RequestPacket extends Packet
 	public List<Integer> getListState()
 	{
 		List<Integer> data = new ArrayList<Integer>();
-		data.add(type.ordinal());
 		data.add((registers ? 1 : 0) + (links ? 2 : 0) + (registers ? 4 : 0));
 		return data;
 	}
