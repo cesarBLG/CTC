@@ -18,9 +18,9 @@ import javax.swing.Timer;
 import scrt.Orientation;
 import scrt.com.packet.ACData;
 import scrt.com.packet.ACID;
-import scrt.com.packet.ElementType;
 import scrt.com.packet.ID;
-import scrt.com.packet.ItineraryRegister;
+import scrt.com.packet.ID.ElementType;
+import scrt.com.packet.ItineraryStablisher;
 import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
 import scrt.com.packet.SignalID;
@@ -31,6 +31,7 @@ import scrt.com.packet.TrackRegister;
 public class TrackIcon extends CTCIcon {
 	JLabel TrackIcon = new JLabel();
 	JLabel NumAxles = new JLabel();
+	public JLabel Counter = null;
 	TrackIcon(TrackItemID id)
 	{
 		this.id = id;
@@ -41,7 +42,7 @@ public class TrackIcon extends CTCIcon {
 	TrackItemID id;
 	TrackData data;
 	SignalID sigId;
-	SignalIcon signal;
+	public SignalIcon signal = null;
 	ACID acid = null;
 	static TrackItemID ItineraryStart = null;
 	public TrackIcon(TrackRegister reg)
@@ -76,14 +77,14 @@ public class TrackIcon extends CTCIcon {
 					if(arg0.isControlDown())
 					{
 						data.BlockState = Orientation.None;
-						reader.send(data);
+						receiver.send(data);
 						return;
 					}
 					if(acid!=null)
 					{
 						ACData a = new ACData(acid);
 						a.dir = Orientation.Odd;
-						reader.send(a);
+						receiver.send(a);
 					}
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON2)
@@ -91,9 +92,9 @@ public class TrackIcon extends CTCIcon {
 					if(ItineraryStart == null) ItineraryStart = id;
 					else
 					{
-						ItineraryRegister r = new ItineraryRegister(ItineraryStart, id);
+						ItineraryStablisher r = new ItineraryStablisher(ItineraryStart, id);
 						r.dir = id.x > ItineraryStart.x ? Orientation.Even : Orientation.Odd;
-						reader.send(r);
+						receiver.send(r);
 						ItineraryStart = null;
 					}
 				}
@@ -103,7 +104,7 @@ public class TrackIcon extends CTCIcon {
 					{
 						ACData a = new ACData(acid);
 						a.dir = Orientation.Even;
-						reader.send(a);
+						receiver.send(a);
 					}
 				}
 			}
@@ -181,6 +182,7 @@ public class TrackIcon extends CTCIcon {
 		signal = sig;
 		signal.comp.setBounds(0, 10, 30, 25);
 		comp.add(signal.comp, 0);
+		comp.revalidate();
 	}
 	Timer timer = new Timer(350, new ActionListener()
 			{
@@ -243,6 +245,17 @@ public class TrackIcon extends CTCIcon {
 			{
 				acid = (ACID) link;
 				TrackIcon.setBorder(BorderFactory.createMatteBorder(0, acid.dir == Orientation.Odd ? 2 : 0, 0, acid.dir == Orientation.Odd ? 0 : 2, Color.black));
+				{
+					Counter = new JLabel("CV" + acid.Num);
+					Counter.setHorizontalAlignment(acid.dir == Orientation.Even ? JLabel.RIGHT : JLabel.LEFT);
+					Counter.setVerticalAlignment(JLabel.TOP);
+					Counter.setForeground(Color.cyan);
+					Counter.setFont(new Font("Tahoma", 0, 8));
+					Counter.setBounds(0, 38, 30, 12);
+					comp.add(Counter);
+					comp.repaint();
+					comp.revalidate();
+				}
 				return;
 			}
 			CTCIcon icon = findID(link);
@@ -264,5 +277,6 @@ public class TrackIcon extends CTCIcon {
 		comp.setPreferredSize(new Dimension(30, 73));
 		comp.setMaximumSize(new Dimension(30, 73));
 		layout.add(comp, gbc);
+		layout.revalidate();
 	}
 }

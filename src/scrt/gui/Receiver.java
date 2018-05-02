@@ -6,26 +6,26 @@ import java.net.Socket;
 
 import scrt.com.packet.Packet;
 
-public class Reader
+public class Receiver
 {
 	Socket s;
-	public Reader()
+	public Receiver()
 	{
-		while(s==null)
-		{
-			try
-			{
-				s = new Socket("localhost", 300);
-			}
-			catch (IOException e)
-			{
-			}
-		}
 		new Thread(new Runnable()
 				{
 					@Override
 					public void run()
 					{
+						while(s==null)
+						{
+							try
+							{
+								s = new Socket("localhost", 300);
+							}
+							catch (IOException e)
+							{
+							}
+						}
 						while(!s.isConnected()) {}
 						InputStream i;
 						try
@@ -50,7 +50,7 @@ public class Reader
 	}
 	public void write(byte[] data)
 	{
-		if(!s.isConnected()) return;
+		if(s==null||!s.isConnected()) return;
 		try
 		{
 			s.getOutputStream().write(data);

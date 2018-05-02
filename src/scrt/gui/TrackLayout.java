@@ -15,10 +15,11 @@ import javax.swing.border.EmptyBorder;
 public class TrackLayout
 {
 	public static boolean external = false;
+	public static JFrame frame;
 	public static void main(String[] args) 
 	{
 		external = true;
-		JFrame frame = new JFrame();
+		frame = new JFrame("Editor");
 		new TrackLayout(frame);
 		frame.pack();
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -39,7 +40,7 @@ public class TrackLayout
 		g.gridheight = 1;
 		CTCIcon.gbc = g;
 		CTCIcon.layout = layout;
-		CTCIcon.reader = new Reader();
+		CTCIcon.receiver = new Receiver();
 		JScrollPane pane = new JScrollPane(layout);
 		pane.getHorizontalScrollBar().setUnitIncrement(20);
 		c.add(pane);

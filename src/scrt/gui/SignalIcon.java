@@ -19,17 +19,19 @@ import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.com.packet.AutomaticOrder;
+import scrt.com.packet.ClearOrder;
 import scrt.com.packet.Packet;
 import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalID;
 import scrt.com.packet.SignalRegister;
 import scrt.ctc.Signal.Aspect;
-import scrt.ctc.Signal.SignalType;
+import scrt.ctc.Signal.Signal.SignalType;
 
 public class SignalIcon extends CTCIcon {
 	SignalData sig;
 	SignalID id;
-	SignalRegister reg;
+	public SignalRegister reg;
 	JPopupMenu popup;
 	JMenuItem close = new JMenuItem("Abrir señal");
 	JMenuItem override = new JMenuItem("Rebase autorizado");
@@ -50,7 +52,7 @@ public class SignalIcon extends CTCIcon {
 		comp = new JPanel();
 		comp.setLayout(new BorderLayout());
 		comp.setOpaque(false);
-		name = new JLabel(reg.Name);
+		name = new JLabel(id.Name);
 		name.setHorizontalAlignment(id.Direction == Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
 		name.setFont(new Font("Tahoma", 0, 10));
 		name.setForeground(Color.WHITE);
@@ -109,14 +111,16 @@ public class SignalIcon extends CTCIcon {
 				sigIcon.add(pie);
 			}
 			popup = new JPopupMenu();
-			popup.add(reg.Name);
+			popup.add(id.Name);
 			popup.addSeparator();
 			close.addActionListener(new ActionListener()
 					{
 						@Override
 						public void actionPerformed(ActionEvent arg0) {
-							sig.UserRequest = !sig.ClearRequest;
-							reader.send(sig);
+							var cr = new ClearOrder(id);
+							cr.clear = !sig.ClearRequest;
+							cr.override = false;
+							receiver.send(cr);
 						}
 				
 					});
@@ -126,15 +130,17 @@ public class SignalIcon extends CTCIcon {
 						public void actionPerformed(ActionEvent arg0) {
 							if(sig.OverrideRequest && sig.ClearRequest)
 							{
-								sig.UserRequest = false;
-								sig.OverrideRequest = false;
-								reader.send(sig);
+								var cr = new ClearOrder(id);
+								cr.clear = false;
+								cr.override = false;
+								receiver.send(cr);
 							}
 							else
 							{
-								sig.OverrideRequest = true;
-								sig.UserRequest = true;
-								reader.send(sig);
+								var cr = new ClearOrder(id);
+								cr.clear = true;
+								cr.override = true;
+								receiver.send(cr);
 							}
 						}
 				
@@ -143,8 +149,9 @@ public class SignalIcon extends CTCIcon {
 					{
 						@Override
 						public void actionPerformed(ActionEvent arg0) {
-							sig.Automatic = !sig.Automatic;
-							reader.send(sig);
+							var ao = new AutomaticOrder(id);
+							ao.automatic = !sig.Automatic;
+							receiver.send(ao);
 						}
 				
 					});
@@ -194,7 +201,9 @@ public class SignalIcon extends CTCIcon {
 							if(arg0.getButton()==MouseEvent.BUTTON1)
 							{
 								sig.UserRequest = true;
-								reader.send(sig);
+								var cr = new ClearOrder(id);
+								cr.clear = true;
+								receiver.send(cr);
 							}
 						}
 

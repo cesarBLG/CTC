@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Packet
@@ -20,9 +21,12 @@ public abstract class Packet
 		JunctionSwitch,
 		JunctionRegister,
 		JunctionLock,
-		ItineraryRegister,
+		ItineraryStablisher,
 		ACData,
-		RequestPacket
+		RequestPacket,
+		StationRegister,
+		ClearOrder,
+		AutomaticOrder
 	}
 	PacketType type;
 	public abstract List<Integer> getListState();
@@ -88,5 +92,26 @@ public abstract class Packet
 		}
 		control = 255 - (control % 255);
 		return (byte)control;
+	}
+	public static List<Integer> toList(String s)
+	{
+		var l = new ArrayList<Integer>();
+		for(int i=0;  i<s.length(); i++)
+		{
+			l.add((int) s.charAt(i));
+		}
+		l.add(0);
+		return l;
+	}
+	public static String toString(InputStream in) throws IOException
+	{
+		String s = "";
+		int c = in.read();
+		while(c!=0)
+		{
+			s = s + (char)c;
+			c = in.read();
+		}
+		return s;
 	}
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TrackRegister extends StatePacket implements RegisterPacket
 {
-	public String Name;
+	public String Name = "";
 	public int OddRotation;
 	public int EvenRotation;
 	public TrackRegister(TrackItemID packetID)
@@ -19,11 +19,7 @@ public class TrackRegister extends StatePacket implements RegisterPacket
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.addAll(id.getId());
-		for(int i=0;  i<Name.length(); i++)
-		{
-			data.add((int) Name.charAt(i));
-		}
-		data.add(0);
+		data.addAll(toList(Name));
 		data.add(OddRotation);
 		data.add(EvenRotation);
 		return data;
@@ -32,13 +28,7 @@ public class TrackRegister extends StatePacket implements RegisterPacket
 	{
 		i.read();
 		var tr = new TrackRegister(new TrackItemID(i));
-		tr.Name = "";
-		int c = i.read();
-		while(c!=0)
-		{
-			tr.Name = tr.Name + (char)c;
-			c = i.read();
-		}
+		tr.Name = toString(i);
 		tr.OddRotation = (byte)i.read();
 		tr.EvenRotation = (byte)i.read();
 		return tr;

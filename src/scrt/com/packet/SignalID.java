@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import scrt.Orientation;
-import scrt.ctc.Signal.SignalType;
+import scrt.ctc.Signal.Signal.SignalType;
 
 public class SignalID extends ID
 {
@@ -13,6 +13,7 @@ public class SignalID extends ID
 	public int Number;
 	public int Track;
 	public Orientation Direction;
+	public String Name;
 	public SignalID(InputStream b) throws IOException
 	{
 		super(b);
@@ -20,6 +21,33 @@ public class SignalID extends ID
 		Number = b.read();
 		Track = b.read();
 		Direction = ((Number % 2) == 0) ? Orientation.Even : Orientation.Odd;
+		Name = Class.toString() + Integer.toString(Number) + (Track!=0 ? "/" + Integer.toString(Track) : "");
+	}
+	public SignalID(String name, int station)
+	{
+		Name = name;
+		if(Name.charAt(0)=='S') Class = SignalType.Exit;
+		else if((Name.charAt(0)=='E' && Name.charAt(1)!='\'') || Name.charAt(0) == 'F') Class = SignalType.Entry;
+		else if(Name.startsWith("E'")) Class = SignalType.Advanced;
+		else if(Name.charAt(0)=='M') Class = SignalType.Shunting;
+		else if(Name.startsWith("IS")) Class = SignalType.Exit_Indicator;
+		else Class = SignalType.Block;
+		int start1 = -1;
+		int end1 = 0;
+		int start2 = 0;
+		for(int i=0; i<Name.length();i++)
+		{
+			if(Name.charAt(i)<='9'&&Name.charAt(i)>='0'&&start1==-1) start1 = i;
+			if(Name.charAt(i)=='/') end1 = i;
+			if(Name.charAt(i)<='9'&&Name.charAt(i)>='0'&&end1!=0&&start2==0) start2 = i;
+		}
+		if(end1==0) end1 = Name.length();
+		Number = Integer.parseInt(Name.substring(start1, end1));
+		if(start2!=0) Track = Integer.parseInt(Name.substring(start2));
+		else Track = 0;
+		Direction = Number%2 == 0 ? Orientation.Even : Orientation.Odd;
+		stationNumber = station;
+		Name = Class.toString() + Integer.toString(Number) + (Track!=0 ? "/" + Integer.toString(Track) : "");
 	}
 	public SignalID(){}
 	@Override

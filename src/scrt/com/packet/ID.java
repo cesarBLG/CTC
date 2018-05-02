@@ -8,6 +8,13 @@ import java.util.List;
 
 public abstract class ID
 {
+	public enum ElementType
+	{
+		Signal,
+		AC,
+		TrackItem,
+		Junction
+	}
 	public ElementType type;
 	public int stationNumber;
 	public List<Integer> getId()

@@ -5,11 +5,12 @@ import scrt.ctc.Station;
 
 public class FixedSignal extends MainSignal {
 	public FixedSignal(String s, Orientation dir, Aspect a, Station dep) {
+		super(dep);
 		Name = s;
 		if(Name.length()!=0)
 		{
 			Number = Integer.parseInt(Name.split("/")[0].substring(1));
-			Track = 1;
+			Track = 0;
 		}
 		//else 
 		/*if(Name.charAt(1)=='S') Class = SignalType.Exit;

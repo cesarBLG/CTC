@@ -1,6 +1,6 @@
 package scrt.ctc.Signal;
 
-import scrt.Orientation;
+import scrt.com.packet.SignalID;
 import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
 import scrt.event.SRCTEvent;
@@ -9,13 +9,14 @@ public class ExitIndicator extends Signal{
 	MainSignal MainSignal = null;
 	public ExitIndicator(String s, Station dep)
 	{
+		super(dep);
 		Name = s;
-		Station = dep;
+		id = new SignalID(s, dep.AssociatedNumber);
 		Automatic = true;
-		Direction = Name.charAt(2)=='1' ? Orientation.Odd : Orientation.Even;
+		Direction = id.Direction;
 		Class = SignalType.Exit_Indicator;
-		Number = Integer.parseInt(Name.split("/")[0].substring(2));
-		Track = 1;
+		Number = id.Number;
+		Track = id.Track;
 		setAspect();
 	}
 	void setMain()

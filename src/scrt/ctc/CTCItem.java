@@ -16,15 +16,21 @@ public abstract class CTCItem implements SRCTListener, Packable {
 	public static PacketManager PacketManager = new PacketManager();
 	public CTCItem()
 	{
-		PacketManager.items.add(this);
+		synchronized(PacketManager.items)
+		{
+			PacketManager.items.add(this);
+		}
 	}
 	public abstract ID getID();
-	public static TrackItem findId(ID id)
+	public static CTCItem findId(ID id)
 	{
-		for(Packable p : PacketManager.items)
+		synchronized(PacketManager.items)
 		{
-			if(id.equals(((CTCItem)p).getID())) return (TrackItem)p;
+			for(Packable p : PacketManager.items)
+			{
+				if(id.equals(((CTCItem)p).getID())) return (CTCItem)p;
+			}
+			return null;
 		}
-		return null;
 	}
 }

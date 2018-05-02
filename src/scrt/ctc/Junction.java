@@ -39,6 +39,18 @@ public class Junction extends TrackItem
 	List<AxleCounter> StraightOccupier = new ArrayList<AxleCounter>();
 	List<AxleCounter> CurveOccupier = new ArrayList<AxleCounter>();
 	Junction Linked = null;
+	public Junction(JunctionRegister reg)
+	{
+		x = reg.TrackId.x;
+		y = reg.TrackId.y;
+		JunctionID id = (JunctionID)reg.id;
+		Number = id.Number;
+		Class = reg.Class;
+		Direction = reg.Direction;
+		Station = scrt.ctc.Station.byNumber(id.stationNumber);
+		send(PacketType.JunctionRegister);
+		updateState();
+	}
 	public Junction(int num, Station dep, Position p, int x, int y)
 	{
 		this.x = x;
@@ -118,7 +130,7 @@ public class Junction extends TrackItem
 		if(blockPosition!=-1&&((t==FrontItems[0]&&blockPosition==0)||(t==FrontItems[1]&&blockPosition==1)||t==BackItem)) return true;
 		return false;
 	}
-	public boolean LockedFor(TrackItem t, boolean check)
+	public boolean lockedFor(TrackItem t, boolean check)
 	{
 		if(Locked == -1 && !check) return true;
 		if(Locked!=-1&&((t==FrontItems[0]&&Locked==0)||(t==FrontItems[1]&&Locked==1)||t==BackItem)) return true;
@@ -201,6 +213,19 @@ public class Junction extends TrackItem
 		if(o == Orientation.None && Occupied == Orientation.None) blockPosition = -1;
 		super.setBlock(o);
 		tryToUnlock();
+	}
+	@Override
+	public void setOverlap(TrackItem t)
+	{
+		if(overlap==t || (t!=null && overlap!=null)) return;
+		if(t != null)
+		{
+			if(FrontItems[0].overlap == t) blockPosition = 0;
+			else if(FrontItems[1].overlap == t) blockPosition = 1;
+			else block(BackItem);
+		}
+		super.setOverlap(t);
+		//Maybe we should lock the point?
 	}
 	@Override
 	public void blockChanged()

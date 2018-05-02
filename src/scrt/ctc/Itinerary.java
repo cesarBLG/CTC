@@ -5,7 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import scrt.Orientation;
-import scrt.com.packet.ItineraryRegister;
+import scrt.com.packet.ItineraryStablisher;
 import scrt.com.packet.Packet;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
@@ -23,7 +23,7 @@ public class Itinerary {
 	String Name;
 	Itinerary_Type Class;
 	Station Station;
-	Itinerary(ItineraryRegister r){}
+	Itinerary(ItineraryStablisher r){}
 	Itinerary(String name, Station dep, List<String> sig, Hashtable<Integer, Integer> sw)
 	{
 		Name = name;
@@ -165,10 +165,10 @@ public class Itinerary {
 	}
 	public static void handlePacket(Packet p)
 	{
-		if(p instanceof ItineraryRegister)
+		if(p instanceof ItineraryStablisher)
 		{
-			ItineraryRegister r = (ItineraryRegister) p;
-			set(CTCItem.findId(r.start), CTCItem.findId(r.destination), r.dir, false);
+			ItineraryStablisher r = (ItineraryStablisher) p;
+			set((TrackItem)CTCItem.findId(r.start), (TrackItem)CTCItem.findId(r.destination), r.dir, false);
 		}
 	}
 }

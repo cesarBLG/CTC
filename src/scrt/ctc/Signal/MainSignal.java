@@ -8,8 +8,10 @@ import java.util.List;
 import javax.swing.Timer;
 
 import scrt.Orientation;
+import scrt.com.packet.AutomaticOrder;
+import scrt.com.packet.ClearOrder;
 import scrt.com.packet.Packet;
-import scrt.com.packet.SignalData;
+import scrt.ctc.AxleCounter;
 import scrt.ctc.Clock;
 import scrt.ctc.Config;
 import scrt.ctc.Junction;
@@ -26,14 +28,14 @@ public class MainSignal extends Signal{
 	public MainSignal NextSignal = null;
 	List<TrackItem> MonitoringItems = new ArrayList<TrackItem>();
 	boolean ForceClose = false;
-	MainSignal()
+	MainSignal(Station dep)
 	{
-		
+		super(dep);
 	}
 	public MainSignal(String s, Station dep)
 	{
+		super(dep);
 		Name = s;
-		Station = dep;
 		if(Name.charAt(0)=='S')
 		{
 			Class = SignalType.Exit;
@@ -95,11 +97,11 @@ public class MainSignal extends Signal{
 		if(start2!=0) Track = Integer.parseInt(Name.substring(start2));
 		else Track = 0;
 		allowsOnSight = Config.allowOnSight && Class != SignalType.Entry;
-		set(Number%2 == 0 ? Orientation.Even : Orientation.Odd);
+		Direction = Number%2 == 0 ? Orientation.Even : Orientation.Odd;
+		set();
 	}
-	void set(Orientation dir)
+	void set()
 	{
-		Direction = dir;
 		super.setAspect();
 		setState();
 	}
@@ -145,22 +147,28 @@ public class MainSignal extends Signal{
 		boolean Next = false;
 		TrackIs end;
 		boolean Override;
+		Signal lastSignal;
 		TrackAvailable(boolean Override, boolean CheckBlock)
 		{
 			this.Override = Override;
 			if(!Override) end = (i, dir, p) ->  i==Linked||i==null||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir||(i.SignalLinked.BlockSignal);
 			else end = ovEnd;
 			checkBlock = CheckBlock;
+			lastSignal = MainSignal.this;
 		}
 		@Override
 		public boolean condition(TrackItem i, Orientation dir, TrackItem p) 
 		{
-			if(nextSignal.condition(i, dir, p) && !Next)
+			if(nextSignal.condition(i, dir, p))
 			{
-				Next = true;
-				NextSignal = (MainSignal)i.SignalLinked;
-				if(!NextSignal.listeners.contains(MainSignal.this)) NextSignal.listeners.add(MainSignal.this);
-				checkBlock = false;
+				if(!Next)
+				{
+					Next = true;
+					NextSignal = (MainSignal)i.SignalLinked;
+					if(!NextSignal.listeners.contains(MainSignal.this)) NextSignal.listeners.add(MainSignal.this);
+					checkBlock = false;
+				}
+				lastSignal = i.SignalLinked;
 			}
 			if(end.condition(i, dir, p))
 			{
@@ -188,11 +196,29 @@ public class MainSignal extends Signal{
 			{
 				Junction j = (Junction)i;
 				if(p!=null && !j.blockedFor(p, checkBlock)) return false;
-				if(Config.lock && p!=null && !j.LockedFor(p, checkBlock)) return false;
+				if(Config.lock && p!=null && !j.lockedFor(p, checkBlock)) return false;
 				if(j.CrossingLinked != null)
 				{
 					Junction k = j.CrossingLinked;
 					if(k.Locked == 1 || (k.Switch != Position.Straight && k.BlockState != Orientation.None)) return false;
+				}
+			}
+			if(!Override && Config.overlap && (lastSignal.Class == SignalType.Exit || lastSignal.Class == SignalType.Entry))
+			{
+				p = i;
+				i = i.getNext(dir);
+				if(i != null && !end.condition(i, dir, p))
+				{
+					AxleCounter ac = i.CounterLinked;
+					while(true)
+					{
+						if(i==null || !i.getOccupierCounter(dir).contains(ac)) break;
+						if((i.BlockState!=dir&&(i.BlockState!=Orientation.None||checkBlock)) || (i.Occupied != Orientation.None && (i.Occupied != dir || !lastSignal.allowsOnSight)))
+						{
+							return false;
+						}
+						i = i.getNext(dir);
+					}
 				}
 			}
 			return true;
@@ -229,8 +255,10 @@ public class MainSignal extends Signal{
 	class BlockTrack implements TrackComparer
 	{
 		TrackIs end;
+		boolean override;
 		BlockTrack(boolean Override)
 		{
+			override = Override;
 			if(!Override) end = (i, dir, p) -> !nextSignal.condition(i, dir, p);
 			else end = ovEnd;
 		}
@@ -247,6 +275,16 @@ public class MainSignal extends Signal{
 				}
 				i.setBlock(dir, MainSignal.this);
 				return true;
+			}
+			if(i != null && !Override && Config.overlap && (Class == SignalType.Exit || Class == SignalType.Entry))
+			{
+				AxleCounter ac = i.CounterLinked;
+				while(true)
+				{
+					if(i==null || !i.getOccupierCounter(dir).contains(ac)) break;
+					i.setOverlap(prev);
+					i = i.getNext(dir);
+				}
 			}
 			return false;
 		}
@@ -293,7 +331,7 @@ public class MainSignal extends Signal{
 			{
 				if(Switches && Config.anuncioPrecaución == 2)
 				{
-					SignalAspect = Aspect.Anuncio_parada;
+					if(Linked.overlap != null) SignalAspect = Aspect.Anuncio_parada;
 				}
 				if(NextSignal==null || NextSignal.SignalAspect == Aspect.Parada || NextSignal.SignalAspect == Aspect.Rebase || NextSignal.SignalAspect == Aspect.Apagado)
 				{
@@ -657,7 +695,6 @@ public class MainSignal extends Signal{
 					{
 						return i==Linked||(i!=null&&(i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir||i.SignalLinked.BlockSignal));
 					}
-
 					@Override
 					public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p) {
 						// TODO Auto-generated method stub
@@ -665,6 +702,22 @@ public class MainSignal extends Signal{
 					}
 					
 				}, Direction);
+		if(Config.overlap && (Class == SignalType.Exit || Class == SignalType.Entry))
+		{
+			TrackItem i = MonitoringItems.get(MonitoringItems.size()-1);
+			i = i.getNext(Direction);
+			if(i!=null)
+			{
+
+				AxleCounter ac = i.CounterLinked;
+				while(true)
+				{
+					if(i==null || !i.getOccupierCounter(Direction).contains(ac)) break;
+					MonitoringItems.add(i);
+					i = i.getNext(Direction);
+				}
+			}		
+		}
 		for(TrackItem t : MonitoringItems)
 		{
 			if(t!=null&&!t.listeners.contains(this)) t.listeners.add(this);
@@ -747,15 +800,19 @@ public class MainSignal extends Signal{
 	@Override
 	public void load(Packet p)
 	{
-		if(p instanceof SignalData)
+		if(p instanceof ClearOrder)
 		{
-			SignalData d = (SignalData)p;
+			var d = (ClearOrder)p;
 			if(!d.id.equals(getID())) return;
-			setAutomatic(d.Automatic);
-			if(!OverrideRequest && d.OverrideRequest && UserRequest) UserRequest(false);
-			OverrideRequest = d.OverrideRequest;
-			if(d.UserRequest) UserRequest = false;
-			UserRequest(d.UserRequest);
+			OverrideRequest = d.override;
+			UserRequest = !d.clear;
+			UserRequest(d.clear);
+		}
+		if(p instanceof AutomaticOrder)
+		{
+			var d = (AutomaticOrder)p;
+			if(!d.id.equals(getID())) return;
+			setAutomatic(d.automatic);
 		}
 	}
 }

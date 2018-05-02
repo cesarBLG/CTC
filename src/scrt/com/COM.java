@@ -1,10 +1,12 @@
 package scrt.com;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import scrt.com.packet.DataPacket;
-import scrt.com.packet.ItineraryRegister;
+import scrt.com.packet.ItineraryStablisher;
 import scrt.com.packet.LinkPacket;
 import scrt.com.packet.Packet;
 import scrt.com.packet.RegisterPacket;
@@ -22,6 +24,7 @@ public class COM
 		com2.start();
 		new TCP().initialize();
 		new Serial().begin(9600);
+		new File();
 	}
 	public static void addDevice(Device d)
 	{
@@ -63,8 +66,8 @@ public class COM
 		for(Device dev : devs) dev.write(data);
 		return;
 	}
-	static List<Packet> inQueue = new ArrayList<Packet>();
-	static List<Packet> outQueue = new ArrayList<Packet>();
+	static Queue<Packet> inQueue = new LinkedList<Packet>();
+	static Queue<Packet> outQueue = new LinkedList<Packet>();
 	static Thread com1 = new Thread(new Runnable()
 	{
 		@Override
@@ -76,7 +79,7 @@ public class COM
 				{
 					if(outQueue.size()!=0)
 					{
-						send(outQueue.remove(0));
+						send(outQueue.poll());
 					}
 					else
 						try
@@ -103,8 +106,8 @@ public class COM
 				{
 					if(inQueue.size()!=0)
 					{
-						Packet p = inQueue.remove(0);
-						if(p instanceof ItineraryRegister) Itinerary.handlePacket(p);
+						Packet p = inQueue.poll();
+						if(p instanceof ItineraryStablisher) Itinerary.handlePacket(p);
 						else CTCItem.PacketManager.handlePacket(p);
 					}
 					else

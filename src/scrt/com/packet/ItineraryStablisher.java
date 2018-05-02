@@ -7,12 +7,12 @@ import java.util.List;
 
 import scrt.Orientation;
 
-public class ItineraryRegister extends Packet
+public class ItineraryStablisher extends Packet implements OrderPacket
 {
 	public TrackItemID start;
 	public TrackItemID destination;
 	public Orientation dir;
-	public ItineraryRegister(TrackItemID start, TrackItemID destination)
+	public ItineraryStablisher(TrackItemID start, TrackItemID destination)
 	{
 		this.start = start;
 		this.destination = destination;
@@ -26,13 +26,13 @@ public class ItineraryRegister extends Packet
 		data.add(dir.ordinal());
 		return data;
 	}
-	public static ItineraryRegister byState(InputStream i) throws IOException
+	public static ItineraryStablisher byState(InputStream i) throws IOException
 	{
 		i.read();
 		TrackItemID i1 = new TrackItemID(i);
 		i.read();
 		TrackItemID i2 = new TrackItemID(i);
-		var ir = new ItineraryRegister(i1, i2);
+		var ir = new ItineraryStablisher(i1, i2);
 		ir.dir = Orientation.values()[i.read()];
 		return ir;
 	}

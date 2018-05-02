@@ -1,8 +1,12 @@
 package scrt.ctc;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.swing.Timer;
 
 import scrt.Orientation;
 import scrt.com.COM;
@@ -53,6 +57,18 @@ public class TrackItem extends CTCItem{
 	TrackItem()
 	{
 		
+	}
+	public TrackItem(TrackRegister reg)
+	{
+		TrackItemID id = (TrackItemID) reg.id;
+		x = id.x;
+		y = id.y;
+		OddRotation = reg.OddRotation;
+		EvenRotation = reg.EvenRotation;
+		Name = reg.Name;
+		Station = scrt.ctc.Station.byNumber(id.stationNumber);
+		send(PacketType.TrackRegister);
+		updateState();
 	}
 	public TrackItem(String label, Station dep, int oddrot, int evenrot, int x, int y)
 	{
@@ -216,16 +232,41 @@ public class TrackItem extends CTCItem{
 		}
 		if(EvenOccupier.contains(a)&&dir==Orientation.Even)
 		{
+			if(EvenAxles==0)
+			{
+				OccupiedTime = Clock.time();
+				trainStopTimer.setInitialDelay(Station.AssociatedNumber == 0 ? 20000 : 10000);
+				trainStopTimer.setRepeats(false);
+				trainStopTimer.start();
+			}
 			EvenAxles++;
-			OccupiedTime = Clock.time();
 		}
 		else if(OddOccupier.contains(a)&&dir==Orientation.Odd)
 		{
+			if(OddAxles==0)
+			{
+				OccupiedTime = Clock.time();
+				trainStopTimer.setInitialDelay(Station.AssociatedNumber == 0 ? 20000 : 10000);
+				trainStopTimer.setRepeats(false);
+				trainStopTimer.start();
+			}
 			OddAxles++;
-			OccupiedTime = Clock.time();
 		}
 		updateOccupancy();
 	}
+	Timer trainStopTimer = new Timer(10000, new ActionListener()
+			{
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					List<SRCTListener> list = new ArrayList<SRCTListener>();
+					list.addAll(listeners);
+					for(SRCTListener l : list)
+					{
+						l.actionPerformed(new OccupationEvent(TrackItem.this, Orientation.Unknown, 0));
+					}
+				}
+			});
 	void updateOccupancy()
 	{
 		if(EvenAxles>0&&OddAxles>0) Occupied = Orientation.Both;
@@ -271,7 +312,17 @@ public class TrackItem extends CTCItem{
 	}
 	public boolean trainStopped()
 	{
-		return (Clock.time() - OccupiedTime) > (Station.AssociatedNumber == 0 ? 20000 : 15000);
+		return Occupied == Orientation.None || (Clock.time() - OccupiedTime) >= (Station.AssociatedNumber == 0 ? 20000 : 10000);
+	}
+	public TrackItem overlap = null;
+	public void setOverlap(TrackItem t)
+	{
+		if(overlap==t || (t!=null && overlap!=null)) return;
+		if(overlap==null) t.listeners.add(this);
+		else overlap.listeners.remove(this);
+		overlap = t;
+		if(overlap == null) setBlock(Orientation.None);
+		else setBlock(t.BlockState);
 	}
 	public void PerformAction(AxleCounter a, Orientation dir)
 	{
@@ -314,6 +365,7 @@ public class TrackItem extends CTCItem{
 	void tryToFree()
 	{
 		if(BlockState!=Orientation.Odd && BlockState!=Orientation.Even) return;
+		if(overlap != null) return;
 		if(BlockingSignal==null||!BlockingSignal.ClearRequest||!BlockingSignal.listeners.contains(this))
 		{
 			if(BlockingTime<=OccupiedTime || BlockingSignal == null)
@@ -418,6 +470,10 @@ public class TrackItem extends CTCItem{
 					if(SignalLinked!=null) SignalLinked.actionPerformed(e);
 				}
 				else PerformAction((AxleCounter)ae.creator, ae.dir);
+			}
+			if(overlap == e.creator && overlap.trainStopped() && overlap.BlockState != BlockState)
+			{
+				setOverlap(null);
 			}
 		}
 	}

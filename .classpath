@@ -8,7 +8,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/RXTXcomm/RXTXcomm.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="SRCT/lib/RXTXcomm"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="SCRT/lib/RXTXcomm"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jfreechart-1.0.19/lib/jfreechart-1.0.19.jar" sourcepath="lib/jfreechart-1.0.19/source"/>

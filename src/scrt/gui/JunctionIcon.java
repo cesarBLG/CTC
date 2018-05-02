@@ -68,12 +68,12 @@ public class JunctionIcon extends TrackIcon {
 				{
 					JunctionSwitch j = new JunctionSwitch(junctionID);
 					if(arg0.isAltDown()) j.force = true;
-					reader.send(j);
+					receiver.send(j);
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON1 && arg0.isControlDown())
 				{
 					data.BlockState = Orientation.None;
-					reader.send(data);
+					receiver.send(data);
 				}
 			}
 			@Override

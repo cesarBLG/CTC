@@ -16,6 +16,7 @@ public class JunctionData extends StatePacket implements DataPacket
 	public int Locked;
 	public int blockPosition;
 	public boolean locking;
+	public int muelle;
 	public JunctionData(JunctionID id)
 	{
 		super(id);

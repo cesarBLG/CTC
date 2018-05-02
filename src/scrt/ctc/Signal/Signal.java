@@ -18,6 +18,37 @@ import scrt.event.SignalEvent;
 
 public abstract class Signal extends CTCItem
 {
+	public enum SignalType
+	{
+		Exit,
+		Entry,
+		Advanced,
+		Block,
+		Shunting,
+		Exit_Indicator,
+		Switch_Indicator;
+		@Override
+		public String toString()
+		{
+			switch(this)
+			{
+				case Exit:
+					return "S";
+				case Entry:
+					return "E";
+				case Advanced:
+					return "E'";
+				case Shunting:
+					return "M";
+				case Exit_Indicator:
+					return "IS";
+				case Switch_Indicator:
+					return "R";
+				default:
+					return "";
+			}
+		}
+	}
 	public Orientation Direction;
 	public String Name = "";
 	public SignalType Class;
@@ -41,6 +72,11 @@ public abstract class Signal extends CTCItem
 	public abstract void setState();
 	Aspect LastAspect = null;
 	SignalID id = null;
+	public Signal(Station s)
+	{
+		Station = s;
+		Station.Signals.add(this);
+	}
 	public void setLinked(TrackItem t)
 	{
 		Linked = t;
@@ -75,6 +111,7 @@ public abstract class Signal extends CTCItem
 		id.stationNumber = Station.AssociatedNumber;
 		id.Number = Number;
 		id.Track = Track;
+		id.Name = Name;
 		return id;
 	}
 	@Override
@@ -88,10 +125,7 @@ public abstract class Signal extends CTCItem
 		{
 			case SignalRegister:
 				SignalRegister reg = new SignalRegister(getID());
-				reg.Name = Name;
 				reg.Fixed = this instanceof FixedSignal;
-				reg.x = Linked.x;
-				reg.y = Linked.y;
 				reg.EoT = this instanceof EoT;
 				p = reg;
 				break;
@@ -108,5 +142,18 @@ public abstract class Signal extends CTCItem
 				return;
 		}
 		COM.toSend(p);
+	}
+	public static Signal construct(SignalRegister reg)
+	{
+		SignalID id = (SignalID) reg.id;
+		switch(id.Class)
+		{
+			case Exit_Indicator:
+				return new ExitIndicator(id.Name, scrt.ctc.Station.byNumber(reg.id.stationNumber));
+			default:
+				if(reg.EoT) return new EoT(id.Direction, scrt.ctc.Station.byNumber(reg.id.stationNumber));
+				if(reg.Fixed) return new FixedSignal(id.Name, id.Direction, Aspect.Anuncio_parada, scrt.ctc.Station.byNumber(reg.id.stationNumber));
+				return new MainSignal(id.Name, scrt.ctc.Station.byNumber(reg.id.stationNumber));
+		}
 	}
 }

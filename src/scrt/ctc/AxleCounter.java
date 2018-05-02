@@ -13,15 +13,20 @@ import scrt.event.SRCTListener;
 
 public class AxleCounter extends CTCItem
 {
-	public Station Station;
+	public Station station;
 	public int Number;
 	AxleCounter EvenCounter = null;
 	AxleCounter OddCounter = null;
 	public boolean Working = true;
+	AxleCounter(ACID acid)
+	{
+		Number = acid.Num;
+		station = Station.byNumber(acid.stationNumber);
+	}
 	AxleCounter(int num, Station dep)
 	{
 		Number = num;
-		Station = dep;
+		station = dep;
 	}
 	public void EvenPassed()
 	{
@@ -60,7 +65,7 @@ public class AxleCounter extends CTCItem
 	public ACID getID()
 	{
 		ACID acid = new ACID();
-		acid.stationNumber = Station.AssociatedNumber;
+		acid.stationNumber = station.AssociatedNumber;
 		acid.Num = Number;
 		acid.dir = (Number % 2 == 0) ? Orientation.Even : Orientation.Odd;
 		return acid;
