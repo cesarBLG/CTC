@@ -27,6 +27,8 @@ import scrt.com.packet.SignalID;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.TrackRegister;
+import scrt.ctc.CTCItem;
+import scrt.ctc.TrackItem;
 
 public class TrackIcon extends CTCIcon {
 	JLabel TrackIcon = new JLabel();
@@ -74,6 +76,11 @@ public class TrackIcon extends CTCIcon {
 				// TODO Auto-generated method stub
 				if(arg0.getButton()==MouseEvent.BUTTON1)
 				{
+					if(arg0.isAltDown())
+					{
+						TrackItem t = (TrackItem) CTCItem.findId(id);
+						return;
+					}
 					if(arg0.isControlDown())
 					{
 						data.BlockState = Orientation.None;

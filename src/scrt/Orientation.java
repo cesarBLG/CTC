@@ -9,6 +9,8 @@ public enum Orientation
 	Unknown;
 	public static Orientation OppositeDir(Orientation dir)
 	{
-		return dir==Orientation.Even ? Orientation.Odd : Orientation.Even;
+		if(dir == Orientation.Even) return Orientation.Odd;
+		if(dir == Orientation.Odd) return Orientation.Even;
+		return dir;
 	}
 }

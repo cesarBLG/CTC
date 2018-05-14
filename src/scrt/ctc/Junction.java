@@ -19,12 +19,19 @@ import scrt.com.packet.Packet;
 import scrt.com.packet.Packet.PacketType;
 import scrt.com.packet.StatePacket;
 import scrt.com.packet.TrackItemID;
+import scrt.event.AxleEvent;
 import scrt.event.BlockEvent;
 import scrt.event.OccupationEvent;
-import scrt.event.SRCTListener;
+import scrt.event.SCRTListener;
 
 public class Junction extends TrackItem 
 {
+	public enum Position
+	{
+		Straight,
+		Left,
+		Right,
+	}
 	public int Number;
 	public Orientation Direction;
 	public Position Switch = Position.Straight;
@@ -35,9 +42,6 @@ public class Junction extends TrackItem
 	TrackItem BackItem;
 	TrackItem FrontItems[] = new TrackItem[2];
 	public Junction CrossingLinked = null;
-	AxleCounter ReleaseCounter[] = new AxleCounter[2];
-	List<AxleCounter> StraightOccupier = new ArrayList<AxleCounter>();
-	List<AxleCounter> CurveOccupier = new ArrayList<AxleCounter>();
 	Junction Linked = null;
 	public Junction(JunctionRegister reg)
 	{
@@ -202,8 +206,11 @@ public class Junction extends TrackItem
 			if(Linked == null || (Linked.BlockState==Orientation.None&&(Linked.Occupied==Orientation.None||Linked.Occupied==Orientation.Unknown)))
 			{
 				Locked = -1;
-				if(Linked != null) Linked.tryToUnlock();
-				blockChanged();
+				if(Linked != null)
+				{
+					Linked.tryToUnlock();
+					Linked.blockChanged(); //TODO: I hope doing this doesn't produce strange bugs
+				}
 			}
 		}
 	}
@@ -211,8 +218,10 @@ public class Junction extends TrackItem
 	public void setBlock(Orientation o) 
 	{
 		if(o == Orientation.None && Occupied == Orientation.None) blockPosition = -1;
-		super.setBlock(o);
+		if(BlockState == o) return;
+		BlockState = o;
 		tryToUnlock();
+		blockChanged();
 	}
 	@Override
 	public void setOverlap(TrackItem t)
@@ -233,16 +242,16 @@ public class Junction extends TrackItem
 		super.blockChanged();
 		if(CrossingLinked!=null)
 		{
-			List<SRCTListener> list = new ArrayList<SRCTListener>(); 
+			List<SCRTListener> list = new ArrayList<SCRTListener>(); 
 			list.addAll(CrossingLinked.listeners);
-			for(SRCTListener l : list)
+			for(SCRTListener l : list)
 			{
 				l.actionPerformed(new BlockEvent(this, BlockState));
 			}
 		}
 	}
 	@Override
-	public void PerformAction(AxleCounter c, Orientation dir)
+	public void AxleActions(AxleEvent ae)
 	{
 		if(Occupied==Direction)
 		{
@@ -252,167 +261,38 @@ public class Junction extends TrackItem
 		{
 			if(wasFree)
 			{
-				if(StraightOccupier.contains(c) && dir != Direction)
+				if(ae.previous == FrontItems[0] && !ae.release && ae.dir != Direction)
 				{
 					blockPosition = 0;
 					updatePosition(Position.Straight);
 				}
-				else if(CurveOccupier.contains(c) && dir != Direction)
+				else if(ae.previous == FrontItems[1] && !ae.release && ae.dir != Direction)
 				{
 					blockPosition = 1;
 					updatePosition(Class);
 				}
 			}
 		}
-		super.PerformAction(c, dir);
+		super.AxleActions(ae);
 		if(Occupied==Orientation.None && Muelle!=-1) updatePosition(Muelle == 0 ? Position.Straight : Class);
 		if(Occupied==Orientation.None && BlockState == Orientation.None) blockPosition = -1;
 		tryToUnlock();
-		updateState();
 	}
 	@Override
 	public void updateState()
 	{
 		send(PacketType.JunctionData);
 	}
-	@Override
-	public void setCounters(Orientation dir)
-	{
-		List<AxleCounter> l = new ArrayList<AxleCounter>();
-		l.addAll(EvenOccupier);
-		l.addAll(OddOccupier);
-		l.add(EvenRelease);
-		l.add(OddRelease);
-		EvenOccupier.clear();
-		OddOccupier.clear();
-		StraightOccupier.clear();
-		CurveOccupier.clear();
-		ReleaseCounter[0] = ReleaseCounter[1] = null;
-		EvenRelease = null;
-		OddRelease = null;
-		for(AxleCounter ac : l)
-		{
-			if(ac!=null) ac.listeners.remove(this);
-		}
-		if(BackItem!=null)
-		{
-			if(BackItem.CounterLinked!=null && BackItem.CounterDir==Direction)
-			{
-				if(Direction==Orientation.Even)
-				{
-					if(BackItem.getNext(Direction)==this) EvenOccupier.add(BackItem.CounterLinked);
-					OddRelease = BackItem.CounterLinked;
-				}
-				else
-				{
-					if(BackItem.getNext(Direction)==this) OddOccupier.add(BackItem.CounterLinked);
-					EvenRelease = BackItem.CounterLinked;
-				}
-			}
-			else
-			{
-				if(Direction==Orientation.Even)
-				{
-					if(BackItem.getNext(Direction)==this) EvenOccupier.addAll(BackItem.EvenOccupier);
-					OddRelease = BackItem.OddRelease;
-				}
-				else
-				{
-					if(BackItem.getNext(Direction)==this) OddOccupier.addAll(BackItem.OddOccupier);
-					EvenRelease = BackItem.EvenRelease;
-				}
-			}
-		}
-		if(FrontItems[0]!=null)
-		{
-			if(FrontItems[0].CounterLinked!=null && FrontItems[0].CounterDir!=Direction)
-			{
-				if(FrontItems[0].getNext(Direction == Orientation.Even ? Orientation.Odd : Orientation.Even)==this) StraightOccupier.add(FrontItems[0].CounterLinked);
-				ReleaseCounter[0] = FrontItems[0].CounterLinked;
-			}
-			else
-			{
-				if(Direction==Orientation.Even)
-				{
-					if(FrontItems[0].getNext(Direction == Orientation.Even ? Orientation.Odd : Orientation.Even)==this) StraightOccupier.addAll(FrontItems[0].OddOccupier);
-					ReleaseCounter[0] = FrontItems[0].EvenRelease;
-				}
-				else
-				{
-					if(FrontItems[0].getNext(Direction == Orientation.Even ? Orientation.Odd : Orientation.Even)==this) StraightOccupier.addAll(FrontItems[0].EvenOccupier);
-					ReleaseCounter[0] = FrontItems[0].OddRelease;
-				}
-			}
-		}
-		if(FrontItems[1]!=null)
-		{
-			if(FrontItems[1].CounterLinked!=null && FrontItems[1].CounterDir!=Direction)
-			{
-				if(FrontItems[1].getNext(Direction == Orientation.Even ? Orientation.Odd : Orientation.Even)==this) CurveOccupier.add(FrontItems[1].CounterLinked);
-				ReleaseCounter[1] = FrontItems[1].CounterLinked;
-			}
-			else
-			{
-				if(Direction==Orientation.Even)
-				{
-					if(FrontItems[1].getNext(Direction == Orientation.Even ? Orientation.Odd : Orientation.Even)==this) CurveOccupier.addAll(FrontItems[1].OddOccupier);
-					ReleaseCounter[1] = FrontItems[1].EvenRelease;
-				}
-				else
-				{
-					if(FrontItems[1].getNext(Direction == Orientation.Even ? Orientation.Odd : Orientation.Even)==this) CurveOccupier.addAll(FrontItems[1].EvenOccupier);
-					ReleaseCounter[1] = FrontItems[1].OddRelease;
-				}
-			}
-		}
-		if(Direction==Orientation.Even)
-		{
-			if(Switch==Position.Straight) EvenRelease = ReleaseCounter[0];
-			else EvenRelease = ReleaseCounter[1];
-			OddOccupier.addAll(StraightOccupier);
-			OddOccupier.addAll(CurveOccupier);
-		}
-		else
-		{
-			if(Switch==Position.Straight) OddRelease = ReleaseCounter[0];
-			else OddRelease = ReleaseCounter[1];
-			EvenOccupier.addAll(StraightOccupier);
-			EvenOccupier.addAll(CurveOccupier);
-		}
-		l.clear();
-		l.add(EvenRelease);
-		l.addAll(EvenOccupier);
-		l.add(OddRelease);
-		l.addAll(OddOccupier);
-		for(AxleCounter ac : l)
-		{
-			if(ac!=null) ac.addListener(this);
-		}
-		if(dir==Orientation.Both)
-		{
-			if(FrontItems[0]!=null) FrontItems[0].setCounters(Direction);
-			if(FrontItems[1]!=null) FrontItems[1].setCounters(Direction);
-			if(BackItem!=null) BackItem.setCounters(Direction == Orientation.Even ? Orientation.Odd : Orientation.Even);
-		}
-		else if(dir==Direction)
-		{
-			if(FrontItems[0]!=null) FrontItems[0].setCounters(Direction);
-			if(FrontItems[1]!=null) FrontItems[1].setCounters(Direction);
-		}
-		else if(dir!=Orientation.None)
-		{
-			if(BackItem!=null) BackItem.setCounters(dir);
-		}
-	}
 	public void updatePosition(Position p)
 	{
+		OddItem = getNext(Orientation.Odd);
+		EvenItem = getNext(Orientation.Even);
 		if(Occupied==Orientation.None&&Muelle!=-1) Switch = Muelle == 0 ? Position.Straight : Class;
 		else Switch = p;
 		updateState();
-		setCounters(Orientation.Both);
-		List<SRCTListener> list = new ArrayList<SRCTListener>();
+		List<SCRTListener> list = new ArrayList<SCRTListener>();
 		list.addAll(listeners);
-		for(SRCTListener l : list)
+		for(SCRTListener l : list)
 		{
 			l.actionPerformed(new OccupationEvent(this, Orientation.None, 0));
 		}
@@ -420,7 +300,8 @@ public class Junction extends TrackItem
 	public boolean setSwitch(Position p)
 	{
 		//if(!Station.Opened) return false;
-		if(!(Switch!=p&&Occupied==Orientation.None&&BlockState==Orientation.None&&Locked==-1)) return false;
+		if(Switch==p||Occupied!=Orientation.None||Locked!=-1) return false;
+		if((Switch == Position.Straight && blockPosition == 0) || (Switch == Class && blockPosition == 1)) return false;
 		updatePosition(p);
 		if(Linked!=null&&Linked.Switch != p) Linked.setSwitch(p);
 		return true;
@@ -493,6 +374,11 @@ public class Junction extends TrackItem
 				if(((JunctionSwitch) p).force)
 				{
 					updatePosition(Switch == Position.Straight ? Class : Position.Straight);
+				}
+				else if(((JunctionSwitch) p).muelle)
+				{
+					if(Muelle == -1) Muelle = Switch == Position.Straight ? 0 : 1;
+					else Muelle = -1;
 				}
 				else userChangeSwitch();
 			}

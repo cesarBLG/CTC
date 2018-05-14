@@ -1,4 +1,4 @@
-package scrt.regulation.train;
+package scrt.train;
 
 import java.util.ArrayList;
 import java.util.List;

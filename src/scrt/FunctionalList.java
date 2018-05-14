@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.ListIterator;
 
 import scrt.event.ListEvent;
-import scrt.event.SRCTListener;
+import scrt.event.SCRTListener;
 
 public class FunctionalList<E> implements List<E>{
 	List<E> list;
-	List<SRCTListener> listeners = new ArrayList<SRCTListener>();
+	List<SCRTListener> listeners = new ArrayList<SCRTListener>();
 	public FunctionalList()
 	{
 		list = new ArrayList<E>();
@@ -20,17 +20,17 @@ public class FunctionalList<E> implements List<E>{
 	{
 		list = l;
 	}
-	public void addListener(SRCTListener l)
+	public void addListener(SCRTListener l)
 	{
 		if(!listeners.contains(l)) listeners.add(l);
 	}
-	public void removerListener(SRCTListener l)
+	public void removerListener(SCRTListener l)
 	{
 		listeners.remove(l);
 	}
 	void changed(Object e)
 	{
-		for(SRCTListener l : listeners)
+		for(SCRTListener l : listeners)
 		{
 			l.actionPerformed(new ListEvent(this, e));
 		}

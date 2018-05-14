@@ -1,18 +1,19 @@
 package scrt.ctc;
 
 import scrt.Main;
+import scrt.ctc.Junction.Position;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 
 public class CommandParser {
-	public static void Parse(String s, Loader l)
+	public static void Parse(String s)
 	{
 		if(s.equals("reset")) Main.main(null);
 		if(s.equals("exit")) System.exit(0);
 		if(s.length()<5) return;
 		String name = s.substring(0, s.length() - 4);
 		String dep = s.substring(s.length() - 3);
-		for(Signal sig : l.signals)
+		for(Signal sig : Loader.signals)
 		{
 			if(sig.Name.equalsIgnoreCase(name)&&sig.Station.Name.equalsIgnoreCase(dep)&&sig instanceof MainSignal)
 			{
@@ -20,7 +21,7 @@ public class CommandParser {
 				return;
 			}
 		}
-		for(Itinerary i : l.itineraries)
+		for(Itinerary i : Loader.itineraries)
 		{
 			if(i.Name.equalsIgnoreCase(name)&&i.Station.Name.equalsIgnoreCase(dep))
 			{
@@ -28,7 +29,7 @@ public class CommandParser {
 				return;
 			}
 		}
-		for(TrackItem t : l.items)
+		for(TrackItem t : Loader.items)
 		{
 			if(t instanceof Junction)
 			{

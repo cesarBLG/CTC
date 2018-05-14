@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.WindowConstants;
@@ -37,6 +38,7 @@ public class TrackLayout
 		g.anchor = GridBagConstraints.CENTER;
 		g.gridx = g.gridy = 0;
 		g.insets = new Insets(0, 0, 0, 0);
+		g.weightx = 3;
 		g.gridheight = 1;
 		CTCIcon.gbc = g;
 		CTCIcon.layout = layout;
@@ -44,5 +46,11 @@ public class TrackLayout
 		JScrollPane pane = new JScrollPane(layout);
 		pane.getHorizontalScrollBar().setUnitIncrement(20);
 		c.add(pane);
+		for(int i=-20; i<70; i++)
+		{
+			g.gridx = i;
+			g.gridy = 50;
+			layout.add(new JLabel(" "));
+		}
 	}
 }

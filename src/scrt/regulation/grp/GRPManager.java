@@ -7,12 +7,10 @@ import scrt.ctc.Loader;
 import scrt.ctc.Station;
 
 public class GRPManager {
-	public List<GRP> GRPs = new ArrayList<GRP>();
-	Loader l;
-	public GRPManager(Loader l)
+	public static List<GRP> GRPs = new ArrayList<GRP>();
+	public static void start()
 	{
-		this.l = l;
-		for(Station s : l.stations)
+		for(Station s : Loader.stations)
 		{
 			if(!s.isOpen()) continue;
 			GRPs.add(new GRP(s));

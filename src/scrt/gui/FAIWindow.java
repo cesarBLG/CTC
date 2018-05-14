@@ -22,6 +22,7 @@ public class FAIWindow extends JFrame {
 	public FAIWindow(GRPManager grpManager)
 	{
 		super();
+		if(grpManager==null) return;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setTitle("Gestor de rutas y prioridades");
 		JTabbedPane tab = new JTabbedPane();
@@ -86,6 +87,7 @@ public class FAIWindow extends JFrame {
 		JButton addRule = new JButton("Añadir regla");
 		addRule.addActionListener(new ActionListener()
 				{
+					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						new FAIRuleCreator(grp, null);
 					}
@@ -94,6 +96,7 @@ public class FAIWindow extends JFrame {
 		JButton editRule = new JButton("Editar regla");
 		editRule.addActionListener(new ActionListener()
 				{
+					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						new FAIRuleCreator(grp, grp.rules.get(rules.getSelectedIndex()));
 					}
@@ -102,6 +105,7 @@ public class FAIWindow extends JFrame {
 		JButton deleteRule = new JButton("Eliminar regla");
 		deleteRule.addActionListener(new ActionListener()
 				{
+					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						int index = rules.getSelectedIndex();
 						if(index<0) return;

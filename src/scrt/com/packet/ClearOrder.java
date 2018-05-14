@@ -9,6 +9,7 @@ public class ClearOrder extends StatePacket implements OrderPacket
 {
 	public boolean clear = false;
 	public boolean override = false;
+	public boolean mt = false;
 	public ClearOrder(SignalID id)
 	{
 		super(id);
@@ -18,7 +19,7 @@ public class ClearOrder extends StatePacket implements OrderPacket
 	{
 		List<Integer> data = new ArrayList<Integer>();
 		data.addAll(id.getId());
-		data.add((clear ? 1 : 0) + (override ? 2 : 0));
+		data.add((clear ? 1 : 0) + (override ? 2 : 0) + (mt ? 4 : 0));
 		return data;
 	}
 	public static ClearOrder byState(InputStream i) throws IOException
@@ -28,6 +29,7 @@ public class ClearOrder extends StatePacket implements OrderPacket
 		int val = i.read();
 		co.clear = (val & 1) != 0;
 		co.override = (val & 2) != 0;
+		co.mt = (val & 4) != 0;
 		return co;
 	}
 }

@@ -14,7 +14,6 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import scrt.ctc.CommandParser;
-import scrt.ctc.Loader;
 
 public class GUI
 {
@@ -22,11 +21,9 @@ public class GUI
 	private JTextField cajaTexto;
 	private JLabel etiqueta;
 	private JFrame frame;
-	Loader l;
-	public GUI(Loader l)
+	public GUI()
 	{
 		//while(!JOptionPane.showInputDialog(null, "Introduzca contraseña").equals("1234"));
-		this.l = l;
 		frame = new JFrame();
 		frame.setLayout(new BorderLayout());
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -35,7 +32,7 @@ public class GUI
 	}
 	void Start()
 	{
-		frame.setJMenuBar(new Menu(l));
+		frame.setJMenuBar(new Menu());
 		new TrackLayout(frame);
 		setItineraryFrame();
 		frame.pack();
@@ -87,6 +84,6 @@ public class GUI
 	{
 		String s = cajaTexto.getText();
 		cajaTexto.setText("");
-		CommandParser.Parse(s, l);
+		CommandParser.Parse(s);
 	}
 }

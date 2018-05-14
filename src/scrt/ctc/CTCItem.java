@@ -7,10 +7,10 @@ import scrt.com.packet.ID;
 import scrt.com.packet.Packable;
 import scrt.com.packet.PacketManager;
 import scrt.event.SRCTEvent;
-import scrt.event.SRCTListener;
+import scrt.event.SCRTListener;
 
-public abstract class CTCItem implements SRCTListener, Packable {
-	public List<SRCTListener> listeners = new ArrayList<SRCTListener>();
+public abstract class CTCItem implements SCRTListener, Packable {
+	public List<SCRTListener> listeners = new ArrayList<SCRTListener>();
 	protected List<SRCTEvent> Queue = new ArrayList<SRCTEvent>();
 	protected boolean EventsMuted = false;
 	public static PacketManager PacketManager = new PacketManager();

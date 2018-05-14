@@ -27,8 +27,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import scrt.Orientation;
 import scrt.regulation.Place;
+import scrt.regulation.timetable.Timetable;
 import scrt.regulation.timetable.TimetableEntry;
-import scrt.regulation.train.Train;
 
 public class TrafficGraph extends JFrame
 {
@@ -43,8 +43,8 @@ public class TrafficGraph extends JFrame
 		if(t.item.isPP)
 		{
 			double pk = t.item.getPK();
-			if(t.getNext()!=null && (t.getNext().item.getPK() < pk ^ t.timetable.train.Direction == Orientation.Even)) pk = t.item.secondPK;
-			if(t.getPrev()!=null && (t.getPrev().item.getPK() > pk ^ t.timetable.train.Direction == Orientation.Even)) pk = t.item.secondPK;
+			if(t.getNext()!=null && (t.getNext().item.getPK() < pk ^ t.timetable.direction == Orientation.Even)) pk = t.item.secondPK;
+			if(t.getPrev()!=null && (t.getPrev().item.getPK() > pk ^ t.timetable.direction == Orientation.Even)) pk = t.item.secondPK;
 			series.add(t.getEntry().getTime(), pk);
 			if(t.timetable.entries.indexOf(t) != t.timetable.entries.size() - 1)
 			{
@@ -54,24 +54,24 @@ public class TrafficGraph extends JFrame
 			}
 		}
 	}
-	XYSeries construct(Train t)
+	XYSeries construct(Timetable t)
 	{
-		XYSeries series = new XYSeries(t.Number);
-		for(TimetableEntry entry : t.timetable.entries)
+		XYSeries series = new XYSeries(t.number);
+		for(TimetableEntry entry : t.entries)
 		{
 			itemToPoint(series, entry);
 		}
 		return series;
 	}
 	XYSeriesCollection dataset = new XYSeriesCollection();
-	List<Train> trains;
-	public void updateData(List<Train> trains)
+	List<Timetable> timetables;
+	public void updateData(List<Timetable> timetables)
 	{
-		this.trains = trains;
+		this.timetables = timetables;
 		dataset.removeAllSeries();
-		for(Train t : trains)
+		for(Timetable t : timetables)
 		{
-			if(t.timetable.valid) dataset.addSeries(construct(t));
+			if(t.valid) dataset.addSeries(construct(t));
 		}
 	}
 	XYLineAndShapeRenderer rend = new XYLineAndShapeRenderer()
@@ -117,12 +117,12 @@ public class TrafficGraph extends JFrame
 		ValueMarker m = new ValueMarker(new Date().getTime(), Color.white, new BasicStroke(1.5f));
 		m.setLabel(Integer.toString(new Date().getHours()) + ":" + new Date().getMinutes());
 		plot.addDomainMarker(m);
-		Timer t = new Timer(10000, new ActionListener()
+		Timer t = new Timer(2000, new ActionListener()
 				{
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						m.setValue(new Date().getTime());
-						updateData(trains);
+						updateData(timetables);
 					}
 				});
 		t.setRepeats(true);

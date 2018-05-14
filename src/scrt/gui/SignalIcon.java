@@ -36,6 +36,7 @@ public class SignalIcon extends CTCIcon {
 	JMenuItem close = new JMenuItem("Abrir señal");
 	JMenuItem override = new JMenuItem("Rebase autorizado");
 	JMenuItem auto = new JMenuItem("Modo automático");
+	JMenuItem mt = new JMenuItem("Marche el tren");
 	JPanel sigIcon = new JPanel();
 	JLabel pie = new JLabel();
 	JLabel mastil = new JLabel();
@@ -44,6 +45,7 @@ public class SignalIcon extends CTCIcon {
 	JLabel name;
 	ImageIcon mastil1;
 	ImageIcon mastil2;
+	ImageIcon mastil3;
 	public SignalIcon(SignalRegister s)
 	{
 		reg = s;
@@ -90,6 +92,7 @@ public class SignalIcon extends CTCIcon {
 			pie.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/Pie.png")));
 			mastil1 = new ImageIcon(getClass().getResource("/scrt/Images/Signals/Mastil.png"));
 			mastil2 = new ImageIcon(getClass().getResource("/scrt/Images/Signals/Recuadro.png"));
+			mastil3 = new ImageIcon(getClass().getResource("/scrt/Images/Signals/MT.png"));
 			foco.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/Foco.png")));
 			sucesion.setHorizontalAlignment(id.Direction == Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
 			sucesion.setHorizontalTextPosition(id.Direction == Orientation.Even ? JLabel.RIGHT : JLabel.LEFT);
@@ -155,6 +158,19 @@ public class SignalIcon extends CTCIcon {
 						}
 				
 					});
+			mt.addActionListener(new ActionListener()
+					{
+						@Override
+						public void actionPerformed(ActionEvent e)
+						{
+							if(!sig.ClearRequest) return;
+							var cr = new ClearOrder(id);
+							cr.clear = true;
+							cr.override = false;
+							cr.mt = true;
+							receiver.send(cr);
+						}
+					});
 			JMenuItem config = new JMenuItem("Configuración");
 			config.addActionListener(new ActionListener()
 			{
@@ -171,6 +187,7 @@ public class SignalIcon extends CTCIcon {
 				popup.add(auto);
 				//popup.add(config);
 			}
+			if(id.Class == SignalType.Exit) popup.add(mt);
 			comp.addMouseListener(new MouseListener()
 					{
 
@@ -281,6 +298,7 @@ public class SignalIcon extends CTCIcon {
 				name.setForeground(Color.white);
 			}
 			if(sig.SignalAspect == Aspect.Rebase || sig.SignalAspect == Aspect.Parada || sig.SignalAspect == Aspect.Preanuncio) mastil.setIcon(mastil2);
+			else if(sig.MT) mastil.setIcon(mastil3);
 			else mastil.setIcon(mastil1);
 			switch(sig.SignalAspect)
 			{
@@ -317,6 +335,7 @@ public class SignalIcon extends CTCIcon {
 			close.setText(sig.ClearRequest ? "Cerrar señal" : "Abrir señal");
 			override.setText(sig.OverrideRequest && sig.ClearRequest ? "Desactivar rebase" : "Rebase autorizado");
 			auto.setText(!sig.Automatic ? "Modo automático" : "Modo manual");
+			mt.setVisible(sig.ClearRequest && !sig.MT && sig.SignalAspect != Aspect.Parada && sig.SignalAspect != Aspect.Rebase);
 		}
 	}
 }

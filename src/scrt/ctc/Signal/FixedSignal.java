@@ -32,9 +32,20 @@ public class FixedSignal extends MainSignal {
 	public void setAutomatic(boolean b) {}
 	boolean prevClear = false;
 	@Override
+	public void setClearRequest()
+	{
+		if(!BlockRequest() && !TrackRequest()) UserRequest = false;
+		super.setClearRequest();
+	}
+	@Override
 	public void setAspect() {
 		SignalAspect = Aspects.get(0);
 		send();
+	}
+	@Override
+	int maxSigsAhead()
+	{
+		return SigsAhead();
 	}
 	@Override
 	public int SigsAhead()

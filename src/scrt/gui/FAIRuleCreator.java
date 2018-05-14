@@ -25,7 +25,7 @@ import scrt.Orientation;
 import scrt.ctc.TrackItem;
 import scrt.regulation.grp.GRP;
 import scrt.regulation.grp.GRPRule;
-import scrt.regulation.train.Train.TrainClass;
+import scrt.train.Train.TrainClass;
 
 public class FAIRuleCreator extends JDialog {
 

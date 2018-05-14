@@ -13,9 +13,13 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import scrt.ctc.Loader;
+import scrt.event.ListEvent;
+import scrt.event.SCRTListener;
+import scrt.event.SRCTEvent;
+import scrt.regulation.Regulation;
 
 public class Menu extends JMenuBar {
-	public Menu(Loader l)
+	public Menu()
 	{
 		super();
 		JMenu Monitor = new JMenu("Estado");
@@ -27,7 +31,18 @@ public class Menu extends JMenuBar {
 				{
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						new scrt.regulation.Loader();
+						Regulation.g = new TrafficGraph(Regulation.p);
+						Regulation.g.updateData(Regulation.services);
+						Regulation.services.addListener(new SCRTListener()
+								{
+									@Override
+									public void actionPerformed(SRCTEvent e)
+									{
+										if(e instanceof ListEvent) Regulation.g.updateData(Regulation.services);
+									}
+									@Override
+									public void muteEvents(boolean mute){}
+								});
 					}
 					
 				});
@@ -38,18 +53,18 @@ public class Menu extends JMenuBar {
 				{
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						new StationWindow(l);
+						new StationWindow();
 					}
 					
 				});
-		JMenuItem Trains = new JMenuItem("Trenes...");
+		JMenuItem Trains = new JMenuItem("Horarios...");
 		Monitor.add(Trains);
 		Trains.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
 		Trains.addActionListener(new ActionListener()
 				{
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						new TrainWindow();
+						new TimetableWindow();
 					}
 				});
 		JMenuItem Routes = new JMenuItem("Itinerarios...");
@@ -60,7 +75,7 @@ public class Menu extends JMenuBar {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						JDialog d = new JDialog();
-						d.add(new JList(l.itineraries.toArray()));
+						d.add(new JList(Loader.itineraries.toArray()));
 						d.pack();
 						d.setVisible(true);
 					}
@@ -72,7 +87,7 @@ public class Menu extends JMenuBar {
 				{
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						new FAIWindow(l.grpManager);
+						new FAIWindow(null);
 					}
 				});
 		JMenu Help = new JMenu("Ayuda");

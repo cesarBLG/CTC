@@ -13,7 +13,7 @@ import scrt.com.packet.SignalRegister;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
-import scrt.event.SRCTListener;
+import scrt.event.SCRTListener;
 import scrt.event.SignalEvent;
 
 public abstract class Signal extends CTCItem
@@ -93,8 +93,8 @@ public abstract class Signal extends CTCItem
 		if(LastAspect!=SignalAspect)
 		{
 			SignalEvent e = new SignalEvent(this);
-			List<SRCTListener> list = new ArrayList<SRCTListener>(listeners);
-			for(SRCTListener l : list) l.actionPerformed(e);
+			List<SCRTListener> list = new ArrayList<SCRTListener>(listeners);
+			for(SCRTListener l : list) l.actionPerformed(e);
 		}
 		send(PacketType.SignalData);
 		LastAspect = SignalAspect;
@@ -135,7 +135,12 @@ public abstract class Signal extends CTCItem
 				d.SignalAspect = SignalAspect;
 				d.OverrideRequest = OverrideRequest;
 				d.ClearRequest = ClearRequest;
-				if(this instanceof MainSignal) d.UserRequest = ((MainSignal)this).UserRequest;
+				if(this instanceof MainSignal)
+				{
+					var ms = (MainSignal)this;
+					d.UserRequest = ms.UserRequest;
+					d.MT = ms.MT;
+				}
 				p = d;
 				break;
 			default:

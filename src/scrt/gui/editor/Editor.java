@@ -26,11 +26,12 @@ import scrt.com.packet.SignalData;
 import scrt.com.packet.SignalID;
 import scrt.com.packet.SignalRegister;
 import scrt.com.packet.StatePacket;
+import scrt.com.packet.StationRegister;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.TrackRegister;
+import scrt.ctc.Junction.Position;
 import scrt.ctc.Loader;
-import scrt.ctc.Position;
 import scrt.ctc.Signal.Aspect;
 import scrt.gui.CTCIcon;
 import scrt.gui.JunctionIcon;
@@ -38,16 +39,12 @@ import scrt.gui.SignalIcon;
 import scrt.gui.TrackIcon;
 import scrt.gui.TrackLayout;
 
-public class Main
+public class Editor
 {
 	List<Packet> packets = new ArrayList<>();
-	public static void main(String[] args)
-	{
-		new Main();
-	}
 	int currentTrack = 0;
 	int currentStation = 0;
-	public Main()
+	public Editor()
 	{
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
@@ -88,6 +85,7 @@ public class Main
 					{
 						f.write(p.getState());
 					}
+					f.close();
 				}
 				catch(IOException e)
 				{
@@ -96,8 +94,8 @@ public class Main
 			}
 		}));
 		TrackLayout.main(null);
-		var packets = Loader.parseLayoutFile();
-		for(Packet p : packets)
+		var loadPacket = Loader.parseLayoutFile();
+		for(Packet p : loadPacket)
 		{
 			send(p);
 		}
@@ -115,7 +113,35 @@ public class Main
 						int val = e.getKeyChar() - 48;
 						if(val >= 0 && val < 10)
 						{
-							if(e.isControlDown()) currentStation = val;
+							if(e.isControlDown())
+							{
+								currentStation = val;
+								boolean exists = false;
+								for(var p : packets)
+								{
+									if(p instanceof StationRegister)
+									{
+										var reg = (StationRegister)p;
+										if(reg.associatedNumber == currentStation) exists = true;
+									}
+								}
+								if(!exists)
+								{
+									var p = new StationRegister(currentStation);
+									if(p.associatedNumber == 0)
+									{
+										p.name = "Plena vía";
+										p.shortName = "000";
+									}
+									else
+									{
+										p.name = JOptionPane.showInputDialog("Nombre de la estación");
+										if(p.name == null) return;
+										p.shortName = p.name.substring(0, 3);
+									}
+									send(p);
+								}
+							}
 							else currentTrack = val;
 						}
 					}
@@ -135,6 +161,11 @@ public class Main
 							Point p = gbl.location(ev.getPoint().x, ev.getPoint().y);
 							int x = p.x - 40;
 							int y = p.y;
+							if(ev.isControlDown() || ev.isAltDown())
+							{
+								solveFromX(x, ev.isAltDown() ? -1 : 1);
+								return;
+							}
 							var id = new TrackItemID();
 							id.stationNumber = currentStation;
 							id.x = x;
@@ -195,6 +226,27 @@ public class Main
 					public void mouseExited(MouseEvent e){}
 				});
 		
+	}
+	void solveFromX(int x, int i)
+	{
+		var ids = new ArrayList<TrackItemID>();
+		for(var p : packets)
+		{
+			if(p instanceof StatePacket)
+			{
+				if(((StatePacket) p).id instanceof TrackItemID) ids.add((TrackItemID) ((StatePacket) p).id);
+				if(p instanceof JunctionRegister) ids.add(((JunctionRegister) p).TrackId);
+			}
+			if(p instanceof LinkPacket)
+			{
+				if(((LinkPacket) p).id1 instanceof TrackItemID) ids.add((TrackItemID) ((LinkPacket) p).id1);
+				if(((LinkPacket) p).id2 instanceof TrackItemID) ids.add((TrackItemID) ((LinkPacket) p).id2);
+			}
+		}
+		for(var id : ids)
+		{
+			if(id.x >= x) id.x += i;
+		}
 	}
 	void set(CTCIcon i)
 	{
@@ -273,6 +325,11 @@ public class Main
 					{
 						if(e.getButton()==MouseEvent.BUTTON1)
 						{
+							if(e.isShiftDown())
+							{
+								linkTracks((TrackItemID) ti.getID());
+								return;
+							}
 							if(ti.signal != null) return;
 							String n = JOptionPane.showInputDialog("Nombre de la señal");
 							if(n == null || n.isEmpty()) return;
@@ -354,5 +411,14 @@ public class Main
 		}
 		CTCIcon.PacketManager.handlePacket(p);
 		if(!(p instanceof DataPacket)) packets.add(p);
+	}
+	TrackItemID linktid = null;
+	void linkTracks(TrackItemID ltid)
+	{
+		if(linktid!=null)
+		{
+			send(new LinkPacket(linktid, ltid));
+		}
+		else linktid = ltid;
 	}
 }

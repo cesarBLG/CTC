@@ -10,6 +10,10 @@ public class StationRegister extends Packet implements RegisterPacket
 	public int associatedNumber = 0;
 	public String name = "";
 	public String shortName = "";
+	public StationRegister(int number)
+	{
+		associatedNumber = number;
+	}
 	@Override
 	public List<Integer> getListState()
 	{
@@ -21,8 +25,7 @@ public class StationRegister extends Packet implements RegisterPacket
 	}
 	public static StationRegister byState(InputStream i) throws IOException
 	{
-		var s = new StationRegister();
-		s.associatedNumber = i.read();
+		var s = new StationRegister(i.read());
 		s.name = toString(i);
 		s.shortName = toString(i);
 		return s;

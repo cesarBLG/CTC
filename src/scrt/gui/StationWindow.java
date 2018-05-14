@@ -20,7 +20,7 @@ import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 
 public class StationWindow extends JDialog {
-	public StationWindow(Loader l)
+	public StationWindow()
 	{
 		super();
 		setTitle("Estaciones");
@@ -40,7 +40,7 @@ public class StationWindow extends JDialog {
 		g.gridx++;
 		g.gridy++;
 		Hashtable<Station, JComboBox<String>[]>  state = new Hashtable<Station, JComboBox<String>[]>();
-		for(Station s : l.stations)
+		for(Station s : Loader.stations)
 		{
 			if(s.AssociatedNumber==0) continue;
 			g.gridx = 0;

@@ -2,16 +2,19 @@ package scrt.event;
 
 import scrt.Orientation;
 import scrt.ctc.AxleCounter;
+import scrt.ctc.TrackItem;
 
 public class AxleEvent extends SRCTEvent 
 {
 	public Orientation dir;
-	public boolean second;
-	public AxleEvent(AxleCounter ac, Orientation dir, boolean second) 
+	public boolean release;
+	public TrackItem previous;
+	public AxleEvent(AxleCounter ac, Orientation dir, boolean release, TrackItem p) 
 	{
 		super(EventType.AxleCounter, ac);
-		this.second = second;
+		this.release = release;
 		this.dir = dir;
+		previous = p;
 	}
 
 }

@@ -12,7 +12,9 @@ public class TimetableEntry extends OccupationInterval{
 	private Date time;
 	private long stopTime = 0;
 	public long minStop = 0;
+	public Date minExit = null;
 	public boolean arrived = false;
+	public boolean exited = false;
 	public Timetable timetable;
 	public TimetableEntry getNext()
 	{
@@ -44,7 +46,7 @@ public class TimetableEntry extends OccupationInterval{
 		TimetableEntry p = getPrev();
 		TimetableEntry n = getNext();
 		stopTime = minStop;
-		if(p!=null)
+		if(p!=null && !arrived)
 		{
 			p.setExit(d);
 			time = p.getExit();
@@ -60,18 +62,29 @@ public class TimetableEntry extends OccupationInterval{
 	@Override
 	public Date getExit()
 	{
-		return new Date(time.getTime() + stopTime + (long)((item.getLength() / Math.min(timetable.train.maxSpeed, item.maxSpeed)) * 1000));
+		return new Date(time.getTime() + stopTime + (long)((item.getLength() / Math.min(timetable.speed, item.maxSpeed)) * 1000));
 	}
 	@Override
 	public void setExit(Date d)
 	{
 		long t = d.getTime() - getExit().getTime();
 		stopTime += t;
-		stopTime = Math.max(stopTime, minStop);
+		if(!exited)
+		{
+			stopTime = Math.max(stopTime, minStop);
+			if(minExit != null) stopTime += Math.max(minExit.getTime() - getExit().getTime(), 0);
+		}
 	}
 	public void setStop(long seconds)
 	{
 		minStop = seconds * 1000;
+		TimetableEntry n = getNext();
+		if(n!=null) n.setEntry(getExit());
+	}
+	public void setStop(Date exitDate)
+	{
+		minExit = exitDate;
+		setExit(exitDate);
 		TimetableEntry n = getNext();
 		if(n!=null) n.setEntry(getExit());
 	}
@@ -81,5 +94,10 @@ public class TimetableEntry extends OccupationInterval{
 		item.occupy(this);
 		TimetableEntry n = getNext();
 		if(n!=null) n.changed();
+	}
+	@Override
+	public String toString()
+	{
+		return item.name + (track!=null ?  " vía " + track.number + ", " : " ") + getEntry() + " " + getExit();
 	}
 }

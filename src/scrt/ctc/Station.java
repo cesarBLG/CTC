@@ -7,7 +7,7 @@ import scrt.com.COM;
 import scrt.com.packet.StationRegister;
 import scrt.ctc.Signal.Signal;
 import scrt.regulation.grp.GRP;
-import scrt.regulation.train.Train;
+import scrt.train.Train;
 
 public class Station {
 	public String Name;
@@ -37,6 +37,7 @@ public class Station {
 		else if(name.equals("Arb")) return 5;
 		else if(name.equals("Los")) return 6;
 		else if(name.equals("Car")) return 7;
+		else if(name.equals("Tor")) return 8; 
 		else return 0;
 	}
 	public void Open()
@@ -95,6 +96,14 @@ public class Station {
 		for(Station s : stations)
 		{
 			if(s.AssociatedNumber == num) return s;
+		}
+		return null;
+	}
+	public static Station byName(String name)
+	{
+		for(Station s : stations)
+		{
+			if(s.Name.equals(name)) return s;
 		}
 		return null;
 	}

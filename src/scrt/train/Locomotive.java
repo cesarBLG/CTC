@@ -1,5 +1,5 @@
-package scrt.regulation.train;
-public class Engine {
+package scrt.train;
+public class Locomotive extends Wagon {
 	public enum PowerClass
 	{
 		Steam,

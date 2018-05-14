@@ -5,7 +5,7 @@ import java.util.List;
 
 import scrt.FunctionalList;
 import scrt.ctc.Station;
-import scrt.regulation.train.Train;
+import scrt.train.Train;
 
 public class GRP {
 	public Station station;
@@ -18,7 +18,7 @@ public class GRP {
 		s.grp = this;
 		rules.add(new GRPRule());
 		rules.add(new GRPRule());
-		trains.add(new Train(27001));
+		//trains.add(new Train(27001));
 	}
 	public void update()
 	{

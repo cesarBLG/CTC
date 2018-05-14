@@ -8,7 +8,9 @@ public class PacketManager
 	public List<Packable> items = new ArrayList<Packable>();
 	public void handlePacket(Packet p)
 	{
-		for(Packable i : items)
+		var l = new ArrayList<Packable>();
+		l.addAll(items);
+		for(Packable i : l)
 		{
 			i.load(p);
 		}

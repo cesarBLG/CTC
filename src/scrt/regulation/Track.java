@@ -6,7 +6,7 @@ import java.util.List;
 
 import scrt.FunctionalList;
 import scrt.regulation.timetable.TimetableEntry;
-import scrt.regulation.train.Train;
+import scrt.train.Train;
 
 public class Track
 {

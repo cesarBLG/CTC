@@ -10,9 +10,9 @@ import javax.swing.event.ListDataListener;
 import scrt.FunctionalList;
 import scrt.event.ListEvent;
 import scrt.event.SRCTEvent;
-import scrt.event.SRCTListener;
+import scrt.event.SCRTListener;
 
-public class FunctionalListModel<E> implements ListModel<E>, SRCTListener {
+public class FunctionalListModel<E> implements ListModel<E>, SCRTListener {
 	List<E> list;
 	List<ListDataListener> listeners = new ArrayList<ListDataListener>();
 	public FunctionalListModel(FunctionalList<E> list)

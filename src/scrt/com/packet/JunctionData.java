@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import scrt.Orientation;
-import scrt.ctc.Position;
+import scrt.ctc.Junction.Position;
 
 public class JunctionData extends StatePacket implements DataPacket
 {
@@ -16,7 +16,6 @@ public class JunctionData extends StatePacket implements DataPacket
 	public int Locked;
 	public int blockPosition;
 	public boolean locking;
-	public int muelle;
 	public JunctionData(JunctionID id)
 	{
 		super(id);

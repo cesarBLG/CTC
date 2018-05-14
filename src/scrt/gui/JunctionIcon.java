@@ -14,7 +14,9 @@ import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 import scrt.Orientation;
@@ -24,7 +26,7 @@ import scrt.com.packet.JunctionID;
 import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.JunctionSwitch;
 import scrt.com.packet.Packet;
-import scrt.ctc.Position;
+import scrt.ctc.Junction.Position;
 
 public class JunctionIcon extends TrackIcon {
 	
@@ -38,6 +40,21 @@ public class JunctionIcon extends TrackIcon {
 		super(reg.TrackId);
 		this.reg = reg;
 		junctionID = (JunctionID) reg.id;
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(junctionID.Name);
+		popup.addSeparator();
+		JMenuItem muelle = new JMenuItem("Muelle");
+		muelle.addActionListener(new ActionListener()
+				{
+					@Override
+					public void actionPerformed(ActionEvent e)
+					{
+						JunctionSwitch j = new JunctionSwitch(junctionID);
+						j.muelle = true;
+						receiver.send(j);
+					}
+				});
+		popup.add(muelle);
 		comp.addMouseListener(new MouseListener()
 		{
 
@@ -63,6 +80,7 @@ public class JunctionIcon extends TrackIcon {
 				// TODO Auto-generated method stub
 				if(arg0.isPopupTrigger())
 				{
+					popup.show(comp, arg0.getX(), arg0.getY());
 				}
 				if(arg0.getButton()==MouseEvent.BUTTON1)
 				{
@@ -81,6 +99,7 @@ public class JunctionIcon extends TrackIcon {
 				// TODO Auto-generated method stub
 				if(arg0.isPopupTrigger())
 				{
+					popup.show(comp, arg0.getX(), arg0.getY());
 				}
 			}
 	

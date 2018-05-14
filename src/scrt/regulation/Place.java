@@ -7,8 +7,9 @@ import java.util.List;
 
 import scrt.FunctionalList;
 import scrt.Orientation;
+import scrt.ctc.Station;
 import scrt.regulation.timetable.TimetableEntry;
-import scrt.regulation.train.Train;
+import scrt.train.Train;
 
 public class Place
 {
@@ -20,11 +21,13 @@ public class Place
 	public FunctionalList<Track> tracks = new FunctionalList<Track>();
 	List<Place> odd = new ArrayList<Place>();
 	List<Place> even = new ArrayList<Place>();
-	String name;
+	public String name;
+	public Station station;
 	public Place(){}
-	public Place(String name)
+	public Place(Station station)
 	{
-		this.name = name;
+		this.station = station;
+		this.name = station.FullName;
 	}
 	public double getLength()
 	{

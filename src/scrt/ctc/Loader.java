@@ -20,23 +20,22 @@ import scrt.com.packet.SignalRegister;
 import scrt.com.packet.StationRegister;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.TrackRegister;
+import scrt.ctc.Junction.Position;
 import scrt.ctc.Signal.EoT;
 import scrt.ctc.Signal.Signal;
-import scrt.gui.GUI;
-import scrt.regulation.grp.GRPManager;
+import scrt.train.Train;
 
 public class Loader {
-	public List<TrackItem> items = new ArrayList<TrackItem>();
-	public List<Signal> signals = new ArrayList<Signal>();
-	public List<AxleCounter> counters = new ArrayList<AxleCounter>();
-	public List<Itinerary> itineraries = new ArrayList<Itinerary>();
-	public List<Station> stations = new ArrayList<Station>();
-	public GRPManager grpManager;
-	public Loader()
+	public static List<TrackItem> items = new ArrayList<TrackItem>();
+	public static List<Signal> signals = new ArrayList<Signal>();
+	public static List<AxleCounter> counters = new ArrayList<AxleCounter>();
+	public static List<Itinerary> itineraries = new ArrayList<Itinerary>();
+	public static List<Station> stations = new ArrayList<Station>();
+	public static List<Train> trains = new ArrayList<Train>();
+	public static void load()
 	{
+		//Config.set("FCD");
 		load(parseLayoutFile());
-		grpManager = new GRPManager(this);
-		new GUI(this);
 	}
 	public static List<Packet> parseLayoutFile()
 	{
@@ -65,10 +64,9 @@ public class Loader {
 					{
 						String full = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
 						String name = s.substring(s.indexOf(']')+2, s.indexOf(']')+5);
-						var reg = new StationRegister();
+						var reg = new StationRegister(Station.getNumber(name));
 						reg.name = full;
 						reg.shortName = name;
-						reg.associatedNumber = Station.getNumber(name);
 						Workingdep = reg.associatedNumber;
 						boolean exists = false;
 						for(Packet p : packets)
@@ -200,7 +198,7 @@ public class Loader {
 		}
 		return packets;
 	}
-	public void load(List<Packet> packets)
+	public static void load(List<Packet> packets)
 	{
 		COM.initialize();
 		for(var p : packets)
@@ -225,30 +223,37 @@ public class Loader {
 				signals.add(Signal.construct((SignalRegister) p));
 			}
 		}
+		resolveLinks();
 		for(var p : packets)
 		{
-			if(p instanceof LinkPacket)
+			if(p instanceof LinkPacket) CTCItem.PacketManager.handlePacket(p);
+		}
+		for(TrackItem a : items)
+		{
+			if(a.SignalLinked!=null) a.SignalLinked.setAspect();
+			if(a.getNext(Orientation.Even) == null)
 			{
-				var link = (LinkPacket)p;
-				if(link.id1 instanceof TrackItemID)
+				if(a.CounterLinked != null)
 				{
-					if(link.id2 instanceof SignalID) ((Signal)CTCItem.findId(link.id2)).setLinked((TrackItem)CTCItem.findId(link.id1));
-					if(link.id2 instanceof ACID)
-					{
-						AxleCounter ac = (AxleCounter) CTCItem.findId(link.id2);
-						if(ac == null)
-						{
-							ac = new AxleCounter((ACID)link.id2);
-							counters.add(ac);
-						}
-						((TrackItem)CTCItem.findId(link.id1)).setCounterLinked(ac, ac.Number % 2 == 0 ? Orientation.Even : Orientation.Odd);
-					}
+					new EoT(Orientation.Even, a.Station).setLinked(a);
+					signals.add(a.SignalLinked);
+					a.Station.Signals.add(a.SignalLinked);
 				}
+				else System.err.println("Error: Final de vía sin contador asociado en " + a.x + ", " + a.y);
+			}
+			if(a.getNext(Orientation.Odd) == null)
+			{
+				if(a.CounterLinked != null)
+				{
+					new EoT(Orientation.Odd, a.Station).setLinked(a);
+					signals.add(a.SignalLinked);
+					a.Station.Signals.add(a.SignalLinked);
+				}
+				else System.err.println("Error: Final de vía sin contador asociado en " + a.x + ", " + a.y);
 			}
 		}
-		resolveLinks();
 	}
-	public void resolveLinks()
+	public static void resolveLinks()
 	{
 		for(TrackItem a : items)
 		{
@@ -313,28 +318,6 @@ public class Loader {
 				{
 					if(b.connectsTo(Orientation.Even, a)) a.EvenItem = b;
 					if(b.connectsTo(Orientation.Odd, a)) a.OddItem = b;
-				}
-			}
-		}
-		for(TrackItem a : items)
-		{
-			if(a.SignalLinked!=null) a.SignalLinked.setAspect();
-			if(a.CounterLinked!=null)
-			{
-				a.setCounters(Orientation.None);
-				if(a.EvenItem!=null) a.EvenItem.setCounters(Orientation.Even);
-				else
-				{
-					new EoT(Orientation.Even, a.Station).setLinked(a);
-					signals.add(a.SignalLinked);
-					a.Station.Signals.add(a.SignalLinked);
-				}
-				if(a.OddItem!=null) a.OddItem.setCounters(Orientation.Odd);
-				else
-				{
-					new EoT(Orientation.Odd, a.Station).setLinked(a);
-					signals.add(a.SignalLinked);
-					a.Station.Signals.add(a.SignalLinked);
 				}
 			}
 		}

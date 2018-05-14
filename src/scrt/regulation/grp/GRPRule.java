@@ -7,8 +7,8 @@ import scrt.FunctionalList;
 import scrt.Orientation;
 import scrt.ctc.TrackItem;
 import scrt.event.UserEvent;
-import scrt.regulation.train.Train;
-import scrt.regulation.train.Train.TrainClass;
+import scrt.train.Train;
+import scrt.train.Train.TrainClass;
 
 public class GRPRule {
 	List<UserEvent> actions = new ArrayList<UserEvent>();

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import scrt.Orientation;
-import scrt.ctc.Position;
+import scrt.ctc.Junction.Position;
 
 public class JunctionRegister extends StatePacket implements RegisterPacket
 {

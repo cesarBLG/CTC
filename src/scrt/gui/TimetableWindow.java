@@ -16,9 +16,9 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-public class TrainWindow extends JDialog
+public class TimetableWindow extends JDialog
 {
-	public TrainWindow()
+	public TimetableWindow()
 	{
 		
 		JPanel panel = new JPanel();
@@ -38,6 +38,7 @@ public class TrainWindow extends JDialog
 		
 		JList list = new JList();
 		panel_2.add(list);
+		list.setModel(new FunctionalListModel(scrt.regulation.Regulation.services));
 		list.setPreferredSize(new Dimension(40, 100));
 		
 		JPanel panel_3 = new JPanel();

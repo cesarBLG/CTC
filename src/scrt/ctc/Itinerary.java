@@ -7,6 +7,7 @@ import java.util.List;
 import scrt.Orientation;
 import scrt.com.packet.ItineraryStablisher;
 import scrt.com.packet.Packet;
+import scrt.ctc.Junction.Position;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 

@@ -5,22 +5,29 @@ import java.util.Date;
 import java.util.List;
 
 import scrt.FunctionalList;
-import scrt.regulation.Loader;
+import scrt.Orientation;
 import scrt.regulation.Overlap;
 import scrt.regulation.Place;
 import scrt.regulation.Track;
-import scrt.regulation.train.Train;
+import scrt.train.Train;
 
 public class Timetable
 {
 	public Train train;
+	public int number;
+	public int speed = 3;
 	public FunctionalList<TimetableEntry> entries = new FunctionalList<TimetableEntry>();
 	public long maxDelay = 300000;
 	public boolean valid = false;
-	static long a = 0;
+	public Orientation direction;
+	public Timetable(int serviceNumber)
+	{
+		number = serviceNumber;
+		direction = (serviceNumber % 2 == 0) ? Orientation.Even : Orientation.Odd;
+	}
 	public void set(Place origin, Place destination)
 	{
-		List<Place> list = origin.path(destination, train.Direction, true);
+		List<Place> list = origin.path(destination, direction, true);
 		for(int i = 0; i<list.size(); i++)
 		{
 			entries.add(new TimetableEntry(this, list.get(i)));
@@ -65,7 +72,7 @@ public class Timetable
 			if(t!=this) t.reset();
 		}
 		entries.get(0).changed();
-		List<Timetable> timetables = new ArrayList<Timetable>();
+		//List<Timetable> timetables = new ArrayList<Timetable>();
 		solveOverlaps();
 	}
 	List<Overlap> getOverlapList()
@@ -84,9 +91,13 @@ public class Timetable
 		{
 			list.sort((o1, o2) -> o1.startTime.compareTo(o2.startTime));
 			Overlap o = list.get(0);
-			Loader.g.updateData(Loader.t);
 			o.track.solveOverlap(o);
 			solveOverlaps();
 		}
+	}
+	@Override
+	public String toString()
+	{
+		return Integer.toString(number);
 	}
 }

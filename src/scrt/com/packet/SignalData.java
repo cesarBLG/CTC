@@ -18,6 +18,7 @@ public class SignalData extends StatePacket implements DataPacket
 	public boolean UserRequest;
 	public boolean OverrideRequest;
 	public boolean ClearRequest;
+	public boolean MT = false;
 	@Override
 	public List<Integer> getListState()
 	{
@@ -28,6 +29,7 @@ public class SignalData extends StatePacket implements DataPacket
 		data.add(UserRequest ? 1 : 0);
 		data.add(OverrideRequest ? 1 : 0);
 		data.add(ClearRequest ? 1 : 0);
+		data.add(MT ? 1 : 0);
 		return data;
 	}
 	public static SignalData byState(InputStream d) throws IOException
@@ -39,6 +41,7 @@ public class SignalData extends StatePacket implements DataPacket
 		s.UserRequest = d.read() == 1;
 		s.OverrideRequest = d.read() == 1;
 		s.ClearRequest = d.read() == 1;
+		s.MT = d.read() == 1;
 		return s;
 	}
 }
