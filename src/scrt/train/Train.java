@@ -1,3 +1,21 @@
+/*******************************************************************************
+ * Copyright (C) 2017-2018 César Benito Lamata
+ * 
+ * This file is part of SCRT.
+ * 
+ * SCRT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * SCRT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCRT.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package scrt.train;
 
 import java.awt.event.ActionEvent;
@@ -27,8 +45,8 @@ public class Train {
 	public String Name;
 	public Orientation Direction = Orientation.None;
 	int NumAxles = 2;
-	public int Length = 0;
-	public int Priority = 0;
+	public int length = 0;
+	public int priority = 0;
 	public TrainClass Class = TrainClass.Empty;
 	public List<Wagon> wagons = new ArrayList<Wagon>();
 	public Timetable timetable = null;
@@ -56,6 +74,7 @@ public class Train {
 	}
 	public void addWagon(Wagon w)
 	{
+		length+=w.length;
 		wagons.add(w);
 		w.train = this;
 		boolean steam = false;
@@ -65,7 +84,7 @@ public class Train {
 		{
 			Locomotive e = (Locomotive)w;
 			if(e.Class==PowerClass.Steam) steam = true;
-			if(e.NeedsWater) Priority++;
+			if(e.NeedsWater) priority++;
 		}
 		if(w instanceof FreightWagon) freight = true;
 		if(w instanceof PassengerWagon) passengers = true;
@@ -80,10 +99,10 @@ public class Train {
 	}
 	public void setPriority()
 	{
-		Priority = 0;
-		if(isSteam) Priority++;
-		if(Class==TrainClass.Passengers) Priority++;
-		if((TimeStopped>90&&Class==TrainClass.Passengers)||TimeStopped>120) Priority++;//Change TimeStopped to accumulated delay
+		priority = 0;
+		if(isSteam) priority++;
+		if(Class==TrainClass.Passengers) priority++;
+		if((TimeStopped>90&&Class==TrainClass.Passengers)||TimeStopped>120) priority++;//Change TimeStopped to accumulated delay
 	}
 	public void setPath()
 	{
@@ -101,9 +120,9 @@ public class Train {
 	{
 		t1.setPriority();
 		t2.setPriority();
-		if(t1.Priority < t2.Priority && delay1 >= delay2) return t1;
-		if(t1.Priority > t2.Priority && delay1 <= delay2) return t2;
-		if(t1.Priority == t2.Priority)
+		if(t1.priority < t2.priority && delay1 >= delay2) return t1;
+		if(t1.priority > t2.priority && delay1 <= delay2) return t2;
+		if(t1.priority == t2.priority)
 		{
 			if(delay1 > delay2) return t2;
 			else return t1;

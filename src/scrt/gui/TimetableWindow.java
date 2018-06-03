@@ -1,3 +1,21 @@
+/*******************************************************************************
+ * Copyright (C) 2017-2018 César Benito Lamata
+ * 
+ * This file is part of SCRT.
+ * 
+ * SCRT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * SCRT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCRT.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package scrt.gui;
 
 import java.awt.BorderLayout;
@@ -5,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.text.SimpleDateFormat;
 
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
@@ -15,9 +34,17 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import scrt.regulation.Regulation;
+import scrt.regulation.timetable.Timetable;
+import scrt.regulation.timetable.TimetableEntry;
 
 public class TimetableWindow extends JDialog
 {
+	private JPanel panel_4;
+	private JPanel panel_1;
 	public TimetableWindow()
 	{
 		
@@ -37,6 +64,12 @@ public class TimetableWindow extends JDialog
 		scrollPane.setViewportView(panel_2);
 		
 		JList list = new JList();
+		list.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				display(Regulation.services.get(list.getSelectedIndex()));
+			}
+		});
 		panel_2.add(list);
 		list.setModel(new FunctionalListModel(scrt.regulation.Regulation.services));
 		list.setPreferredSize(new Dimension(40, 100));
@@ -51,7 +84,7 @@ public class TimetableWindow extends JDialog
 		gbl_panel_3.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 		panel_3.setLayout(gbl_panel_3);
 		
-		JPanel panel_1 = new JPanel();
+		panel_1 = new JPanel();
 		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
 		gbc_panel_1.fill = GridBagConstraints.BOTH;
 		gbc_panel_1.insets = new Insets(0, 0, 5, 0);
@@ -64,6 +97,34 @@ public class TimetableWindow extends JDialog
 		gbl_panel_1.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gbl_panel_1.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
 		panel_1.setLayout(gbl_panel_1);
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
+		scrollPane_1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		GridBagConstraints gbc_scrollPane_1 = new GridBagConstraints();
+		gbc_scrollPane_1.fill = GridBagConstraints.BOTH;
+		gbc_scrollPane_1.gridx = 0;
+		gbc_scrollPane_1.gridy = 1;
+		panel_3.add(scrollPane_1, gbc_scrollPane_1);
+
+		panel_4 = new JPanel();
+		scrollPane_1.setViewportView(panel_4);
+		GridBagLayout gbl_panel_4 = new GridBagLayout();
+		gbl_panel_4.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_panel_4.rowHeights = new int[]{0, 0, 0};
+		gbl_panel_4.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_4.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		panel_4.setLayout(gbl_panel_4);
+		
+		display(Regulation.services.get(0));
+		
+		pack();
+		setVisible(true);
+	}
+	void display(Timetable t)
+	{
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+		
+		panel_1.removeAll();
 		
 		JLabel lblTren = new JLabel("TREN");
 		GridBagConstraints gbc_lblTren = new GridBagConstraints();
@@ -122,22 +183,28 @@ public class TimetableWindow extends JDialog
 		gbc_lblSalida.gridy = 1;
 		panel_1.add(lblSalida, gbc_lblSalida);
 		
-		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		GridBagConstraints gbc_scrollPane_1 = new GridBagConstraints();
-		gbc_scrollPane_1.fill = GridBagConstraints.BOTH;
-		gbc_scrollPane_1.gridx = 0;
-		gbc_scrollPane_1.gridy = 1;
-		panel_3.add(scrollPane_1, gbc_scrollPane_1);
+		if((1 & 1) != 0)
+		{
+			GridBagConstraints gbc_train = new GridBagConstraints();
+			gbc_train.gridx = 0;
+			gbc_train.gridy = 2;
+			panel_1.add(new JLabel(Integer.toString(t.number)), gbc_train);
+			gbc_train.gridx++;
+			panel_1.add(new JLabel(t.train != null ? t.train.Class.name() : ""), gbc_train);
+			gbc_train.gridx++;
+			panel_1.add(new JLabel(t.speed + "N"), gbc_train);
+			gbc_train.gridx++;
+			panel_1.add(new JLabel((t.train!=null ? t.train.length : 0)+"m"), gbc_train);
+			gbc_train.gridx++;
+			panel_1.add(new JLabel(t.entries.get(0).item.name), gbc_train);
+			gbc_train.gridx++;
+			panel_1.add(new JLabel(t.entries.get(t.entries.size() - 1).item.name), gbc_train);
+			gbc_train.gridx++;
+			panel_1.add(new JLabel(sdf.format(t.entries.get(0).getExit())), gbc_train);
+			gbc_train.gridx++;
+		}
 		
-		JPanel panel_4 = new JPanel();
-		scrollPane_1.setViewportView(panel_4);
-		GridBagLayout gbl_panel_4 = new GridBagLayout();
-		gbl_panel_4.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_panel_4.rowHeights = new int[]{0, 0, 0};
-		gbl_panel_4.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_panel_4.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
-		panel_4.setLayout(gbl_panel_4);
+		panel_4.removeAll();
 		
 		JLabel lblHorario = new JLabel("HORARIO");
 		GridBagConstraints gbc_lblHorario = new GridBagConstraints();
@@ -190,13 +257,30 @@ public class TimetableWindow extends JDialog
 		gbc_lblHoraSalida.gridy = 1;
 		panel_4.add(lblHoraSalida, gbc_lblHoraSalida);
 		
-		JLabel lblTiempoConc = new JLabel("Tiempo conc.");
-		GridBagConstraints gbc_lblTiempoConc = new GridBagConstraints();
-		gbc_lblTiempoConc.gridx = 6;
-		gbc_lblTiempoConc.gridy = 1;
-		panel_4.add(lblTiempoConc, gbc_lblTiempoConc);
+		GridBagConstraints gbc_timetable = new GridBagConstraints();
+		gbc_timetable.gridy = 2;
 		
-		pack();
-		setVisible(true);
+		for(TimetableEntry e : t.entries)
+		{
+			if(!e.item.isPP) continue;
+			gbc_timetable.gridx = 0;
+			panel_4.add(new JLabel(Integer.toString((int) e.item.getPK())), gbc_timetable);
+			gbc_timetable.gridx++;
+			panel_4.add(new JLabel(Integer.toString(e.item.maxSpeed)), gbc_timetable);
+			gbc_timetable.gridx++;
+			panel_4.add(new JLabel(e.item.name), gbc_timetable);
+			gbc_timetable.gridx++;
+			panel_4.add(new JLabel(sdf.format(e.getEntry())), gbc_timetable);
+			gbc_timetable.gridx++;
+			panel_4.add(new JLabel(Integer.toString(Math.round((e.getExit().getTime() - e.getEntry().getTime()) / 60000f))), gbc_timetable);
+			gbc_timetable.gridx++;
+			panel_4.add(new JLabel(sdf.format(e.getExit())), gbc_timetable);
+			gbc_timetable.gridx++;
+			gbc_timetable.gridy++;
+		}
+		panel_4.validate();
+		panel_1.validate();
+		panel_4.repaint();
+		panel_1.repaint();
 	}
 }
