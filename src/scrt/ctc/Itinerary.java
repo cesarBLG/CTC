@@ -74,7 +74,6 @@ public class Itinerary {
 				{
 					if(Switches.get(j.Number)==0)
 					{
-						if(j.Muelle!=-1) j.Muelle = 0;
 						j.setSwitch(Position.Straight);
 						if(j.Switch!=Position.Straight)
 						{
@@ -84,7 +83,6 @@ public class Itinerary {
 					}
 					else
 					{
-						if(j.Muelle!=-1) j.Muelle = 1;
 						j.setSwitch(j.Class);
 						if(j.Switch!=j.Class)
 						{
@@ -168,7 +166,6 @@ public class Itinerary {
 			if(path.indexOf(t) < path.size() - 1 && !path.contains(t.getNext(dir)))
 			{
 				Junction j = (Junction)t;
-				if(j.Muelle != -1) j.Muelle = 1-j.Muelle;
 				j.setSwitch(j.Switch == Position.Straight ? j.Class : Position.Straight);
 			}
 		}

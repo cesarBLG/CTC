@@ -44,7 +44,8 @@ public abstract class Packet
 		RequestPacket,
 		StationRegister,
 		ClearOrder,
-		AutomaticOrder
+		AutomaticOrder,
+		JunctionPositionSwitch,
 	}
 	PacketType type;
 	public abstract List<Integer> getListState();

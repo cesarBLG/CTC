@@ -18,19 +18,17 @@
  ******************************************************************************/
 package scrt.ctc;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.swing.Timer;
 
 import scrt.Orientation;
 import scrt.com.COM;
 import scrt.com.packet.JunctionData;
 import scrt.com.packet.JunctionID;
 import scrt.com.packet.JunctionLock;
+import scrt.com.packet.JunctionPositionSwitch;
+import scrt.com.packet.JunctionPositionSwitch.Posibilities;
 import scrt.com.packet.JunctionRegister;
 import scrt.com.packet.JunctionSwitch;
 import scrt.com.packet.Packet;
@@ -48,15 +46,17 @@ public class Junction extends TrackItem
 	{
 		Straight,
 		Left,
-		Right,
+		Right, 
+		Unknown,
 	}
 	public int Number;
 	public Orientation Direction;
-	public Position Switch = Position.Straight;
+	public Position Switch = Position.Unknown;
+	Position target = Position.Unknown;
 	public Position Class;
 	public int blockPosition = -1;
 	public int Locked = -1;
-	public int Muelle = -1;
+	int lockTarget = -1;
 	TrackItem BackItem;
 	TrackItem FrontItems[] = new TrackItem[2];
 	public Junction CrossingLinked = null;
@@ -71,6 +71,7 @@ public class Junction extends TrackItem
 		Direction = reg.Direction;
 		Station = scrt.ctc.Station.byNumber(id.stationNumber);
 		send(PacketType.JunctionRegister);
+		send(PacketType.JunctionPositionSwitch, false);
 		updateState();
 	}
 	public Junction(int num, Station dep, Position p, int x, int y)
@@ -82,10 +83,11 @@ public class Junction extends TrackItem
 		Class = p;
 		Direction = num%2==0 ? Orientation.Even : Orientation.Odd;
 		send(PacketType.JunctionRegister);
+		send(PacketType.JunctionPositionSwitch, false);
 		updateState();
 	}
 	@Override
-	void send(PacketType type)
+	void send(PacketType type, Object... extra)
 	{
 		Packet p;
 		switch(type)
@@ -110,6 +112,18 @@ public class Junction extends TrackItem
 				d.locking = locking;
 				p = d;
 				break;
+			case JunctionPositionSwitch:
+				if(extra.length!=1 || !(extra[0] instanceof Boolean)) throw new IllegalArgumentException("Extra parameter must be a boolean");
+				var jps = new JunctionPositionSwitch(getID(), (boolean)extra[0] ? Posibilities.Order : Posibilities.Request);
+				jps.position = target;
+				p = jps;
+				break;
+			case JunctionLock:
+				var jl = new JunctionLock(getID());
+				jl.order = true;
+				jl.value = lockTarget;
+				p = jl;
+				break;
 			default:
 				return;
 		}
@@ -118,25 +132,29 @@ public class Junction extends TrackItem
 	public void userChangeSwitch()
 	{
 		if(Locked!=-1) return;
-		if(Muelle!=-1)
+		//TODO: Spring needs redefinition. Maybe it is unnecessary
+		/*if(Muelle!=-1)
 		{
 			Muelle = 1-Muelle;
 			updatePosition(Position.Straight);
 			return;
-		}
+		}*/
 		if(Switch==Position.Straight) setSwitch(Class);
 		else setSwitch(Position.Straight);
 	}
 	@Override
 	public TrackItem getNext(Orientation o)
 	{
+		if(Switch==Position.Unknown) send(PacketType.JunctionPositionSwitch, false);
 		if(Direction!=o) return BackItem;
-		else return FrontItems[Switch==Position.Straight ? 0 : 1];
+		if(Switch==Position.Unknown || target!=Switch) return null;
+		return FrontItems[Switch==Position.Straight ? 0 : 1];
 	}
 	@Override
 	public TrackItem getNext(TrackItem t)
 	{
 		if((t==FrontItems[0])||(t==FrontItems[1])) return BackItem;
+		if(Switch==Position.Unknown || target!=Switch) return null;
 		if(t==BackItem) return FrontItems[Switch==Position.Straight ? 0 : 1];
 		return null;
 	}
@@ -188,26 +206,11 @@ public class Junction extends TrackItem
 		{
 			if(locking) return;
 			locking = true;
-			sendLockOrder(val);
+			lockTarget = val;
+			send(PacketType.JunctionLock);
 			if(val == 0 && Linked != null) Linked.lock(val);
 			updateState();
 		}
-	}
-	void sendLockOrder(int val)
-	{
-		Timer timer = new Timer(1000, new ActionListener()
-				{
-					@Override
-					public void actionPerformed(ActionEvent arg0)
-					{
-						JunctionLock l = new JunctionLock(getID());
-						l.order = false;
-						l.value = val;
-						load(l);
-					}
-				});
-		timer.setRepeats(false);
-		timer.start();
 	}
 	void updateLock(int lock)
 	{
@@ -292,7 +295,11 @@ public class Junction extends TrackItem
 			}
 		}
 		super.AxleActions(ae);
-		if(Occupied==Orientation.None && Muelle!=-1) updatePosition(Muelle == 0 ? Position.Straight : Class);
+		if(Occupied==Orientation.None && !wasFree)
+		{
+			Switch = Position.Unknown;
+			send(PacketType.JunctionPositionSwitch, false);
+		}
 		if(Occupied==Orientation.None && BlockState == Orientation.None) blockPosition = -1;
 		tryToUnlock();
 	}
@@ -303,10 +310,10 @@ public class Junction extends TrackItem
 	}
 	public void updatePosition(Position p)
 	{
+		Switch = p;
+		target = p;
 		OddItem = getNext(Orientation.Odd);
 		EvenItem = getNext(Orientation.Even);
-		if(Occupied==Orientation.None&&Muelle!=-1) Switch = Muelle == 0 ? Position.Straight : Class;
-		else Switch = p;
 		updateState();
 		List<SCRTListener> list = new ArrayList<SCRTListener>();
 		list.addAll(listeners);
@@ -320,8 +327,9 @@ public class Junction extends TrackItem
 		//if(!Station.Opened) return false;
 		if(Switch==p||Occupied!=Orientation.None||Locked!=-1) return false;
 		if((Switch == Position.Straight && blockPosition == 0) || (Switch == Class && blockPosition == 1)) return false;
-		updatePosition(p);
-		if(Linked!=null&&Linked.Switch != p) Linked.setSwitch(p);
+		target = p;
+		send(PacketType.JunctionPositionSwitch, true);
+		if(Linked!=null&&Linked.Switch != p && Linked.target != p) Linked.setSwitch(p);
 		return true;
 	}
 	@Override
@@ -364,7 +372,7 @@ public class Junction extends TrackItem
 		else
 		{
 			int d = pathDepth;
-			l = getNext(dir).path(destination, dir, false);
+			l = FrontItems[Switch == Position.Straight ? 0 : 1].path(destination, dir, false);
 			pathDepth = d;
 			List<TrackItem> x = null;
 			if(FrontItems[Switch == Position.Straight ? 1 : 0]!=null) x = FrontItems[Switch == Position.Straight ? 1 : 0].path(destination, dir, false);
@@ -389,7 +397,7 @@ public class Junction extends TrackItem
 			}
 			if(p instanceof JunctionSwitch)
 			{
-				if(((JunctionSwitch) p).force)
+				/*if(((JunctionSwitch) p).force)
 				{
 					updatePosition(Switch == Position.Straight ? Class : Position.Straight);
 				}
@@ -398,12 +406,16 @@ public class Junction extends TrackItem
 					if(Muelle == -1) Muelle = Switch == Position.Straight ? 0 : 1;
 					else Muelle = -1;
 				}
-				else userChangeSwitch();
+				else */userChangeSwitch();
 			}
 			if(p instanceof JunctionData)
 			{
 				JunctionData d = (JunctionData)p;
 				if(d.BlockState == Orientation.None && BlockState == Orientation.Unknown) setBlock(Orientation.None);
+			}
+			if(p instanceof JunctionPositionSwitch)
+			{
+				if((((JunctionPositionSwitch) p).orderType == Posibilities.Comprobation) && (Occupied==Orientation.None || Occupied==Orientation.Unknown)) updatePosition(((JunctionPositionSwitch) p).position);
 			}
 		}
 	}

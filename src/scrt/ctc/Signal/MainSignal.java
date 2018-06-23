@@ -23,13 +23,12 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Timer;
-
 import scrt.Orientation;
 import scrt.com.packet.AutomaticOrder;
 import scrt.com.packet.ClearOrder;
 import scrt.com.packet.Packet;
 import scrt.ctc.AxleCounter;
+import scrt.ctc.CTCTimer;
 import scrt.ctc.Clock;
 import scrt.ctc.Config;
 import scrt.ctc.Junction;
@@ -132,7 +131,7 @@ public class MainSignal extends Signal{
 		update();
 		if(!Cleared&&UserRequest)
 		{
-			Timer t = new Timer(30000, new ActionListener() {
+			var t = new CTCTimer(30000, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					setCleared();
@@ -177,6 +176,7 @@ public class MainSignal extends Signal{
 		@Override
 		public boolean condition(TrackItem i, Orientation dir, TrackItem p) 
 		{
+			if(i==null) return true;
 			if(nextSignal.condition(i, dir, p))
 			{
 				if(!Next)
@@ -492,12 +492,14 @@ public class MainSignal extends Signal{
 					boolean EndOfLock2 = true;
 					@Override
 					public boolean condition(TrackItem i, Orientation dir, TrackItem p) {
-						if((i==Linked||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir) && i.BlockingSignal == MainSignal.this)
+						if(i==null) return false;
+						if((i==Linked||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir))
 						{
 							if(OverrideRequest && Class == SignalType.Exit && i.Station != Linked.Station) return false;
 							if(i.Occupied!=Orientation.None) EndOfLock1 = false;
 							if(!EndOfLock1 && i.Occupied == Orientation.None) EndOfLock2 = false;
-							if(EndOfLock2&&i.BlockState==dir) i.setBlock(Orientation.None);
+							if(i.BlockingItem != MainSignal.this) i.tryToFree(null);
+							else if(EndOfLock2&&i.BlockState==dir) i.setBlock(Orientation.None);
 							return true;
 						}
 						return false;
@@ -625,12 +627,12 @@ public class MainSignal extends Signal{
 			setAspect();
 		}
 	}
-	Timer ClosingTimer = null;
+	CTCTimer ClosingTimer = null;
 	public void setClosingTimer(int time)
 	{
 		if(ClosingTimer==null)
 		{
-			ClosingTimer = new Timer(time, new ActionListener() {
+			ClosingTimer = new CTCTimer(time, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if(!Cleared)
@@ -797,11 +799,11 @@ public class MainSignal extends Signal{
 				if(e.creator == Linked.CounterLinked && Linked.CounterLinked.Working)
 				{
 					AxleEvent ae = (AxleEvent)e;
-					if(Direction==ae.dir)
+					if(!ae.release && Direction==ae.dir)
 					{
 						if(SignalAspect==Aspect.Parada&&Clock.time() > lastPass + 10000)
 						{
-							Logger.trace("Señal " + Name + " de " + Station.FullName + " rebasada");
+							Logger.trace(this, "rebasada");
 							TrackItem.DirectExploration(Linked, new TrackComparer()
 									{
 										@Override
@@ -827,7 +829,47 @@ public class MainSignal extends Signal{
 									}, ae.dir);
 						}
 						if(SignalAspect != Aspect.Parada) lastPass = Clock.time();
+						TrackItem.DirectExploration(Linked, new TrackComparer()
+								{
+									@Override
+									public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+									{
+										if(t==null) return false;
+										if(nextSignal.condition(t, dir, p)) return false;
+										t.BlockingItem = ae.axle;
+										return true;
+									}
+									@Override
+									public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+									{
+										return true;
+									}
+								}, Direction);
 						if(UserRequest) OverrideRequest = UserRequest = false;
+					}
+					else
+					{
+						/*CTCTimer t = new CTCTimer(1000, new ActionListener() { @Override
+						public void actionPerformed(ActionEvent e) {*/
+						TrackItem.DirectExploration(Linked, new TrackComparer()
+						{
+							@Override
+							public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+							{
+								if(t==null) return false;
+								if(nextSignal.condition(t, dir, p)) return false;
+								t.tryToFree(ae);
+								return true;
+							}
+							@Override
+							public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+							{
+								return true;
+							}
+						}, Direction);
+						/*} });
+						t.setRepeats(false);
+						t.start();*/
 					}
 				}
 			}

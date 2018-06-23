@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
@@ -56,6 +57,7 @@ public class TrafficGraph extends JFrame
 		cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), h, min, 0);
 		return cal.getTime().getTime();
 	}
+	boolean showPlans = false;
 	void itemToPoint(XYSeries series, TimetableEntry t)
 	{
 		if(t.item.isPP)
@@ -89,7 +91,7 @@ public class TrafficGraph extends JFrame
 		dataset.removeAllSeries();
 		for(Timetable t : timetables)
 		{
-			dataset.addSeries(construct(t));
+			if(showPlans || t.valid) dataset.addSeries(construct(t));
 		}
 	}
 	XYLineAndShapeRenderer rend = new XYLineAndShapeRenderer()
@@ -162,6 +164,17 @@ public class TrafficGraph extends JFrame
 		panel.createToolTip();
 		panel.setPopupMenu(null);
 		add(panel);
+		JCheckBox prevision = new JCheckBox("Mostrar trenes planificados");
+		prevision.addActionListener(new ActionListener()
+				{
+					@Override
+					public void actionPerformed(ActionEvent e)
+					{
+						showPlans = prevision.isSelected();
+						updateData(timetables);
+					}
+				});
+		add(prevision);
 		this.setTitle("MALLAS");
 		pack();
 		setVisible(true);

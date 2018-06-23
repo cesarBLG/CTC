@@ -144,6 +144,11 @@ public class AxleCounter extends CTCItem
 				if(t == start && t.CounterDir == dir) return true;
 				if(t == linked && t.CounterDir != dir) release = false;
 				if(p == linked) release = false;
+				if(t == null)
+				{
+					//TODO: Remove axle from train
+					return false;
+				}
 				if(t.CounterLinked != null && t.CounterLinked != AxleCounter.this && t.CounterLinked != start.CounterLinked && t.CounterDir != dir)
 				{
 					t.CounterLinked.getAxles(OppositeDir(dir)).add(axle);
@@ -151,14 +156,14 @@ public class AxleCounter extends CTCItem
 					axle.orientation = dir;
 					return false;
 				}
-				if(p!= null && p.CounterLinked != null && p.CounterLinked != AxleCounter.this && p.CounterLinked != start.CounterLinked)
+				if(p != null && p.CounterLinked != null && p.CounterLinked != AxleCounter.this && p.CounterLinked != start.CounterLinked)
 				{
 					p.CounterLinked.getAxles(OppositeDir(dir)).add(axle);
 					axle.firstPosition = p;
 					axle.orientation = dir;
 					return false;
 				}
-				t.actionPerformed(new AxleEvent(AxleCounter.this, dir, release, p));
+				t.actionPerformed(new AxleEvent(AxleCounter.this, dir, release, p, axle));
 				set.addAll(t.listeners);
 				if(t.EvenItem != null && t.EvenItem.SignalLinked!=null && t.EvenItem.SignalLinked instanceof MainSignal)
 				{

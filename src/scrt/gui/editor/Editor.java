@@ -111,7 +111,7 @@ public class Editor
 				}
 			}
 		}));
-		TrackLayout.main(null);
+		TrackLayout.start();
 		var loadPacket = Loader.parseLayoutFile();
 		for(Packet p : loadPacket)
 		{
@@ -177,9 +177,9 @@ public class Editor
 						{
 							var gbl = (GridBagLayout)CTCIcon.layout.getLayout();
 							Point p = gbl.location(ev.getPoint().x, ev.getPoint().y);
-							int x = p.x - 40;
+							int x = p.x;
 							int y = p.y;
-							if(ev.isControlDown() || ev.isAltDown())
+							if(ev.isControlDown() ^ ev.isAltDown())
 							{
 								solveFromX(x, ev.isAltDown() ? -1 : 1);
 								return;
@@ -203,7 +203,7 @@ public class Editor
 							else
 							{
 								var reg = new TrackRegister(id);
-								if(ev.isControlDown()) reg.Name = JOptionPane.showInputDialog("Nombre de la vía");
+								if(ev.isControlDown() && ev.isAltDown()) reg.Name = JOptionPane.showInputDialog("Nombre de la vía");
 								if(reg.Name == null) reg.Name = "";
 								int o = 0, e = 0;
 								switch(currentTrack)
@@ -261,9 +261,18 @@ public class Editor
 				if(((LinkPacket) p).id2 instanceof TrackItemID) ids.add((TrackItemID) ((LinkPacket) p).id2);
 			}
 		}
+		for(CTCIcon icon : CTCIcon.items)
+		{
+			if(icon.getID() instanceof TrackItemID) ids.add((TrackItemID) icon.getID());
+		}
 		for(var id : ids)
 		{
 			if(id.x >= x) id.x += i;
+		}
+		CTCIcon.layout.removeAll();
+		for(CTCIcon icon : CTCIcon.items)
+		{
+			if(icon instanceof TrackIcon) ((TrackIcon) icon).paint();
 		}
 	}
 	void set(CTCIcon i)
@@ -356,10 +365,13 @@ public class Editor
 							reg.EoT = false;
 							reg.Fixed = false;
 							LinkPacket link = new LinkPacket(ti.getID(), id);
-							if(CTCIcon.findID(id)!=null)
+							for(Packet p : packets)
 							{
-								System.err.println("Señal ya existente");
-								return;
+								if(p instanceof StatePacket && ((StatePacket) p).id.equals(id))
+								{
+									System.err.println("Señal ya existente");
+									return;
+								}
 							}
 							send(reg);
 							send(link);
@@ -367,6 +379,11 @@ public class Editor
 						}
 						if(e.getButton() == MouseEvent.BUTTON2)
 						{
+							if(e.isControlDown())
+							{
+								System.out.println(ti.getID().stationNumber);
+								return;
+							}
 							if(ti.Counter != null) return;
 							String val = JOptionPane.showInputDialog("Número de contador");
 							if(val == null) return;
@@ -436,6 +453,7 @@ public class Editor
 		if(linktid!=null)
 		{
 			send(new LinkPacket(linktid, ltid));
+			linktid = null;
 		}
 		else linktid = ltid;
 	}

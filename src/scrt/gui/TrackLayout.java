@@ -25,7 +25,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.WindowConstants;
@@ -35,7 +34,7 @@ public class TrackLayout
 {
 	public static boolean external = false;
 	public static JFrame frame;
-	public static void main(String[] args) 
+	public static void start() 
 	{
 		external = true;
 		frame = new JFrame("Editor");
@@ -64,11 +63,5 @@ public class TrackLayout
 		JScrollPane pane = new JScrollPane(layout);
 		pane.getHorizontalScrollBar().setUnitIncrement(20);
 		c.add(pane);
-		for(int i=-20; i<70; i++)
-		{
-			g.gridx = i;
-			g.gridy = 50;
-			layout.add(new JLabel(" "));
-		}
 	}
 }

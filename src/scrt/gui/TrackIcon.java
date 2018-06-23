@@ -31,6 +31,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import scrt.Orientation;
@@ -45,8 +46,6 @@ import scrt.com.packet.SignalID;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.TrackRegister;
-import scrt.ctc.CTCItem;
-import scrt.ctc.TrackItem;
 
 public class TrackIcon extends CTCIcon {
 	JLabel TrackIcon = new JLabel();
@@ -96,7 +95,7 @@ public class TrackIcon extends CTCIcon {
 				{
 					if(arg0.isAltDown())
 					{
-						TrackItem t = (TrackItem) CTCItem.findId(id);
+						//TrackItem t = (TrackItem) CTCItem.findId(id);
 						return;
 					}
 					if(arg0.isControlDown())
@@ -294,14 +293,70 @@ public class TrackIcon extends CTCIcon {
 			update();
 		}
 	}
+	public static boolean run = false;
+	static int a = 0;
 	public void paint()
 	{
-		gbc.gridx = id.x + 40;
-		gbc.gridy = id.y;
-		comp.setMinimumSize(new Dimension(30, 73));
-		comp.setPreferredSize(new Dimension(30, 73));
-		comp.setMaximumSize(new Dimension(30, 73));
-		layout.add(comp, gbc);
-		layout.revalidate();
+		int x = id.x;
+		int y = id.y;
+		if(maxx<x)
+		{
+			maxx = x;
+			run = false;
+		}
+		if(maxy<y)
+		{
+			maxy = y;
+			run = false;
+		}
+		if(minx>x)
+		{
+			minx = x;
+			run = false;
+		}
+		if(miny>y)
+		{
+			miny = y;
+			run = false;
+		}
+		if(!run) SwingUtilities.invokeLater(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						if(run) return;
+						synchronized(gbc)
+						{
+							for(int i=minx; i<=maxx; i++)
+							{
+								gbc.gridx = i;
+								gbc.gridy = 0;
+								JLabel j = new JLabel(Integer.toString(i));
+								j.setForeground(Color.white);
+								layout.add(j, gbc);
+							}
+							for(int i=miny; i<=maxy; i++)
+							{
+								gbc.gridx = 0;
+								gbc.gridy = i;
+								JLabel j = new JLabel(Integer.toString(i));
+								j.setForeground(Color.white);
+								layout.add(j, gbc);
+							}
+						}
+						run = true;
+					}			
+				});
+		synchronized(gbc)
+		{
+			gbc.weightx = 0;
+			gbc.gridx = x;
+			gbc.gridy = y;
+			comp.setMinimumSize(new Dimension(30, 73));
+			comp.setPreferredSize(new Dimension(30, 73));
+			comp.setMaximumSize(new Dimension(30, 73));
+			layout.add(comp, gbc);
+			layout.revalidate();
+		}
 	}
 }

@@ -16,26 +16,41 @@
  * You should have received a copy of the GNU General Public License
  * along with SCRT.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package scrt.event;
+package scrt.ctc;
 
-import scrt.Orientation;
-import scrt.ctc.Axle;
-import scrt.ctc.AxleCounter;
-import scrt.ctc.TrackItem;
+import java.util.LinkedList;
+import java.util.Queue;
 
-public class AxleEvent extends SRCTEvent 
+public class CTCThread extends Thread
 {
-	public Orientation dir;
-	public boolean release;
-	public TrackItem previous;
-	public Axle axle;
-	public AxleEvent(AxleCounter ac, Orientation dir, boolean release, TrackItem p, Axle a) 
+	public Queue<Runnable> tasks = new LinkedList<>();
+	public CTCThread()
 	{
-		super(EventType.AxleCounter, ac);
-		this.release = release;
-		this.dir = dir;
-		previous = p;
-		axle = a;
+		super("CTC Thread");
 	}
-
+	@Override
+	public void run()
+	{
+		while(true)
+		{
+			Runnable r = null;
+			synchronized(tasks)
+			{
+				if(tasks.isEmpty())
+				{
+					try
+					{
+						tasks.wait();
+					}
+					catch (InterruptedException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else r = tasks.poll();
+			}
+			if(r!=null) r.run();
+		}
+	}
 }

@@ -54,7 +54,10 @@ public class BlockingLine
 		if(blockRequest == Orientation.None) blockState = Orientation.None;
 		if(blockRequest == Orientation.Even) blockState = Orientation.Even;
 		if(blockRequest == Orientation.Odd) blockState = Orientation.Odd;
-		if(blockRequest == Orientation.Both) handleBoth();
+		if(blockRequest == Orientation.Both)
+		{
+			if(!t.isRunning()) handleBoth();
+		}
 		else t.stop();
 	}
 	void handleBoth()

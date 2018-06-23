@@ -91,7 +91,7 @@ public class Timetable
 		}
 		entries.get(0).changed();
 		//List<Timetable> timetables = new ArrayList<Timetable>();
-		solveOverlaps();
+		//solveOverlaps();
 	}
 	List<Overlap> getOverlapList()
 	{

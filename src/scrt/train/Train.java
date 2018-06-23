@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import scrt.Orientation;
@@ -59,7 +60,13 @@ public class Train {
 	public Train(String name)
 	{
 		Name = name;
-		assign(++foo);
+		SwingUtilities.invokeLater(new Runnable(){
+			@Override
+			public void run()
+			{
+				assign(++foo);
+			}
+		});
 	}
 	public void assign(int number)
 	{

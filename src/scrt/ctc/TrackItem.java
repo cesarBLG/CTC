@@ -22,9 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-
-import javax.swing.Timer;
 
 import scrt.Orientation;
 import scrt.com.COM;
@@ -112,11 +111,11 @@ public class TrackItem extends CTCItem{
 		if(t==EvenItem) return OddItem;
 		return null;
 	}
-	public MainSignal BlockingSignal;
+	public Object BlockingItem;
 	long BlockingTime = 0;
 	public void setBlock(Orientation o, MainSignal blocksignal)
 	{
-		BlockingSignal = blocksignal;
+		BlockingItem = blocksignal;
 		BlockingTime = Clock.time();
 		setBlock(o);
 	}
@@ -158,9 +157,9 @@ public class TrackItem extends CTCItem{
 	}
 	void AxleActions(AxleEvent ae)
 	{
-		tryToFree();
+		tryToFree(ae);
 	}
-	Timer trainStopTimer = new Timer(10000, new ActionListener()
+	CTCTimer trainStopTimer = new CTCTimer(10000, new ActionListener()
 			{
 				@Override
 				public void actionPerformed(ActionEvent e)
@@ -173,8 +172,11 @@ public class TrackItem extends CTCItem{
 					}
 				}
 			});
+	LinkedList<Axle> axles = new LinkedList<>();
 	void updateOccupancy(AxleEvent ae)
 	{
+		if(ae.release) axles.remove(ae.axle);
+		else axles.add(ae.axle);
 		if(ae.release&&ae.dir==Orientation.Even)
 		{
 			if(EvenAxles>0) EvenAxles--;
@@ -274,12 +276,44 @@ public class TrackItem extends CTCItem{
 		if(overlap == null) setBlock(Orientation.None);
 		else setBlock(t.BlockState);
 	}
-	boolean Done = false;
-	void tryToFree()
+	boolean free;
+	public void tryToFree(AxleEvent ae)
 	{
 		if(BlockState!=Orientation.Odd && BlockState!=Orientation.Even) return;
 		if(overlap != null) return;
-		if(BlockingSignal==null||!BlockingSignal.Locked)
+		if(BlockingItem instanceof MainSignal)
+		{
+			if(((MainSignal) BlockingItem).Locked) return;
+		}
+		if(BlockingItem instanceof Axle)
+		{
+			if(ae==null || ae.axle != BlockingItem)
+			{
+				free = true;
+				TrackItem.InverseExploration(this, new TrackComparer()
+						{
+							@Override
+							public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+							{
+								if(t!=null && t.axles.contains(BlockingItem))
+								{
+									free = false;
+								}
+								if(t!=null && t.SignalLinked instanceof MainSignal && t.SignalLinked.Direction == Orientation.OppositeDir(dir)) return false;
+								return true;
+							}
+							@Override
+							public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+							{
+								if(t==null) return false;
+								return true;
+							}
+						}, Orientation.OppositeDir(BlockState));
+				if(!free) return;
+			}
+		}
+		setBlock(Orientation.None);
+		/*if(BlockingSignal==null||!BlockingSignal.Locked)
 		{
 			if(Occupied == Orientation.None || BlockingTime<=OccupiedTime || BlockingSignal == null)
 			{
@@ -287,6 +321,29 @@ public class TrackItem extends CTCItem{
 				return;
 			}
 		}
+		free = true;
+		TrackItem.InverseExploration(this, new TrackComparer()
+				{
+					@Override
+					public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+					{
+						if(t!=null && t.SignalLinked instanceof MainSignal && t.SignalLinked.Direction == Orientation.OppositeDir(dir))
+						{
+							MainSignal ms = (MainSignal) t.SignalLinked;
+							if(ms.Locked) free = false;
+ 							return false;
+						}
+						if(BlockState==Orientation.OppositeDir(dir)) free = false;
+						return true;
+					}
+					@Override
+					public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+					{
+						if(t==null) return false;
+						return true;
+					}
+				}, Orientation.OppositeDir(BlockState));
+		if(free) BlockState = Orientation.None;
 		if(BlockingSignal!=null)
 		{
 			if(TrackItem.DirectExploration(BlockingSignal.Linked, new TrackComparer()
@@ -305,7 +362,7 @@ public class TrackItem extends CTCItem{
 							return true;
 						}
 					}, BlockState) != null) BlockState = Orientation.None;
-		}
+		}*/
 	}
 	public interface TrackComparer
 	{
@@ -362,8 +419,6 @@ public class TrackItem extends CTCItem{
 	}
 	public boolean connectsTo(Orientation dir, int objx, int objy, int objrot)
 	{
-		if(x==-8&&dir==Orientation.Even) return objy == y+2 && objx==48;
-		if(x==48&&dir==Orientation.Odd) return objy == y-2 && objx==-8;
 		if(dir == Orientation.Even)
 		{
 			if(objrot == OddRotation) return x == objx + 1 && y == objy - objrot;
@@ -383,7 +438,7 @@ public class TrackItem extends CTCItem{
 			if(e.type == EventType.AxleCounter)
 			{
 				var ae = (AxleEvent)e;
-				if(!ae.release && SignalLinked!=null) SignalLinked.actionPerformed(ae); 
+				if(SignalLinked!=null) SignalLinked.actionPerformed(ae); 
 				AxleRun(ae);
 			}
 			if(overlap == e.creator && overlap.trainStopped() && overlap.BlockState != BlockState)
@@ -494,7 +549,7 @@ public class TrackItem extends CTCItem{
 			}
 		}
 	}
-	void send(PacketType type)
+	void send(PacketType type, Object... extra)
 	{
 		Packet p;
 		switch(type)

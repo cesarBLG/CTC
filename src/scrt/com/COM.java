@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import scrt.com.packet.ActionPacket;
 import scrt.com.packet.DataPacket;
 import scrt.com.packet.ItineraryStablisher;
 import scrt.com.packet.LinkPacket;
@@ -32,19 +33,25 @@ import scrt.com.packet.StatePacket;
 import scrt.com.tcp.TCP;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Itinerary;
+import scrt.ctc.Loader;
 
 public class COM
 {
 	static List<Device> devs = new ArrayList<Device>();
 	public static void initialize()
 	{
-		com1.start();
-		com2.start();
+		comIn.start();
+		comOut.start();
 		new TCP().initialize();
-		new Serial().begin(9600);
+		try
+		{
+			Class.forName("gnu.io.SerialPort");
+			new Serial().begin(9600);
+		}
+		catch (ClassNotFoundException e){}
 		new File();
 	}
-	public static void addDevice(Device d)
+	public static synchronized void addDevice(Device d)
 	{
 		devs.add(d);
 		for(Packet p : registers)
@@ -59,10 +66,15 @@ public class COM
 		{
 			d.write(p.getState());
 		}
+		for(Packet p : extern)
+		{
+			d.write(p.getState());
+		}
 	}
-	static List<Packet> registers = new ArrayList<Packet>();
-	static List<LinkPacket> linkers = new ArrayList<LinkPacket>();
-	static List<Packet> data = new ArrayList<Packet>();
+	static List<Packet> registers = new ArrayList<>();
+	static List<LinkPacket> linkers = new ArrayList<>();
+	static List<Packet> data = new ArrayList<>();
+	static List<Packet> extern = new ArrayList<>();
 	public static void toSend(Packet p)
 	{
 		synchronized(outQueue)
@@ -80,13 +92,18 @@ public class COM
 			data.removeIf((packet) -> packet instanceof StatePacket && ((StatePacket)packet).id == ((StatePacket)p).id);
 			data.add(p);
 		}
+		else if(p instanceof ActionPacket)
+		{
+			extern.removeIf((packet) -> packet instanceof StatePacket && ((StatePacket)packet).id == ((StatePacket)p).id);
+			extern.add(p);
+		}
 		byte[] data = p.getState();
 		for(Device dev : devs) dev.write(data);
 		return;
 	}
-	static Queue<Packet> inQueue = new LinkedList<Packet>();
+	public static Queue<Packet> inQueue = new LinkedList<Packet>();
 	static Queue<Packet> outQueue = new LinkedList<Packet>();
-	static Thread com1 = new Thread(new Runnable()
+	static Thread comOut = new Thread(new Runnable()
 	{
 		@Override
 		public void run()
@@ -95,7 +112,7 @@ public class COM
 			{
 				synchronized(outQueue)
 				{
-					if(outQueue.size()!=0)
+					if(!outQueue.isEmpty())
 					{
 						send(outQueue.poll());
 					}
@@ -113,7 +130,7 @@ public class COM
 			}
 		}
 	});
-	static Thread com2 = new Thread(new Runnable()
+	static Thread comIn = new Thread(new Runnable()
 	{
 		@Override
 		public void run()
@@ -122,13 +139,25 @@ public class COM
 			{
 				synchronized(inQueue)
 				{
-					if(inQueue.size()!=0)
+					if(!inQueue.isEmpty())
 					{
 						Packet p = inQueue.poll();
-						if(p instanceof ItineraryStablisher) Itinerary.handlePacket(p);
-						else CTCItem.PacketManager.handlePacket(p);
+						synchronized(Loader.ctcThread.tasks)
+						{
+							Loader.ctcThread.tasks.add(new Runnable()
+									{
+										@Override
+										public void run()
+										{
+											if(p instanceof ItineraryStablisher) Itinerary.handlePacket(p);
+											else CTCItem.PacketManager.handlePacket(p);
+										}
+									});
+							Loader.ctcThread.tasks.notify();
+						}
 					}
 					else
+					{
 						try
 						{
 							inQueue.wait();
@@ -138,6 +167,7 @@ public class COM
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+					}
 				}
 			}
 		}

@@ -16,36 +16,44 @@
  * You should have received a copy of the GNU General Public License
  * along with SCRT.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package scrt.log;
+package scrt.com.packet;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Date;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Logger
+import scrt.ctc.Junction.Position;
+
+public class JunctionPositionSwitch extends StatePacket implements ActionPacket
 {
-	static PrintWriter out = null;
-	public static void start()
+	public enum Posibilities
 	{
-		try
-		{
-			FileWriter fw = new FileWriter("bin/log.txt", true);
-		    BufferedWriter bw = new BufferedWriter(fw);
-		    out = new PrintWriter(bw);
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Request,
+		Order,
+		Comprobation,
 	}
-	public static void trace(Object obj, String message)
+	public Posibilities orderType;
+	public Position position;
+	public JunctionPositionSwitch(JunctionID id, Posibilities type)
 	{
-		if(out == null) start();
-		out.println("[" + new Date() + "] " + obj + ": " + message);
-		out.close();
-		out = null;
+		super(id);
+		orderType = type;
 	}
+	@Override
+	public List<Integer> getListState()
+	{
+		var l = new ArrayList<Integer>(id.getId());
+		l.add(orderType.ordinal());
+		l.add(position.ordinal());
+		return l;
+	}
+	public static JunctionPositionSwitch byState(InputStream i) throws IOException
+	{
+		i.read();
+		var jps = new JunctionPositionSwitch(new JunctionID(i), Posibilities.values()[i.read()]);
+		jps.position = Position.values()[i.read()];
+		return jps;
+	}
+
 }

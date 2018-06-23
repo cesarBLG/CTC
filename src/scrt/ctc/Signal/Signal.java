@@ -33,6 +33,7 @@ import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
 import scrt.event.SCRTListener;
 import scrt.event.SignalEvent;
+import scrt.log.Logger;
 
 public abstract class Signal extends CTCItem
 {
@@ -110,6 +111,7 @@ public abstract class Signal extends CTCItem
 		if(Linked==null) return;
 		if(LastAspect!=SignalAspect)
 		{
+			Logger.trace(this, SignalAspect.name());
 			SignalEvent e = new SignalEvent(this);
 			List<SCRTListener> list = new ArrayList<SCRTListener>(listeners);
 			for(SCRTListener l : list) l.actionPerformed(e);
@@ -178,5 +180,10 @@ public abstract class Signal extends CTCItem
 				if(reg.Fixed) return new FixedSignal(id.Name, id.Direction, Aspect.Anuncio_parada, scrt.ctc.Station.byNumber(reg.id.stationNumber));
 				return new MainSignal(id.Name, scrt.ctc.Station.byNumber(reg.id.stationNumber));
 		}
+	}
+	@Override
+	public String toString()
+	{
+		return "Señal " + Name + " de " + Station.FullName;
 	}
 }

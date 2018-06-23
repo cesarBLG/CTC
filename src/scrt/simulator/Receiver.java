@@ -16,13 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with SCRT.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package scrt.gui;
+package scrt.simulator;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-
-import javax.swing.SwingUtilities;
 
 import scrt.com.packet.Packet;
 
@@ -53,8 +51,7 @@ public class Receiver
 							i = s.getInputStream();
 							while(true)
 							{
-								Packet p = Packet.byState(i);
-								SwingUtilities.invokeLater(() -> CTCIcon.PacketManager.handlePacket(p));
+								Simulator.load(Packet.byState(i));
 							}
 						}
 						catch (IOException e)
@@ -82,3 +79,4 @@ public class Receiver
 		}
 	}
 }
+

@@ -40,6 +40,10 @@ public abstract class CTCIcon implements Packable {
 	public static Receiver receiver;
 	public static GridBagConstraints gbc;
 	public static JPanel layout;
+	public static int maxx = 0;
+	public static int minx = Integer.MAX_VALUE;
+	public static int maxy = 0;
+	public static int miny = Integer.MAX_VALUE;
 	public static PacketManager PacketManager = new PacketManager()
 			{
 				@Override

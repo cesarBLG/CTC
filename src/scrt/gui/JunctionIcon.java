@@ -234,7 +234,7 @@ public class JunctionIcon extends TrackIcon {
 			Direct.setBackground((data.blockPosition==0&&(data.BlockState!=Orientation.None || data.Occupied != Orientation.None)) ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
 			Direct.repaint();
 		}
-		else
+		else if(data.Switch!=Position.Unknown)
 		{
 			Direct.setOpaque(false);
 			Direct.repaint();

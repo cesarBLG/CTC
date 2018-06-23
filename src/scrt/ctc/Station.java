@@ -47,6 +47,7 @@ public class Station {
 		if(AssociatedNumber == 0) Close();
 		COM.send(reg);
 	}
+	@Deprecated
 	public static int getNumber(String name)
 	{
 		if(name.equals("Cen")) return 1;

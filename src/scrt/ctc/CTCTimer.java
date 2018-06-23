@@ -16,26 +16,35 @@
  * You should have received a copy of the GNU General Public License
  * along with SCRT.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package scrt.event;
+package scrt.ctc;
 
-import scrt.Orientation;
-import scrt.ctc.Axle;
-import scrt.ctc.AxleCounter;
-import scrt.ctc.TrackItem;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class AxleEvent extends SRCTEvent 
+import javax.swing.Timer;
+
+public class CTCTimer extends Timer
 {
-	public Orientation dir;
-	public boolean release;
-	public TrackItem previous;
-	public Axle axle;
-	public AxleEvent(AxleCounter ac, Orientation dir, boolean release, TrackItem p, Axle a) 
+	public CTCTimer(int delay, ActionListener listener)
 	{
-		super(EventType.AxleCounter, ac);
-		this.release = release;
-		this.dir = dir;
-		previous = p;
-		axle = a;
+		super(delay, new ActionListener()
+				{
+					@Override
+					public void actionPerformed(ActionEvent e)
+					{
+						synchronized(Loader.ctcThread.tasks)
+						{
+							Loader.ctcThread.tasks.add(new Runnable()
+									{
+										@Override
+										public void run()
+										{
+											listener.actionPerformed(e);
+										}
+									});
+							Loader.ctcThread.tasks.notify();
+						}
+					}
+				});
 	}
-
 }

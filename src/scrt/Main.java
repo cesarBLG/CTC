@@ -21,12 +21,14 @@ package scrt;
 import scrt.ctc.Loader;
 import scrt.gui.GUI;
 import scrt.gui.editor.Editor;
+import scrt.simulator.Simulator;
 
 public class Main {
 	public static void main(String[] args)
 	{
 		if(args.length == 0)
 		{
+			Simulator.init();
 			Loader.load();
 			scrt.regulation.Regulation.load();
 			new GUI();

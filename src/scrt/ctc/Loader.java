@@ -50,6 +50,7 @@ public class Loader {
 	public static List<Itinerary> itineraries = new ArrayList<Itinerary>();
 	public static List<Station> stations = new ArrayList<Station>();
 	public static List<Train> trains = new ArrayList<Train>();
+	public static CTCThread ctcThread = new CTCThread();
 	public static void load()
 	{
 		//Config.set("FCD");
@@ -249,6 +250,7 @@ public class Loader {
 		}
 		for(TrackItem a : items)
 		{
+			if(a instanceof Junction) continue;
 			if(a.SignalLinked!=null) a.SignalLinked.setAspect();
 			if(a.getNext(Orientation.Even) == null)
 			{
@@ -271,6 +273,7 @@ public class Loader {
 				else System.err.println("Error: Final de vía sin contador asociado en " + a.x + ", " + a.y);
 			}
 		}
+		ctcThread.start();
 	}
 	public static void resolveLinks()
 	{

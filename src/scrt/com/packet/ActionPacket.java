@@ -16,26 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with SCRT.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package scrt.event;
+package scrt.com.packet;
 
-import scrt.Orientation;
-import scrt.ctc.Axle;
-import scrt.ctc.AxleCounter;
-import scrt.ctc.TrackItem;
-
-public class AxleEvent extends SRCTEvent 
+public interface ActionPacket
 {
-	public Orientation dir;
-	public boolean release;
-	public TrackItem previous;
-	public Axle axle;
-	public AxleEvent(AxleCounter ac, Orientation dir, boolean release, TrackItem p, Axle a) 
-	{
-		super(EventType.AxleCounter, ac);
-		this.release = release;
-		this.dir = dir;
-		previous = p;
-		axle = a;
-	}
 
 }
