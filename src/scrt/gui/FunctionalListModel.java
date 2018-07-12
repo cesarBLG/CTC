@@ -32,7 +32,7 @@ import scrt.event.SCRTListener;
 
 public class FunctionalListModel<E> implements ListModel<E>, SCRTListener {
 	List<E> list;
-	List<ListDataListener> listeners = new ArrayList<ListDataListener>();
+	List<ListDataListener> listeners = new ArrayList<>();
 	public FunctionalListModel(FunctionalList<E> list)
 	{
 		this.list = list;

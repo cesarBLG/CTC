@@ -37,7 +37,7 @@ public abstract class ID
 	public int stationNumber;
 	public List<Integer> getId()
 	{
-		List<Integer> l = new ArrayList<Integer>();
+		List<Integer> l = new ArrayList<>();
 		l.add(type.ordinal());
 		l.add(stationNumber);
 		return l;

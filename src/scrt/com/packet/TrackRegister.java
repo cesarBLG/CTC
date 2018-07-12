@@ -35,7 +35,7 @@ public class TrackRegister extends StatePacket implements RegisterPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.addAll(toList(Name));
 		data.add(OddRotation);
@@ -45,7 +45,7 @@ public class TrackRegister extends StatePacket implements RegisterPacket
 	public static TrackRegister byState(InputStream i) throws IOException
 	{
 		i.read();
-		var tr = new TrackRegister(new TrackItemID(i));
+		TrackRegister tr = new TrackRegister(new TrackItemID(i));
 		tr.Name = toString(i);
 		tr.OddRotation = (byte)i.read();
 		tr.EvenRotation = (byte)i.read();

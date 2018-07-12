@@ -212,7 +212,7 @@ public class JunctionIcon extends TrackIcon {
 	@Override
 	public void update()
 	{
-		TrackIcon.setBackground(data.Occupied != Orientation.None ? (data.Occupied == Orientation.Unknown ? Color.white : Color.red) : data.BlockState != Orientation.None ? (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green) : Color.yellow);
+		TrackIcon.setBackground(data.Occupied != Orientation.None ? (data.Occupied == Orientation.Unknown ? Color.white : Color.red) : data.BlockState != Orientation.None ? (data.BlockState==Orientation.Unknown ? Color.darkGray : (data.shunt ? Color.blue : Color.green)) : Color.yellow);
 		if(data.locking)
 		{
 			FlashingTimer.setRepeats(true);
@@ -231,7 +231,7 @@ public class JunctionIcon extends TrackIcon {
 			Desv.setOpaque(false);
 			Desv.repaint();
 			Direct.setOpaque(true);
-			Direct.setBackground((data.blockPosition==0&&(data.BlockState!=Orientation.None || data.Occupied != Orientation.None)) ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
+			Direct.setBackground((data.blockPosition==0&&(data.BlockState!=Orientation.None || data.Occupied != Orientation.None)) ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : (data.shunt ? Color.blue : Color.green))) : Color.yellow);
 			Direct.repaint();
 		}
 		else if(data.Switch!=Position.Unknown)
@@ -239,7 +239,7 @@ public class JunctionIcon extends TrackIcon {
 			Direct.setOpaque(false);
 			Direct.repaint();
 			Desv.setOpaque(true);
-			Desv.setBackground((data.blockPosition==1&&(data.BlockState!=Orientation.None || data.Occupied != Orientation.None)) ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : Color.green)) : Color.yellow);
+			Desv.setBackground((data.blockPosition==1&&(data.BlockState!=Orientation.None || data.Occupied != Orientation.None)) ? (data.Occupied != Orientation.None ? Color.red : (data.BlockState==Orientation.Unknown ? Color.darkGray : (data.shunt ? Color.blue : Color.green))) : Color.yellow);
 			Desv.repaint();
 		}
 	}

@@ -38,7 +38,7 @@ public class ItineraryStablisher extends Packet implements OrderPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(start.getId());
 		data.addAll(destination.getId());
 		data.add(dir.ordinal());
@@ -50,7 +50,7 @@ public class ItineraryStablisher extends Packet implements OrderPacket
 		TrackItemID i1 = new TrackItemID(i);
 		i.read();
 		TrackItemID i2 = new TrackItemID(i);
-		var ir = new ItineraryStablisher(i1, i2);
+		ItineraryStablisher ir = new ItineraryStablisher(i1, i2);
 		ir.dir = Orientation.values()[i.read()];
 		return ir;
 	}

@@ -35,7 +35,7 @@ import scrt.com.packet.TrackRegister;
 
 public abstract class CTCIcon implements Packable {
 	public abstract void update();
-	public static List<CTCIcon> items = new ArrayList<CTCIcon>();
+	public static List<CTCIcon> items = new ArrayList<>();
 	public JPanel comp;
 	public static Receiver receiver;
 	public static GridBagConstraints gbc;

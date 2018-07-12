@@ -48,6 +48,7 @@ import scrt.train.Train;
 
 public class TrackItem extends CTCItem{
 	public Orientation BlockState = Orientation.None;
+	public boolean shunt = false;
 	public Orientation Occupied = Orientation.None;
 	public Signal SignalLinked = null;
 	public AxleCounter CounterLinked = null;
@@ -64,7 +65,7 @@ public class TrackItem extends CTCItem{
 	public int EvenRotation = 0;
 	public boolean Acknowledged = true;
 	public boolean invert = false;
-	List<Train> trains = new ArrayList<Train>();
+	List<Train> trains = new ArrayList<>();
 	public void setSignal(Signal sig)
 	{
 		SignalLinked = sig;
@@ -113,8 +114,9 @@ public class TrackItem extends CTCItem{
 	}
 	public Object BlockingItem;
 	long BlockingTime = 0;
-	public void setBlock(Orientation o, MainSignal blocksignal)
+	public void setBlock(Orientation o, MainSignal blocksignal, boolean shunt)
 	{
+		this.shunt = shunt;
 		BlockingItem = blocksignal;
 		BlockingTime = Clock.time();
 		setBlock(o);
@@ -135,7 +137,7 @@ public class TrackItem extends CTCItem{
 		{
 			OddItem.SignalLinked.actionPerformed(new BlockEvent(this, BlockState));
 		}
-		List<SCRTListener> list = new ArrayList<SCRTListener>(); 
+		List<SCRTListener> list = new ArrayList<>(); 
 		list.addAll(listeners);
 		for(SCRTListener l : list)
 		{
@@ -164,7 +166,7 @@ public class TrackItem extends CTCItem{
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
-					List<SCRTListener> list = new ArrayList<SCRTListener>();
+					List<SCRTListener> list = new ArrayList<>();
 					list.addAll(listeners);
 					for(SCRTListener l : list)
 					{
@@ -371,7 +373,7 @@ public class TrackItem extends CTCItem{
 	}
 	public static List<TrackItem> DirectExploration(TrackItem start, TrackComparer tc, Orientation dir)
 	{
-		List<TrackItem> list = new ArrayList<TrackItem>();
+		List<TrackItem> list = new ArrayList<>();
 		TrackItem t = start;
 		TrackItem p = null;
 		while(true)
@@ -387,7 +389,7 @@ public class TrackItem extends CTCItem{
 	}
 	public static List<TrackItem> InverseExploration(TrackItem start, TrackComparer tc, Orientation dir)
 	{
-		List<TrackItem> list = new ArrayList<TrackItem>();
+		List<TrackItem> list = new ArrayList<>();
 		TrackItem t = start;
 		TrackItem prev = null;
 		while(true)
@@ -429,7 +431,7 @@ public class TrackItem extends CTCItem{
 		}
 		return false;
 	}
-	public List<SCRTListener> listeners = new ArrayList<SCRTListener>();
+	public List<SCRTListener> listeners = new ArrayList<>();
 	@Override
 	public void actionPerformed(SRCTEvent e) 
 	{
@@ -437,7 +439,7 @@ public class TrackItem extends CTCItem{
 		{
 			if(e.type == EventType.AxleCounter)
 			{
-				var ae = (AxleEvent)e;
+				AxleEvent ae = (AxleEvent)e;
 				if(SignalLinked!=null) SignalLinked.actionPerformed(ae); 
 				AxleRun(ae);
 			}
@@ -464,7 +466,7 @@ public class TrackItem extends CTCItem{
 		List<TrackItem> l = null;
 		if(destination == this)
 		{
-			l = new ArrayList<TrackItem>();
+			l = new ArrayList<>();
 			l.add(this);
 			return l;
 		}
@@ -504,7 +506,7 @@ public class TrackItem extends CTCItem{
 		}
 		if(p instanceof LinkPacket)
 		{
-			var link = (LinkPacket)p;
+			LinkPacket link = (LinkPacket)p;
 			if(link.id1.equals(getID()))
 			{
 				if(link.id2 instanceof SignalID) ((Signal)CTCItem.findId(link.id2)).setLinked(this);
@@ -565,6 +567,7 @@ public class TrackItem extends CTCItem{
 				TrackData d = new TrackData((TrackItemID) getID());
 				d.Acknowledged = Acknowledged;
 				d.BlockState = BlockState;
+				d.shunt = shunt;
 				d.Occupied = Occupied;
 				d.EvenAxles = EvenAxles;
 				d.OddAxles = OddAxles;

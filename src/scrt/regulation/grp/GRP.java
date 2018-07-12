@@ -28,8 +28,8 @@ import scrt.train.Train;
 public class GRP {
 	public Station station;
 	public boolean Activated = false;
-	public FunctionalList<GRPRule> rules = new FunctionalList<GRPRule>();
-	List<Train> trains = new ArrayList<Train>();
+	public FunctionalList<GRPRule> rules = new FunctionalList<>();
+	List<Train> trains = new ArrayList<>();
 	public GRP(Station s) 
 	{
 		station = s;

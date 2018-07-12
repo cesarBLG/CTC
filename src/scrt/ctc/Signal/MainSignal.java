@@ -43,7 +43,7 @@ import scrt.log.Logger;
 
 public class MainSignal extends Signal{
 	public MainSignal NextSignal = null;
-	List<TrackItem> MonitoringItems = new ArrayList<TrackItem>();
+	List<TrackItem> MonitoringItems = new ArrayList<>();
 	boolean ForceClose = false;
 	MainSignal(Station dep)
 	{
@@ -131,7 +131,7 @@ public class MainSignal extends Signal{
 		update();
 		if(!Cleared&&UserRequest)
 		{
-			var t = new CTCTimer(30000, new ActionListener() {
+			CTCTimer t = new CTCTimer(30000, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					setCleared();
@@ -291,7 +291,7 @@ public class MainSignal extends Signal{
 					Junction j = (Junction)i;
 					j.block(prev);
 				}
-				i.setBlock(dir, MainSignal.this);
+				i.setBlock(dir, MainSignal.this, override);
 				return true;
 			}
 			if(i != null && !override && Config.overlap && (Class == SignalType.Exit || Class == SignalType.Entry))
@@ -667,7 +667,7 @@ public class MainSignal extends Signal{
 	List<MainSignal> PreviousSignals;
 	public List<MainSignal> getPreviousSignals()
 	{
-		PreviousSignals = new ArrayList<MainSignal>();
+		PreviousSignals = new ArrayList<>();
 		TrackItem.InverseExploration(Linked, new TrackComparer()
 				{
 					@Override
@@ -812,7 +812,7 @@ public class MainSignal extends Signal{
 											//ToDo: Needs revision
 											if(!nextSignal.condition(t, dir, p))
 											{
-												t.setBlock(Orientation.Unknown, MainSignal.this);
+												t.setBlock(Orientation.Unknown, MainSignal.this, false);
 												if(t instanceof Junction)
 												{
 													((Junction)t).lock(p);
@@ -882,7 +882,7 @@ public class MainSignal extends Signal{
 		EventsMuted = mute;
 		if(!EventsMuted)
 		{
-			List<SRCTEvent> l = new ArrayList<SRCTEvent>();
+			List<SRCTEvent> l = new ArrayList<>();
 			l.addAll(Queue);
 			for(SRCTEvent e : l)
 			{
@@ -896,7 +896,7 @@ public class MainSignal extends Signal{
 	{
 		if(p instanceof ClearOrder)
 		{
-			var d = (ClearOrder)p;
+			ClearOrder d = (ClearOrder)p;
 			if(!d.id.equals(getID())) return;
 			OverrideRequest = d.override;
 			UserRequest = !d.clear;
@@ -905,7 +905,7 @@ public class MainSignal extends Signal{
 		}
 		if(p instanceof AutomaticOrder)
 		{
-			var d = (AutomaticOrder)p;
+			AutomaticOrder d = (AutomaticOrder)p;
 			if(!d.id.equals(getID())) return;
 			setAutomatic(d.automatic);
 		}

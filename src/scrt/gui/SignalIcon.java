@@ -138,7 +138,7 @@ public class SignalIcon extends CTCIcon {
 					{
 						@Override
 						public void actionPerformed(ActionEvent arg0) {
-							var cr = new ClearOrder(id);
+							ClearOrder cr = new ClearOrder(id);
 							cr.clear = !sig.ClearRequest;
 							cr.override = false;
 							receiver.send(cr);
@@ -151,14 +151,14 @@ public class SignalIcon extends CTCIcon {
 						public void actionPerformed(ActionEvent arg0) {
 							if(sig.OverrideRequest && sig.ClearRequest)
 							{
-								var cr = new ClearOrder(id);
+								ClearOrder cr = new ClearOrder(id);
 								cr.clear = false;
 								cr.override = false;
 								receiver.send(cr);
 							}
 							else
 							{
-								var cr = new ClearOrder(id);
+								ClearOrder cr = new ClearOrder(id);
 								cr.clear = true;
 								cr.override = true;
 								receiver.send(cr);
@@ -170,7 +170,7 @@ public class SignalIcon extends CTCIcon {
 					{
 						@Override
 						public void actionPerformed(ActionEvent arg0) {
-							var ao = new AutomaticOrder(id);
+							AutomaticOrder ao = new AutomaticOrder(id);
 							ao.automatic = !sig.Automatic;
 							receiver.send(ao);
 						}
@@ -182,7 +182,7 @@ public class SignalIcon extends CTCIcon {
 						public void actionPerformed(ActionEvent e)
 						{
 							if(!sig.ClearRequest) return;
-							var cr = new ClearOrder(id);
+							ClearOrder cr = new ClearOrder(id);
 							cr.clear = true;
 							cr.override = false;
 							cr.mt = true;
@@ -236,7 +236,7 @@ public class SignalIcon extends CTCIcon {
 							if(arg0.getButton()==MouseEvent.BUTTON1)
 							{
 								sig.UserRequest = true;
-								var cr = new ClearOrder(id);
+								ClearOrder cr = new ClearOrder(id);
 								cr.clear = true;
 								receiver.send(cr);
 							}

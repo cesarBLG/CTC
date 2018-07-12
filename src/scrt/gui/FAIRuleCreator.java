@@ -151,7 +151,7 @@ public class FAIRuleCreator extends JDialog {
 					JLabel lblTrenesSituadosEn = new JLabel("Trenes situados en v\u00EDa:");
 					panel_1.add(lblTrenesSituadosEn);
 				}
-				lm = new DefaultListModel<String>();
+				lm = new DefaultListModel<>();
 				list = new JList();
 				list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 				{

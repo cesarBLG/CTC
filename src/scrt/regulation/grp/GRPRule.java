@@ -29,9 +29,9 @@ import scrt.train.Train;
 import scrt.train.Train.TrainClass;
 
 public class GRPRule {
-	List<UserEvent> actions = new ArrayList<UserEvent>();
-	public FunctionalList<TrackItem> trainsAt = new FunctionalList<TrackItem>();
-	public FunctionalList<TrainClass> trainClasses = new FunctionalList<TrainClass>();
+	List<UserEvent> actions = new ArrayList<>();
+	public FunctionalList<TrackItem> trainsAt = new FunctionalList<>();
+	public FunctionalList<TrainClass> trainClasses = new FunctionalList<>();
 	public Orientation trainParity = Orientation.Odd;
 	public GRPRule()
 	{

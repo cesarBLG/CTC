@@ -105,6 +105,7 @@ public class Junction extends TrackItem
 			case JunctionData:
 				JunctionData d = new JunctionData(getID());
 				d.BlockState = BlockState;
+				d.shunt = shunt;
 				d.Occupied = Occupied;
 				d.Locked = Locked;
 				d.blockPosition = blockPosition;
@@ -114,12 +115,12 @@ public class Junction extends TrackItem
 				break;
 			case JunctionPositionSwitch:
 				if(extra.length!=1 || !(extra[0] instanceof Boolean)) throw new IllegalArgumentException("Extra parameter must be a boolean");
-				var jps = new JunctionPositionSwitch(getID(), (boolean)extra[0] ? Posibilities.Order : Posibilities.Request);
+				JunctionPositionSwitch jps = new JunctionPositionSwitch(getID(), (boolean)extra[0] ? Posibilities.Order : Posibilities.Request);
 				jps.position = target;
 				p = jps;
 				break;
 			case JunctionLock:
-				var jl = new JunctionLock(getID());
+				JunctionLock jl = new JunctionLock(getID());
 				jl.order = true;
 				jl.value = lockTarget;
 				p = jl;
@@ -263,7 +264,7 @@ public class Junction extends TrackItem
 		super.blockChanged();
 		if(CrossingLinked!=null)
 		{
-			List<SCRTListener> list = new ArrayList<SCRTListener>(); 
+			List<SCRTListener> list = new ArrayList<>(); 
 			list.addAll(CrossingLinked.listeners);
 			for(SCRTListener l : list)
 			{
@@ -315,7 +316,7 @@ public class Junction extends TrackItem
 		OddItem = getNext(Orientation.Odd);
 		EvenItem = getNext(Orientation.Even);
 		updateState();
-		List<SCRTListener> list = new ArrayList<SCRTListener>();
+		List<SCRTListener> list = new ArrayList<>();
 		list.addAll(listeners);
 		for(SCRTListener l : list)
 		{
@@ -360,7 +361,7 @@ public class Junction extends TrackItem
 		List<TrackItem> l = null;
 		if(destination == this)
 		{
-			l = new ArrayList<TrackItem>();
+			l = new ArrayList<>();
 			l.add(this);
 			return l;
 		}

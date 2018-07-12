@@ -26,7 +26,7 @@ import java.util.List;
 import scrt.com.COM;
 
 public class TCP {
-	List<ClientListener> clientListeners = new ArrayList<ClientListener>();
+	List<ClientListener> clientListeners = new ArrayList<>();
 	ServerSocket server;
 	public void initialize()
 	{

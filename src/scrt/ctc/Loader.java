@@ -44,12 +44,12 @@ import scrt.ctc.Signal.Signal;
 import scrt.train.Train;
 
 public class Loader {
-	public static List<TrackItem> items = new ArrayList<TrackItem>();
-	public static List<Signal> signals = new ArrayList<Signal>();
-	public static List<AxleCounter> counters = new ArrayList<AxleCounter>();
-	public static List<Itinerary> itineraries = new ArrayList<Itinerary>();
-	public static List<Station> stations = new ArrayList<Station>();
-	public static List<Train> trains = new ArrayList<Train>();
+	public static List<TrackItem> items = new ArrayList<>();
+	public static List<Signal> signals = new ArrayList<>();
+	public static List<AxleCounter> counters = new ArrayList<>();
+	public static List<Itinerary> itineraries = new ArrayList<>();
+	public static List<Station> stations = new ArrayList<>();
+	public static List<Train> trains = new ArrayList<>();
 	public static CTCThread ctcThread = new CTCThread();
 	public static void load()
 	{
@@ -60,7 +60,7 @@ public class Loader {
 	{
 		File layout = new File("layout.bin");
 		if(!layout.exists()) layout = new File("layout.txt");
-		var packets = new ArrayList<Packet>();
+		ArrayList<Packet> packets = new ArrayList<>();
 		FileReader fr = null;
 		try {
 			fr = new FileReader(layout);
@@ -83,7 +83,7 @@ public class Loader {
 					{
 						String full = s.substring(s.indexOf('[') + 1, s.indexOf(']'));
 						String name = s.substring(s.indexOf(']')+2, s.indexOf(']')+5);
-						var reg = new StationRegister(Station.getNumber(name));
+						StationRegister reg = new StationRegister(Station.getNumber(name));
 						reg.name = full;
 						reg.shortName = name;
 						Workingdep = reg.associatedNumber;
@@ -103,15 +103,15 @@ public class Loader {
 						int y = Integer.parseInt(coordinates.substring(coordinates.indexOf(',')+1));
 						if(Number>6)
 						{
-							var id = new JunctionID();
+							JunctionID id = new JunctionID();
 							id.Number = Integer.parseInt(n.substring(1));
 							id.Name = n;
 							id.stationNumber = Workingdep;
-							var tid = new TrackItemID();
+							TrackItemID tid = new TrackItemID();
 							tid.x = x;
 							tid.y = y;
 							tid.stationNumber = Workingdep;
-							var reg = new JunctionRegister(id, tid);
+							JunctionRegister reg = new JunctionRegister(id, tid);
 							reg.Class = Number == 7 ? Position.Left : Position.Right;
 							reg.Direction = id.Number % 2 == 0 ? Orientation.Even : Orientation.Odd;
 							packets.add(reg);
@@ -149,32 +149,32 @@ public class Loader {
 								default:
 									break;
 							}
-							var id = new TrackItemID();
+							TrackItemID id = new TrackItemID();
 							id.x = x;
 							id.y = y;
 							id.stationNumber = Workingdep;
-							var reg = new TrackRegister(id);
+							TrackRegister reg = new TrackRegister(id);
 							reg.EvenRotation = e;
 							reg.OddRotation = o;
 							reg.Name = n;
 							packets.add(reg);
 							if(sig.charAt(0)!='0')
 							{
-								var sigid = new SignalID(sig, id.stationNumber);
-								var sigreg = new SignalRegister(sigid);
+								SignalID sigid = new SignalID(sig, id.stationNumber);
+								SignalRegister sigreg = new SignalRegister(sigid);
 								sigreg.Fixed = sig.charAt(0)=='F';
 								packets.add(sigreg);
-								var link = new LinkPacket(id, sigid);
+								LinkPacket link = new LinkPacket(id, sigid);
 								packets.add(link);
 							}
 							if(ac.charAt(0)!='0')
 							{
 								int num = Integer.parseInt(ac);
-								var acid = new ACID();
+								ACID acid = new ACID();
 								acid.dir = num % 2 == 0 ? Orientation.Even : Orientation.Odd;
 								acid.Num = num;
 								acid.stationNumber = Workingdep;
-								var link = new LinkPacket(id, acid);
+								LinkPacket link = new LinkPacket(id, acid);
 								packets.add(link);
 							}
 						}
@@ -182,8 +182,8 @@ public class Loader {
 					if(s.charAt(0)=='!')
 					{
 						String itname = ReadParameter(s);
-						Hashtable<Integer, Integer> itsw = new Hashtable<Integer, Integer>();
-						List<String> itsig = new ArrayList<String>();
+						Hashtable<Integer, Integer> itsw = new Hashtable<>();
+						List<String> itsig = new ArrayList<>();
 						int Items = Integer.parseInt(ReadParameter(br.readLine()));
 						while(Items>0)
 						{
@@ -221,14 +221,14 @@ public class Loader {
 	public static void load(List<Packet> packets)
 	{
 		COM.initialize();
-		for(var p : packets)
+		for(Packet p : packets)
 		{
 			if(p instanceof StationRegister)
 			{
 				stations.add(new Station((StationRegister)p));
 			}
 		}
-		for(var p : packets)
+		for(Packet p : packets)
 		{
 			if(p instanceof TrackRegister)
 			{
@@ -244,7 +244,7 @@ public class Loader {
 			}
 		}
 		resolveLinks();
-		for(var p : packets)
+		for(Packet p : packets)
 		{
 			if(p instanceof LinkPacket) CTCItem.PacketManager.handlePacket(p);
 		}

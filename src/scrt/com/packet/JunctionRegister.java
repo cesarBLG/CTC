@@ -39,7 +39,7 @@ public class JunctionRegister extends StatePacket implements RegisterPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.addAll(TrackId.getId());
 		data.add(Direction.ordinal());
@@ -52,7 +52,7 @@ public class JunctionRegister extends StatePacket implements RegisterPacket
 		JunctionID i1 = new JunctionID(i);
 		i.read();
 		TrackItemID i2 = new TrackItemID(i);
-		var jr = new JunctionRegister(i1, i2);
+		JunctionRegister jr = new JunctionRegister(i1, i2);
 		jr.Direction = Orientation.values()[i.read()];
 		jr.Class = Position.values()[i.read()];
 		return jr;

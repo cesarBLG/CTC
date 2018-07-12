@@ -37,18 +37,18 @@ import scrt.ctc.Loader;
 
 public class COM
 {
-	static List<Device> devs = new ArrayList<Device>();
+	static List<Device> devs = new ArrayList<>();
 	public static void initialize()
 	{
 		comIn.start();
 		comOut.start();
 		new TCP().initialize();
-		try
+		/*try
 		{
 			Class.forName("gnu.io.SerialPort");
 			new Serial().begin(9600);
 		}
-		catch (ClassNotFoundException e){}
+		catch (ClassNotFoundException e){}*/
 		new File();
 	}
 	public static synchronized void addDevice(Device d)
@@ -101,8 +101,8 @@ public class COM
 		for(Device dev : devs) dev.write(data);
 		return;
 	}
-	public static Queue<Packet> inQueue = new LinkedList<Packet>();
-	static Queue<Packet> outQueue = new LinkedList<Packet>();
+	public static Queue<Packet> inQueue = new LinkedList<>();
+	static Queue<Packet> outQueue = new LinkedList<>();
 	static Thread comOut = new Thread(new Runnable()
 	{
 		@Override

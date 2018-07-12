@@ -26,7 +26,7 @@ import scrt.ctc.Axle;
 public class Wagon
 {
 	int number;
-	List<Axle> axles = new ArrayList<Axle>();
+	List<Axle> axles = new ArrayList<>();
 	static int Number = 0;
 	public Train train;
 	public int length = 0;

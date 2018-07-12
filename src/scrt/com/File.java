@@ -35,7 +35,7 @@ public class File implements Device
 	FileOutputStream out;
 	public File()
 	{
-		var f = new java.io.File("layout.bin");
+		java.io.File f = new java.io.File("layout.bin");
 		if(f.exists()) return;
 		try
 		{
@@ -66,7 +66,7 @@ public class File implements Device
 				}
 				if(p instanceof LinkPacket)
 				{
-					var l = (LinkPacket)p;
+					LinkPacket l = (LinkPacket)p;
 					if(CTCItem.findId(l.id2) instanceof EoT) return;
 				}
 				out.write(b);

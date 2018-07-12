@@ -28,8 +28,8 @@ import scrt.event.SRCTEvent;
 import scrt.event.SCRTListener;
 
 public abstract class CTCItem implements SCRTListener, Packable {
-	public List<SCRTListener> listeners = new ArrayList<SCRTListener>();
-	protected List<SRCTEvent> Queue = new ArrayList<SRCTEvent>();
+	public List<SCRTListener> listeners = new ArrayList<>();
+	protected List<SRCTEvent> Queue = new ArrayList<>();
 	protected boolean EventsMuted = false;
 	public static PacketManager PacketManager = new PacketManager();
 	public CTCItem()

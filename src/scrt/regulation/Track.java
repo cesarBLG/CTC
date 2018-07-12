@@ -31,7 +31,7 @@ public class Track
 	public Place location;
 	public int Length;
 	public int number;
-	public FunctionalList<TimetableEntry> occupation = new FunctionalList<TimetableEntry>();
+	public FunctionalList<TimetableEntry> occupation = new FunctionalList<>();
 	public Track(Place loc, int length)
 	{
 		location = loc;
@@ -41,7 +41,7 @@ public class Track
 	}
 	public List<Overlap> getOverlaps()
 	{
-		List<Overlap> l = new ArrayList<Overlap>();
+		List<Overlap> l = new ArrayList<>();
 		for(int i=0; i<occupation.size(); i++)
 		{
 			TimetableEntry a = occupation.get(i);
@@ -51,7 +51,7 @@ public class Track
 	}
 	public List<Overlap> getOverlaps(TimetableEntry a)
 	{
-		List<Overlap> l = new ArrayList<Overlap>();
+		List<Overlap> l = new ArrayList<>();
 		for(int j=0; j<occupation.size(); j++)
 		{
 			TimetableEntry b = occupation.get(j);

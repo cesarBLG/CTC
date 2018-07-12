@@ -229,7 +229,7 @@ public class TrackIcon extends CTCIcon {
 		if(i.Acknowledged)
 		{
 			timer.stop();
-			TrackIcon.setBackground(i.Occupied != Orientation.None ? (i.Occupied == Orientation.Unknown ? Color.white : Color.red) : i.BlockState != Orientation.None ? (i.BlockState==Orientation.Unknown ? Color.darkGray : Color.green) : Color.yellow);
+			TrackIcon.setBackground(i.Occupied != Orientation.None ? (i.Occupied == Orientation.Unknown ? Color.white : Color.red) : i.BlockState != Orientation.None ? (i.BlockState==Orientation.Unknown ? Color.darkGray : (i.shunt ? Color.blue : Color.green)) : Color.yellow);
 		}
 		else
 		{

@@ -35,7 +35,7 @@ import scrt.regulation.Place;
 
 public class StationAxis extends SymbolAxis
 {
-	List<Place> places = new ArrayList<Place>();
+	List<Place> places = new ArrayList<>();
 	public StationAxis(String label, List<Place> places)
 	{
 		super(label, new String[]{});

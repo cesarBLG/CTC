@@ -34,7 +34,7 @@ public class JunctionSwitch extends StatePacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.add((force ? 1 : 0) + (muelle ? 2 : 0));
 		return data;
@@ -42,7 +42,7 @@ public class JunctionSwitch extends StatePacket
 	public static JunctionSwitch byState(InputStream i) throws IOException
 	{
 		i.read();
-		var js = new JunctionSwitch(new JunctionID(i));
+		JunctionSwitch js = new JunctionSwitch(new JunctionID(i));
 		int data = i.read();
 		js.force = (data & 1) != 0;
 		js.muelle = (data & 2) != 0;

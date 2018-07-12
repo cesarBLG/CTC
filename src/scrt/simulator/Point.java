@@ -47,13 +47,13 @@ public class Point implements Packable
 		if(p instanceof StatePacket)
 		{
 			if(((StatePacket)p).id.equals(id)) return;
-			var t = new Timer(1000, new ActionListener() {
+			Timer t = new Timer(1000, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
 					if(p instanceof JunctionPositionSwitch)
 					{
-						var jps = new JunctionPositionSwitch((JunctionID) ((JunctionPositionSwitch) p).id, Posibilities.Comprobation);
+						JunctionPositionSwitch jps = new JunctionPositionSwitch((JunctionID) ((JunctionPositionSwitch) p).id, Posibilities.Comprobation);
 						jps.position = ((JunctionPositionSwitch) p).orderType == Posibilities.Order ? ((JunctionPositionSwitch) p).position : Position.Straight;
 						receiver.send(jps);
 					}

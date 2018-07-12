@@ -23,10 +23,10 @@ import java.util.List;
 
 public class PacketManager
 {
-	public List<Packable> items = new ArrayList<Packable>();
+	public List<Packable> items = new ArrayList<>();
 	public void handlePacket(Packet p)
 	{
-		var l = new ArrayList<Packable>();
+		ArrayList<Packable> l = new ArrayList<>();
 		l.addAll(items);
 		for(Packable i : l)
 		{

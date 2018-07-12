@@ -30,8 +30,8 @@ import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 
 public class Itinerary {
-	Hashtable<Integer, Integer> Switches = new Hashtable<Integer, Integer>();
-	List<String> Signals = new ArrayList<String>();
+	Hashtable<Integer, Integer> Switches = new Hashtable<>();
+	List<String> Signals = new ArrayList<>();
 	int Number;
 	enum Itinerary_Type
 	{

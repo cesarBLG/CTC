@@ -35,7 +35,7 @@ public class StationRegister extends Packet implements RegisterPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		var l = new ArrayList<Integer>();
+		ArrayList<Integer> l = new ArrayList<>();
 		l.add(associatedNumber);
 		l.addAll(toList(name));
 		l.addAll(toList(shortName));
@@ -43,7 +43,7 @@ public class StationRegister extends Packet implements RegisterPacket
 	}
 	public static StationRegister byState(InputStream i) throws IOException
 	{
-		var s = new StationRegister(i.read());
+		StationRegister s = new StationRegister(i.read());
 		s.name = toString(i);
 		s.shortName = toString(i);
 		return s;

@@ -22,5 +22,5 @@ import scrt.FunctionalList;
 
 public class TrainManager
 {
-	public FunctionalList<Train> trains = new FunctionalList<Train>();
+	public FunctionalList<Train> trains = new FunctionalList<>();
 }

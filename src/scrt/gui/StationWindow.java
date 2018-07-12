@@ -57,26 +57,26 @@ public class StationWindow extends JDialog {
 		list.add(new JLabel("GRP"), g);
 		g.gridx++;
 		g.gridy++;
-		Hashtable<Station, JComboBox<String>[]>  state = new Hashtable<Station, JComboBox<String>[]>();
+		Hashtable<Station, JComboBox<String>[]>  state = new Hashtable<>();
 		for(Station s : Loader.stations)
 		{
 			if(s.AssociatedNumber==0) continue;
 			g.gridx = 0;
 			list.add(new JLabel(s.FullName), g);
 			g.gridx++;
-			JComboBox<String> estado = new JComboBox<String>();
+			JComboBox<String> estado = new JComboBox<>();
 			estado.addItem("Abierta");
 			estado.addItem("Cerrada");
 			estado.setSelectedItem(s.Opened ? "Abierta" : "Cerrada");
 			list.add(estado, g);
 			g.gridx++;
-			JComboBox<String> mando = new JComboBox<String>();
+			JComboBox<String> mando = new JComboBox<>();
 			mando.addItem("Mando Local");
 			mando.addItem("Telemando");
 			mando.setSelectedItem(s.ML ? "Mando Local" : "Telemando");
 			list.add(mando, g);
 			g.gridx++;
-			JComboBox<String> grp = new JComboBox<String>();
+			JComboBox<String> grp = new JComboBox<>();
 			if(s.grp!=null) grp.addItem("Activado");
 			grp.addItem("Desactivado");
 			grp.setSelectedItem(s.grp != null && s.grp.Activated ? "Activado" : "Desactivado");

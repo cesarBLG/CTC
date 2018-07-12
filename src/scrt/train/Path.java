@@ -25,7 +25,7 @@ import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
 
 public class Path {
-	public List<Station> stations = new ArrayList<Station>();
+	public List<Station> stations = new ArrayList<>();
 	public Path(List<TrackItem> items)
 	{
 		for(TrackItem t : items)

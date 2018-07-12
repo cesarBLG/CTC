@@ -35,7 +35,7 @@ public class ClearOrder extends StatePacket implements OrderPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.add((clear ? 1 : 0) + (override ? 2 : 0) + (mt ? 4 : 0));
 		return data;
@@ -43,7 +43,7 @@ public class ClearOrder extends StatePacket implements OrderPacket
 	public static ClearOrder byState(InputStream i) throws IOException
 	{
 		i.read();
-		var co = new ClearOrder(new SignalID(i));
+		ClearOrder co = new ClearOrder(new SignalID(i));
 		int val = i.read();
 		co.clear = (val & 1) != 0;
 		co.override = (val & 2) != 0;

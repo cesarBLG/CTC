@@ -36,9 +36,9 @@ public class Place
 	double Length = 0;
 	public int maxSpeed;
 	public boolean isPP;
-	public FunctionalList<Track> tracks = new FunctionalList<Track>();
-	List<Place> odd = new ArrayList<Place>();
-	List<Place> even = new ArrayList<Place>();
+	public FunctionalList<Track> tracks = new FunctionalList<>();
+	List<Place> odd = new ArrayList<>();
+	List<Place> even = new ArrayList<>();
 	public String name;
 	public Station station;
 	public Place(){}
@@ -146,7 +146,7 @@ public class Place
 	public int getTrackIndex(TimetableEntry e)
 	{
 		if(tracks.size()==1) return 0;
-		List<Track> avail = new ArrayList<Track>();
+		List<Track> avail = new ArrayList<>();
 		for(Track t : tracks)
 		{
 			if(t.getOverlaps(e).isEmpty()) avail.add(t);
@@ -194,7 +194,7 @@ public class Place
 	{
 		if(destination == this && !start)
 		{
-			List<Place> l = new ArrayList<Place>();
+			List<Place> l = new ArrayList<>();
 			l.add(this);
 			return l;
 		}
@@ -212,7 +212,7 @@ public class Place
 	}
 	public List<Overlap> getOverlaps()
 	{
-		List<Overlap> l = new ArrayList<Overlap>();
+		List<Overlap> l = new ArrayList<>();
 		for(Track t : tracks)
 		{
 			l.addAll(t.getOverlaps());

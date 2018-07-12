@@ -33,7 +33,7 @@ public class AutomaticOrder extends StatePacket implements OrderPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.add(automatic ? 1 : 0);
 		return data;
@@ -41,7 +41,7 @@ public class AutomaticOrder extends StatePacket implements OrderPacket
 	public static AutomaticOrder byState(InputStream i) throws IOException
 	{
 		i.read();
-		var ao = new AutomaticOrder(new SignalID(i));
+		AutomaticOrder ao = new AutomaticOrder(new SignalID(i));
 		ao.automatic = i.read() != 0;
 		return ao;
 	}

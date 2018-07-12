@@ -35,7 +35,7 @@ public class ACData extends StatePacket implements DataPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.add(dir.ordinal());
 		return data;

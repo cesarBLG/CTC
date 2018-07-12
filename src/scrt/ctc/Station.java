@@ -32,9 +32,9 @@ public class Station {
 	public String FullName;
 	public int AssociatedNumber = 0;
 	public boolean Opened = true;
-	public List<Signal> Signals = new ArrayList<Signal>();
-	public List<TrackItem> Items = new ArrayList<TrackItem>();
-	List<Train> Trains = new ArrayList<Train>();
+	public List<Signal> Signals = new ArrayList<>();
+	public List<TrackItem> Items = new ArrayList<>();
+	List<Train> Trains = new ArrayList<>();
 	public boolean ML = false;
 	public GRP grp = null;
 	public static List<Station> stations = new ArrayList<>();

@@ -43,7 +43,7 @@ public class JunctionPositionSwitch extends StatePacket implements ActionPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		var l = new ArrayList<Integer>(id.getId());
+		ArrayList l = new ArrayList<>(id.getId());
 		l.add(orderType.ordinal());
 		l.add(position.ordinal());
 		return l;
@@ -51,7 +51,7 @@ public class JunctionPositionSwitch extends StatePacket implements ActionPacket
 	public static JunctionPositionSwitch byState(InputStream i) throws IOException
 	{
 		i.read();
-		var jps = new JunctionPositionSwitch(new JunctionID(i), Posibilities.values()[i.read()]);
+		JunctionPositionSwitch jps = new JunctionPositionSwitch(new JunctionID(i), Posibilities.values()[i.read()]);
 		jps.position = Position.values()[i.read()];
 		return jps;
 	}

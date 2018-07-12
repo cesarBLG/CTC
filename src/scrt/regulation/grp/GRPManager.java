@@ -25,7 +25,7 @@ import scrt.ctc.Loader;
 import scrt.ctc.Station;
 
 public class GRPManager {
-	public static List<GRP> GRPs = new ArrayList<GRP>();
+	public static List<GRP> GRPs = new ArrayList<>();
 	public static void start()
 	{
 		for(Station s : Loader.stations)

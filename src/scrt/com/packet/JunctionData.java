@@ -29,6 +29,7 @@ import scrt.ctc.Junction.Position;
 public class JunctionData extends StatePacket implements DataPacket
 {
 	public Orientation BlockState;
+	public boolean shunt = false;
 	public Orientation Occupied;
 	public Position Switch;
 	public int Locked;
@@ -41,9 +42,10 @@ public class JunctionData extends StatePacket implements DataPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.add(BlockState.ordinal());
+		data.add(shunt ? 1 : 0);
 		data.add(Occupied.ordinal());
 		data.add(Switch.ordinal());
 		data.add(Locked);
@@ -54,8 +56,9 @@ public class JunctionData extends StatePacket implements DataPacket
 	public static JunctionData byState(InputStream i) throws IOException
 	{
 		i.read();
-		var jd = new JunctionData(new JunctionID(i));
+		JunctionData jd = new JunctionData(new JunctionID(i));
 		jd.BlockState = Orientation.values()[i.read()];
+		jd.shunt = i.read() == 1;
 		jd.Occupied = Orientation.values()[i.read()];
 		jd.Switch = Position.values()[i.read()];
 		jd.Locked = (byte)i.read();

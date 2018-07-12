@@ -34,7 +34,7 @@ public class JunctionLock extends StatePacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.add(order ? 1 :0);
 		data.add(value);
@@ -43,7 +43,7 @@ public class JunctionLock extends StatePacket
 	public static JunctionLock byState(InputStream i) throws IOException
 	{
 		i.read();
-		var jl = new JunctionLock(new JunctionID(i));
+		JunctionLock jl = new JunctionLock(new JunctionID(i));
 		jl.order = i.read() == 1;
 		jl.value = (byte)i.read();
 		return jl;

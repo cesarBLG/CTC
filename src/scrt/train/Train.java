@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import scrt.Orientation;
@@ -49,7 +48,7 @@ public class Train {
 	public int length = 0;
 	public int priority = 0;
 	public TrainClass Class = TrainClass.Empty;
-	public List<Wagon> wagons = new ArrayList<Wagon>();
+	public List<Wagon> wagons = new ArrayList<>();
 	public Timetable timetable = null;
 	public int TimeStopped = 0;
 	public Path path;
@@ -60,13 +59,13 @@ public class Train {
 	public Train(String name)
 	{
 		Name = name;
-		SwingUtilities.invokeLater(new Runnable(){
+		new Thread(new Runnable(){
 			@Override
 			public void run()
 			{
 				assign(++foo);
 			}
-		});
+		}).start();
 	}
 	public void assign(int number)
 	{
@@ -113,7 +112,7 @@ public class Train {
 	}
 	public void setPath()
 	{
-		List<TrackItem> pathItems = new ArrayList<TrackItem>();
+		List<TrackItem> pathItems = new ArrayList<>();
 		TrackItem t = start.getNext(Direction);
 		while(t!=null && t.BlockState == Direction && (t.SignalLinked == null || t.SignalLinked.Cleared || t.SignalLinked.Override))
 		{
@@ -152,7 +151,7 @@ public class Train {
 				if(change.getExit().getTime() - new Date().getTime() < 10000)
 				{
 					change.setExit(new Date(change.getExit().getTime() + 30000));
-					var e2 = change.getNext();
+					TimetableEntry e2 = change.getNext();
 					if(e2!=null) e2.setEntry(change.getExit());
 					timetable.reset();
 					delayTimer.setInitialDelay((int)(change.getExit().getTime() - new Date().getTime()));
@@ -171,41 +170,48 @@ public class Train {
 		Direction = wagons.get(0).axles.get(0).orientation;
 		if(timetable != null)
 		{
-			for(TimetableEntry e : timetable.entries)
+			new Thread(new Runnable()
 			{
-				if(e.item.station == start.Station && !e.arrived)
+				@Override
+				public void run()
 				{
-					if(e.getPrev()!=null)
+					for(TimetableEntry e : timetable.entries)
 					{
-						e.getPrev().exited = true;
-						e.getPrev().setExit(new Date());
+						if(e.item.station == start.Station && !e.arrived)
+						{
+							if(e.getPrev()!=null)
+							{
+								e.getPrev().exited = true;
+								e.getPrev().setExit(new Date());
+							}
+							e.arrived = true;
+							e.setEntry(new Date());
+							change = e;
+							break;
+						}
+						if(prev!=null && e.item.station == prev.Station && !e.exited)
+						{
+							e.exited = true;
+							e.setExit(new Date());
+							if(e.getNext()!=null)
+							{
+								e.getNext().arrived = true;
+								e.getNext().setEntry(e.getExit());
+								change = e.getNext();
+							}
+							break;
+						}
 					}
-					e.arrived = true;
-					e.setEntry(new Date());
-					change = e;
-					break;
-				}
-				if(prev!=null && e.item.station == prev.Station && !e.exited)
-				{
-					e.exited = true;
-					e.setExit(new Date());
-					if(e.getNext()!=null)
+					timetable.reset();
+					if(change != null)
 					{
-						e.getNext().arrived = true;
-						e.getNext().setEntry(e.getExit());
-						change = e.getNext();
+						delayTimer.stop();
+						delayTimer.setInitialDelay((int)(change.getExit().getTime() - new Date().getTime()));
+						delayTimer.start();
+						delayTimer.setRepeats(false);
 					}
-					break;
 				}
-			}
-			timetable.reset();
-			if(change != null)
-			{
-				delayTimer.stop();
-				delayTimer.setInitialDelay((int)(change.getExit().getTime() - new Date().getTime()));
-				delayTimer.start();
-				delayTimer.setRepeats(false);
-			}
+			}).start();
 		}
 	}
 }

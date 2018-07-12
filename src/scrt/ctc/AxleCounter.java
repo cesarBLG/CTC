@@ -77,7 +77,7 @@ public class AxleCounter extends CTCItem
 	Orientation startDir;
 	public void Passed(Orientation direction)
 	{
-		var counters = new Hashtable<AxleCounter, Orientation>();
+		Hashtable<AxleCounter, Orientation> counters = new Hashtable<>();
 		TrackItem.InverseExploration(linked, new TrackComparer()
 				{
 					@Override
@@ -134,7 +134,7 @@ public class AxleCounter extends CTCItem
 		else getAxles(OppositeDir(direction)).remove(axle);
 		getAxles(direction).add(axle);
 		axle.lastPosition = linked;
-		var set = new HashSet<SCRTListener>();
+		HashSet<SCRTListener> set = new HashSet<>();
 		release = true;
 		TrackItem.DirectExploration(start, new TrackComparer()
 		{

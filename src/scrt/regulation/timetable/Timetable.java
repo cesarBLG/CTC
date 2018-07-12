@@ -34,7 +34,7 @@ public class Timetable
 	public Train train;
 	public int number;
 	public int speed = 3;
-	public FunctionalList<TimetableEntry> entries = new FunctionalList<TimetableEntry>();
+	public FunctionalList<TimetableEntry> entries = new FunctionalList<>();
 	public long maxDelay = 300000;
 	public boolean valid = false;
 	public Orientation direction;
@@ -74,7 +74,7 @@ public class Timetable
 	public void validate()
 	{
 		valid = true;
-		List<Timetable> tim = new ArrayList<Timetable>();
+		List<Timetable> tim = new ArrayList<>();
 		for(TimetableEntry e : entries)
 		{
 			for(Track t : e.item.tracks)
@@ -95,7 +95,7 @@ public class Timetable
 	}
 	List<Overlap> getOverlapList()
 	{
-		List<Overlap> list = new ArrayList<Overlap>();
+		List<Overlap> list = new ArrayList<>();
 		for(TimetableEntry e : entries)
 		{
 			list.addAll(e.item.getOverlaps());

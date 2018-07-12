@@ -59,7 +59,7 @@ public class FAIWindow extends JFrame {
 	{
 		panel.setLayout(new BorderLayout());
 		JList rules = new JList();
-		rules.setModel(new FunctionalListModel<GRPRule>(grp.rules));
+		rules.setModel(new FunctionalListModel<>(grp.rules));
 		rules.setPreferredSize(new Dimension(400, 400));
 		JScrollPane scroll = new JScrollPane(rules);
 		panel.add(scroll);

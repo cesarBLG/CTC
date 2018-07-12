@@ -28,6 +28,7 @@ import scrt.Orientation;
 public class TrackData extends StatePacket implements DataPacket
 {
 	public Orientation BlockState;
+	public boolean shunt;
 	public Orientation Occupied;
 	public int OddAxles;
 	public int EvenAxles;
@@ -39,9 +40,10 @@ public class TrackData extends StatePacket implements DataPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.add(BlockState.ordinal());
+		data.add(shunt ? 1 : 0);
 		data.add(Occupied.ordinal());
 		data.add(OddAxles);
 		data.add(EvenAxles);
@@ -51,8 +53,9 @@ public class TrackData extends StatePacket implements DataPacket
 	public static TrackData byState(InputStream i) throws IOException
 	{
 		i.read();
-		var td = new TrackData(new TrackItemID(i));
+		TrackData td = new TrackData(new TrackItemID(i));
 		td.BlockState = Orientation.values()[i.read()];
+		td.shunt = i.read() == 1;
 		td.Occupied = Orientation.values()[i.read()];
 		td.OddAxles = (byte)i.read();
 		td.EvenAxles = (byte)i.read();

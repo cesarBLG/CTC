@@ -55,7 +55,7 @@ public class IconDatabase
 			return super.equals(obj);
 		}
 	}
-	static Hashtable<AspectDiscriminator, Icon> aspects = new Hashtable<AspectDiscriminator, Icon>();
+	static Hashtable<AspectDiscriminator, Icon> aspects = new Hashtable<>();
 	public static Icon getAspect(AspectDiscriminator a)
 	{
 		if(!aspects.containsKey(a))

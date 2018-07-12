@@ -87,7 +87,7 @@ public abstract class Packet
 	}
 	public byte[] getState()
 	{
-		var l = getListState();
+		List<Integer> l = getListState();
 		byte[] data = new byte[l.size() + 7];
 		data[0] = 'S';
 		data[1] = 'C';
@@ -114,7 +114,7 @@ public abstract class Packet
 	}
 	public static List<Integer> toList(String s)
 	{
-		var l = new ArrayList<Integer>();
+		ArrayList<Integer> l = new ArrayList<>();
 		for(int i=0;  i<s.length(); i++)
 		{
 			l.add((int) s.charAt(i));

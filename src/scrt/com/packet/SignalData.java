@@ -40,7 +40,7 @@ public class SignalData extends StatePacket implements DataPacket
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id.getId());
 		data.add(SignalAspect.ordinal());
 		data.add(Automatic ? 1 : 0);
@@ -53,7 +53,7 @@ public class SignalData extends StatePacket implements DataPacket
 	public static SignalData byState(InputStream d) throws IOException
 	{
 		d.read();
-		var s = new SignalData(new SignalID(d));
+		SignalData s = new SignalData(new SignalID(d));
 		s.SignalAspect = Aspect.values()[d.read()];
 		s.Automatic = d.read() == 1;
 		s.UserRequest = d.read() == 1;

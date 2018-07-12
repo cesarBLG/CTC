@@ -31,13 +31,13 @@ public class RequestPacket extends Packet
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.add((registers ? 1 : 0) + (links ? 2 : 0) + (registers ? 4 : 0));
 		return data;
 	}
 	public static RequestPacket byState(InputStream i) throws IOException
 	{
-		var rp = new RequestPacket();
+		RequestPacket rp = new RequestPacket();
 		int get = i.read();
 		rp.registers = (get & 1) != 0;
 		rp.links = (get & 2) != 0;

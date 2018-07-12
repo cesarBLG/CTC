@@ -81,7 +81,7 @@ public abstract class Signal extends CTCItem
 	boolean Switches = false;
 	boolean allowsOnSight = false;
 	public Aspect SignalAspect = Aspect.Parada;
-	public List<Aspect> Aspects = new ArrayList<Aspect>();
+	public List<Aspect> Aspects = new ArrayList<>();
 	public Station Station;
 	public int Track;
 	public int Number;
@@ -113,7 +113,7 @@ public abstract class Signal extends CTCItem
 		{
 			Logger.trace(this, SignalAspect.name());
 			SignalEvent e = new SignalEvent(this);
-			List<SCRTListener> list = new ArrayList<SCRTListener>(listeners);
+			List<SCRTListener> list = new ArrayList<>(listeners);
 			for(SCRTListener l : list) l.actionPerformed(e);
 		}
 		send(PacketType.SignalData);
@@ -157,7 +157,7 @@ public abstract class Signal extends CTCItem
 				d.ClearRequest = ClearRequest;
 				if(this instanceof MainSignal)
 				{
-					var ms = (MainSignal)this;
+					MainSignal ms = (MainSignal)this;
 					d.UserRequest = ms.UserRequest;
 					d.MT = ms.MT;
 				}

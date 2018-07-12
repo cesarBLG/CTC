@@ -35,7 +35,7 @@ public class LinkPacket extends Packet
 	@Override
 	public List<Integer> getListState()
 	{
-		List<Integer> data = new ArrayList<Integer>();
+		List<Integer> data = new ArrayList<>();
 		data.addAll(id1.getId());
 		data.addAll(id2.getId());
 		return data;

@@ -29,10 +29,10 @@ import scrt.event.SCRTListener;
 
 public class FunctionalList<E> implements List<E>{
 	List<E> list;
-	List<SCRTListener> listeners = new ArrayList<SCRTListener>();
+	List<SCRTListener> listeners = new ArrayList<>();
 	public FunctionalList()
 	{
-		list = new ArrayList<E>();
+		list = new ArrayList<>();
 	}
 	public FunctionalList(List<E> l)
 	{
@@ -167,7 +167,7 @@ public class FunctionalList<E> implements List<E>{
 	public List<E> subList(int arg0, int arg1) 
 	{
 		
-		return new FunctionalList<E>(list.subList(arg0, arg1));
+		return new FunctionalList<>(list.subList(arg0, arg1));
 	}
 	@Override
 	public Object[] toArray() 
