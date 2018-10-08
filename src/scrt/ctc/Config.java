@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 C閟ar Benito Lamata
+ * Copyright (C) 2017-2018 C茅sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -22,7 +22,7 @@ public class Config
 {
 	public static boolean allowOnSight = true;
 	public static int sigsAhead = 2;
-	public static int anuncioPrecauci髇 = 2;
+	public static int anuncioPrecauci贸n = 2;
 	public static boolean openSignals = true;
 	public static boolean lockBeforeBlock = false;
 	public static boolean lock = true;
@@ -36,7 +36,7 @@ public class Config
 		{
 			allowOnSight = true;
 			sigsAhead = 2;
-			anuncioPrecauci髇 = 2;
+			anuncioPrecauci贸n = 2;
 			openSignals = true;
 			lockBeforeBlock = false;
 			lock = true;
@@ -49,7 +49,7 @@ public class Config
 		{
 			allowOnSight = true;
 			sigsAhead = 0;
-			anuncioPrecauci髇 = 0;
+			anuncioPrecauci贸n = 0;
 			openSignals = true;
 			lockBeforeBlock = false;
 			lock = false;
@@ -62,7 +62,7 @@ public class Config
 		{
 			allowOnSight = false;
 			sigsAhead = 2;
-			anuncioPrecauci髇 = 2;
+			anuncioPrecauci贸n = 2;
 			openSignals = true;
 			lockBeforeBlock = true;
 			lock = true;

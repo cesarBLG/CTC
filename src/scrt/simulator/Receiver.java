@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -38,7 +38,7 @@ public class Receiver
 						{
 							try
 							{
-								s = new Socket("localhost", 300);
+								s = new Socket("localhost", 5300);
 							}
 							catch (IOException e)
 							{

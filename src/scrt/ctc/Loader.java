@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -260,7 +260,7 @@ public class Loader {
 					signals.add(a.SignalLinked);
 					a.Station.Signals.add(a.SignalLinked);
 				}
-				else System.err.println("Error: Final de vía sin contador asociado en " + a.x + ", " + a.y);
+				else System.err.println("Error: Final de vÃ­a sin contador asociado en " + a.x + ", " + a.y);
 			}
 			if(a.getNext(Orientation.Odd) == null)
 			{
@@ -270,7 +270,7 @@ public class Loader {
 					signals.add(a.SignalLinked);
 					a.Station.Signals.add(a.SignalLinked);
 				}
-				else System.err.println("Error: Final de vía sin contador asociado en " + a.x + ", " + a.y);
+				else System.err.println("Error: Final de vÃ­a sin contador asociado en " + a.x + ", " + a.y);
 			}
 		}
 		ctcThread.start();

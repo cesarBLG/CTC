@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 CÈsar Benito Lamata
+ * Copyright (C) 2017-2018 C√©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -48,7 +48,7 @@ public class StationWindow extends JDialog {
 		GridBagConstraints g = new GridBagConstraints();
 		g.gridx = g.gridy = 0;
 		g.insets = new Insets(5, 5, 5, 5);
-		list.add(new JLabel("EstaciÛn"), g);
+		list.add(new JLabel("Estaci√≥n"), g);
 		g.gridx++;
 		list.add(new JLabel("Estado"), g);
 		g.gridx++;
@@ -82,7 +82,7 @@ public class StationWindow extends JDialog {
 			grp.setSelectedItem(s.grp != null && s.grp.Activated ? "Activado" : "Desactivado");
 			list.add(grp, g);
 			g.gridx++;
-			JButton sa = new JButton("SucesiÛn Autom·tica");
+			JButton sa = new JButton("Sucesi√≥n Autom√°tica");
 			sa.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e)

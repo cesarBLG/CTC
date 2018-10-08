@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -116,6 +116,6 @@ public class TimetableEntry extends OccupationInterval{
 	@Override
 	public String toString()
 	{
-		return item.name + (track!=null ?  " vía " + track.number + ", " : " ") + getEntry() + " " + getExit();
+		return item.name + (track!=null ?  " vÃ­a " + track.number + ", " : " ") + getEntry() + " " + getExit();
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 CÈsar Benito Lamata
+ * Copyright (C) 2017-2018 C√©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -42,7 +42,7 @@ public class Menu extends JMenuBar {
 		super();
 		JMenu Monitor = new JMenu("Estado");
 		add(Monitor);
-		JMenuItem Traffic = new JMenuItem("Gestor de tr·fico...");
+		JMenuItem Traffic = new JMenuItem("Gestor de tr√°fico...");
 		Monitor.add(Traffic);
 		Traffic.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
 		Traffic.addActionListener(new ActionListener()
@@ -98,7 +98,7 @@ public class Menu extends JMenuBar {
 						d.setVisible(true);
 					}
 				});
-		JMenuItem GRP = new JMenuItem("GestiÛn de rutas...");
+		JMenuItem GRP = new JMenuItem("Gesti√≥n de rutas...");
 		Monitor.add(GRP);
 		GRP.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
 		GRP.addActionListener(new ActionListener()
@@ -115,7 +115,7 @@ public class Menu extends JMenuBar {
 		{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				JOptionPane.showMessageDialog(null, "Control de tr·fico centralizado\nCÈsar Benito Lamata", "Acerca de", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Control de tr√°fico centralizado\nC√©sar Benito Lamata", "Acerca de", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		Help.add(About);

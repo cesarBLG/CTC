@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -149,12 +149,12 @@ public class Editor
 									StationRegister p = new StationRegister(currentStation);
 									if(p.associatedNumber == 0)
 									{
-										p.name = "Plena vía";
+										p.name = "Plena vÃ­a";
 										p.shortName = "000";
 									}
 									else
 									{
-										p.name = JOptionPane.showInputDialog("Nombre de la estación");
+										p.name = JOptionPane.showInputDialog("Nombre de la estaciÃ³n");
 										if(p.name == null) return;
 										p.shortName = p.name.substring(0, 3);
 									}
@@ -192,7 +192,7 @@ public class Editor
 							if(currentTrack>6)
 							{
 								JunctionID jid = new JunctionID();
-								jid.Name = JOptionPane.showInputDialog("Nombre del desvío");
+								jid.Name = JOptionPane.showInputDialog("Nombre del desvÃ­o");
 								jid.Number = Integer.parseInt(jid.Name.substring(1));
 								jid.stationNumber = currentStation;
 								JunctionRegister reg = new JunctionRegister(jid, id);
@@ -204,7 +204,7 @@ public class Editor
 							else
 							{
 								TrackRegister reg = new TrackRegister(id);
-								if(ev.isControlDown() && ev.isAltDown()) reg.Name = JOptionPane.showInputDialog("Nombre de la vía");
+								if(ev.isControlDown() && ev.isAltDown()) reg.Name = JOptionPane.showInputDialog("Nombre de la vÃ­a");
 								if(reg.Name == null) reg.Name = "";
 								int o = 0, e = 0;
 								switch(currentTrack)
@@ -287,7 +287,7 @@ public class Editor
 			{
 				if(e.getButton()==MouseEvent.BUTTON3)
 				{
-					if(JOptionPane.showConfirmDialog(null, "¿Eliminar " + i + "?", "Eliminación", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+					if(JOptionPane.showConfirmDialog(null, "Â¿Eliminar " + i + "?", "EliminaciÃ³n", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
 					i.comp.getParent().remove(i.comp);
 					CTCIcon.layout.repaint();
 					CTCIcon.layout.revalidate();
@@ -359,7 +359,7 @@ public class Editor
 								return;
 							}
 							if(ti.signal != null) return;
-							String n = JOptionPane.showInputDialog("Nombre de la señal");
+							String n = JOptionPane.showInputDialog("Nombre de la seÃ±al");
 							if(n == null || n.isEmpty()) return;
 							SignalID id = new SignalID(n, ti.getID().stationNumber);
 							SignalRegister reg = new SignalRegister(id);
@@ -370,7 +370,7 @@ public class Editor
 							{
 								if(p instanceof StatePacket && ((StatePacket) p).id.equals(id))
 								{
-									System.err.println("Señal ya existente");
+									System.err.println("SeÃ±al ya existente");
 									return;
 								}
 							}
@@ -386,7 +386,7 @@ public class Editor
 								return;
 							}
 							if(ti.Counter != null) return;
-							String val = JOptionPane.showInputDialog("Número de contador");
+							String val = JOptionPane.showInputDialog("NÃºmero de contador");
 							if(val == null) return;
 							int num = Integer.parseInt(val.startsWith("CV") ? val.substring(2) : val);
 							ACID id = new ACID();
@@ -405,7 +405,7 @@ public class Editor
 								{
 									if(e.getButton()==MouseEvent.BUTTON3)
 									{
-										if(JOptionPane.showConfirmDialog(null, "¿Eliminar contador " + i.comp + "?", "Eliminación", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+										if(JOptionPane.showConfirmDialog(null, "Â¿Eliminar contador " + i.comp + "?", "EliminaciÃ³n", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
 										i.comp.remove(ti.Counter);
 										ti.Counter = null;
 										CTCIcon.layout.repaint();

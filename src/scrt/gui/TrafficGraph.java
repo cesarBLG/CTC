@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 CÈsar Benito Lamata
+ * Copyright (C) 2017-2018 C√©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -111,7 +111,7 @@ public class TrafficGraph extends JFrame
 		setLayout(new FlowLayout());
 		setBackground(Color.black);
 		ValueAxis xAxis = new DateAxis("Horas");
-		ValueAxis yAxis = new StationAxis("EstaciÛn", p);
+		ValueAxis yAxis = new StationAxis("Estaci√≥n", p);
 		rend.setBaseShapesVisible(false);
 		rend.setBaseShapesFilled(false);
 		rend.setAutoPopulateSeriesStroke(false);
@@ -135,7 +135,8 @@ public class TrafficGraph extends JFrame
 		}
 		yAxis.setRange(min - (max-min)*0.02, max + (max-min)*0.02);
 		ValueMarker m = new ValueMarker(new Date().getTime(), Color.white, new BasicStroke(1.5f));
-		m.setLabel(Integer.toString(new Date().getHours()) + ":" + new Date().getMinutes());
+		Calendar c = Calendar.getInstance();
+		m.setLabel(c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE));
 		plot.addDomainMarker(m);
 		Timer t = new Timer(2000, new ActionListener()
 				{
@@ -147,7 +148,7 @@ public class TrafficGraph extends JFrame
 				});
 		t.setRepeats(true);
 		t.start();
-		JFreeChart chart = new JFreeChart("Malla gr·fica", plot);
+		JFreeChart chart = new JFreeChart("Malla gr√°fica", plot);
 		chart.getTitle().setPaint(Color.white);
 		chart.setBackgroundPaint(Color.black);
 		chart.getLegend().setBackgroundPaint(Color.black);

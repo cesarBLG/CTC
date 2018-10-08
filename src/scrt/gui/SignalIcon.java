@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -51,9 +51,9 @@ public class SignalIcon extends CTCIcon {
 	SignalID id;
 	public SignalRegister reg;
 	JPopupMenu popup;
-	JMenuItem close = new JMenuItem("Abrir señal");
+	JMenuItem close = new JMenuItem("Abrir seÃ±al");
 	JMenuItem override = new JMenuItem("Rebase autorizado");
-	JMenuItem auto = new JMenuItem("Modo automático");
+	JMenuItem auto = new JMenuItem("Modo automÃ¡tico");
 	JMenuItem mt = new JMenuItem("Marche el tren");
 	JPanel sigIcon = new JPanel();
 	JLabel pie = new JLabel();
@@ -189,7 +189,7 @@ public class SignalIcon extends CTCIcon {
 							receiver.send(cr);
 						}
 					});
-			JMenuItem config = new JMenuItem("Configuración");
+			JMenuItem config = new JMenuItem("ConfiguraciÃ³n");
 			config.addActionListener(new ActionListener()
 			{
 				@Override
@@ -350,9 +350,9 @@ public class SignalIcon extends CTCIcon {
 				default:
 					break;
 			}
-			close.setText(sig.ClearRequest ? "Cerrar señal" : "Abrir señal");
+			close.setText(sig.ClearRequest ? "Cerrar seÃ±al" : "Abrir seÃ±al");
 			override.setText(sig.OverrideRequest && sig.ClearRequest ? "Desactivar rebase" : "Rebase autorizado");
-			auto.setText(!sig.Automatic ? "Modo automático" : "Modo manual");
+			auto.setText(!sig.Automatic ? "Modo automÃ¡tico" : "Modo manual");
 			mt.setVisible(sig.ClearRequest && !sig.MT && sig.SignalAspect != Aspect.Parada && sig.SignalAspect != Aspect.Rebase);
 		}
 	}

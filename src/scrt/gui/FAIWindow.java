@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -102,7 +102,7 @@ public class FAIWindow extends JFrame {
 	{
 		JPanel buttongrid = new JPanel();
 		buttongrid.setLayout(new GridLayout(1,0));
-		JButton addRule = new JButton("Añadir regla");
+		JButton addRule = new JButton("AÃ±adir regla");
 		addRule.addActionListener(new ActionListener()
 				{
 					@Override
@@ -127,7 +127,7 @@ public class FAIWindow extends JFrame {
 					public void actionPerformed(ActionEvent arg0) {
 						int index = rules.getSelectedIndex();
 						if(index<0) return;
-						if(JOptionPane.showConfirmDialog(panel, "¿Desea eliminar la regla de itinerarios?", "Confirmación de eliminación", JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION)
+						if(JOptionPane.showConfirmDialog(panel, "Â¿Desea eliminar la regla de itinerarios?", "ConfirmaciÃ³n de eliminaciÃ³n", JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION)
 						{
 							grp.rules.remove(index);
 						}

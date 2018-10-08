@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -184,6 +184,6 @@ public abstract class Signal extends CTCItem
 	@Override
 	public String toString()
 	{
-		return "Señal " + Name + " de " + Station.FullName;
+		return "SeÃ±al " + Name + " de " + Station.FullName;
 	}
 }

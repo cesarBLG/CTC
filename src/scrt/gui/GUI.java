@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -41,11 +41,11 @@ public class GUI
 	private JFrame frame;
 	public GUI()
 	{
-		//while(!JOptionPane.showInputDialog(null, "Introduzca contraseña").equals("1234"));
+		//while(!JOptionPane.showInputDialog(null, "Introduzca contraseÃ±a").equals("1234"));
 		frame = new JFrame();
 		frame.setLayout(new BorderLayout());
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		frame.setTitle("Control de Tráfico Centralizado");
+		frame.setTitle("Control de Trafico Centralizado");
 		Start();
 	}
 	void Start()
@@ -63,7 +63,7 @@ public class GUI
 		itinerary.setLayout(new FlowLayout());
 		botonEnviar = new JButton("Enviar");
 		cajaTexto = new JTextField(12);
-		etiqueta= new JLabel("Código");
+		etiqueta= new JLabel("CÃ³digo");
 		etiqueta.setHorizontalAlignment(4);
 		itinerary.add(etiqueta);
 		itinerary.add(cajaTexto);

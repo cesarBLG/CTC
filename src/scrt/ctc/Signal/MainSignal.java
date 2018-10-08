@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 C閟ar Benito Lamata
+ * Copyright (C) 2017-2018 C茅sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -99,7 +99,7 @@ public class MainSignal extends Signal{
 			Aspects.add(Aspect.Via_libre);
 		}
 		if(Config.sigsAhead<2) Aspects.remove(Aspect.Anuncio_parada);
-		if(Config.anuncioPrecauci髇 == 0) Aspects.remove(Aspect.Anuncio_precaucion);
+		if(Config.anuncioPrecauci贸n == 0) Aspects.remove(Aspect.Anuncio_precaucion);
 		int start1 = -1;
 		int end1 = 0;
 		int start2 = 0;
@@ -228,9 +228,8 @@ public class MainSignal extends Signal{
 				if(i != null && !end.condition(i, dir, p))
 				{
 					AxleCounter ac = i.CounterLinked;
-					while(true)
+					while(i!=null && (i.CounterLinked==null || i.CounterLinked==ac))
 					{
-						if(i==null || (i.CounterLinked!=null && i.CounterLinked!=ac)) break;
 						if((i.BlockState!=dir&&(i.BlockState!=Orientation.None||checkBlock)) || (i.Occupied != Orientation.None && i.Occupied != Orientation.Unknown && (i.Occupied != dir || !lastSignal.allowsOnSight)))
 						{
 							return false;
@@ -297,9 +296,8 @@ public class MainSignal extends Signal{
 			if(i != null && !override && Config.overlap && (Class == SignalType.Exit || Class == SignalType.Entry))
 			{
 				AxleCounter ac = i.CounterLinked;
-				while(true)
+				while(i!=null && (i.CounterLinked==null || i.CounterLinked == ac))
 				{
-					if(i==null || (i.CounterLinked!=null && i.CounterLinked != ac)) break;
 					i.setOverlap(prev);
 					i = i.getNext(dir);
 				}
@@ -344,13 +342,13 @@ public class MainSignal extends Signal{
 		{
 			SignalAspect = Aspect.Via_libre;
 			if(Config.sigsAhead > 1 && NextSignal.SignalAspect == Aspect.Anuncio_parada && NextSignal.Class == SignalType.Entry) SignalAspect = Aspect.Preanuncio;
-			if((Switches && Config.anuncioPrecauci髇 == 1) || (NextSignal != null && NextSignal.Switches && Config.anuncioPrecauci髇 == 2))
+			if((Switches && Config.anuncioPrecauci贸n == 1) || (NextSignal != null && NextSignal.Switches && Config.anuncioPrecauci贸n == 2))
 			{
 				SignalAspect = Aspect.Anuncio_precaucion;
 			}
 			if(Config.sigsAhead > 1)
 			{
-				if(Switches && Config.anuncioPrecauci髇 == 2)
+				if(Switches && Config.anuncioPrecauci贸n == 2)
 				{
 					if(Linked.overlap != null) SignalAspect = Aspect.Anuncio_parada;
 				}
@@ -373,6 +371,7 @@ public class MainSignal extends Signal{
 							break;
 						case Rebase:
 							SignalAspect = Aspect.Parada;
+							break;
 						case Precaucion:
 							SignalAspect = Aspect.Rebase;
 							break;
@@ -381,6 +380,7 @@ public class MainSignal extends Signal{
 							break;
 						default:
 							SignalAspect = Aspect.Anuncio_parada;
+							break;
 					}
 				}
 				break;
@@ -394,8 +394,9 @@ public class MainSignal extends Signal{
 						break;
 					case Rebase:
 						SignalAspect = Aspect.Precaucion;
+						break;
 					case Anuncio_parada:
-						SignalAspect = Config.sigsAhead < 2 ? ((Config.anuncioPrecauci髇 == 1 && Switches) ? Aspect.Anuncio_precaucion : Aspect.Via_libre) : (Aspects.contains(Aspect.Parada) ? Aspect.Parada : Aspect.Apagado);
+						SignalAspect = Config.sigsAhead < 2 ? ((Config.anuncioPrecauci贸n == 1 && Switches) ? Aspect.Anuncio_precaucion : Aspect.Via_libre) : (Aspects.contains(Aspect.Parada) ? Aspect.Parada : Aspect.Apagado);
 						break;
 					case Preanuncio:
 						SignalAspect = Aspect.Anuncio_precaucion;

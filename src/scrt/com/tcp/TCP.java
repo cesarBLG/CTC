@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 César Benito Lamata
+ * Copyright (C) 2017-2018 CÃ©sar Benito Lamata
  * 
  * This file is part of SCRT.
  * 
@@ -37,7 +37,7 @@ public class TCP {
 			{
 				try
 				{
-					server = new ServerSocket(300);
+					server = new ServerSocket(5300);
 					while(true)
 					{
 						ClientListener c = new ClientListener(server.accept());
