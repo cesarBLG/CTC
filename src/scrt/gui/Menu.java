@@ -33,7 +33,7 @@ import javax.swing.KeyStroke;
 import scrt.ctc.Loader;
 import scrt.event.ListEvent;
 import scrt.event.SCRTListener;
-import scrt.event.SRCTEvent;
+import scrt.event.SCRTEvent;
 import scrt.regulation.Regulation;
 
 public class Menu extends JMenuBar {
@@ -54,7 +54,7 @@ public class Menu extends JMenuBar {
 						Regulation.services.addListener(new SCRTListener()
 								{
 									@Override
-									public void actionPerformed(SRCTEvent e)
+									public void actionPerformed(SCRTEvent e)
 									{
 										if(e instanceof ListEvent) Regulation.g.updateData(Regulation.services);
 									}

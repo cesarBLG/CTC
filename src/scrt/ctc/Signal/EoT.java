@@ -20,7 +20,7 @@ package scrt.ctc.Signal;
 
 import scrt.Orientation;
 import scrt.ctc.Station;
-import scrt.event.SRCTEvent;
+import scrt.event.SCRTEvent;
 
 public class EoT extends FixedSignal {
 	static int evenCount = 50;
@@ -42,7 +42,7 @@ public class EoT extends FixedSignal {
 	{
 	}
 	@Override
-	public void actionPerformed(SRCTEvent e)
+	public void actionPerformed(SCRTEvent e)
 	{
 	}
 }

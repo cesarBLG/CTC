@@ -21,7 +21,7 @@ package scrt.event;
 import scrt.Orientation;
 import scrt.ctc.TrackItem;
 
-public class OccupationEvent extends SRCTEvent {
+public class OccupationEvent extends SCRTEvent {
 	public int Axles;
 	public Orientation Direction;
 	public OccupationEvent(TrackItem source, Orientation dir, int current)

@@ -38,7 +38,7 @@ import scrt.ctc.TrackItem;
 import scrt.ctc.TrackItem.TrackComparer;
 import scrt.event.AxleEvent;
 import scrt.event.EventType;
-import scrt.event.SRCTEvent;
+import scrt.event.SCRTEvent;
 import scrt.log.Logger;
 
 public class MainSignal extends Signal{
@@ -225,21 +225,25 @@ public class MainSignal extends Signal{
 			{
 				p = i;
 				i = i.getNext(dir);
-				if(i != null && !end.condition(i, dir, p))
-				{
-					AxleCounter ac = i.CounterLinked;
-					while(i!=null && (i.CounterLinked==null || i.CounterLinked==ac))
-					{
-						if((i.BlockState!=dir&&(i.BlockState!=Orientation.None||checkBlock)) || (i.Occupied != Orientation.None && i.Occupied != Orientation.Unknown && (i.Occupied != dir || !lastSignal.allowsOnSight)))
-						{
-							return false;
-						}
-						i = i.getNext(dir);
-					}
-				}
+				if(i != null && !end.condition(i, dir, p)) return checkOverlap(i, p, dir, checkBlock, lastSignal);
 			}
 			return true;
 		}
+	}
+	public static boolean checkOverlap(TrackItem i, TrackItem p, Orientation dir, boolean checkBlock, Signal lastSignal)
+	{
+		AxleCounter ac = i.CounterLinked;
+		while(i!=null && (i.CounterLinked==null || i.CounterLinked==ac))
+		{
+			if((i.BlockState!=dir&&(i.BlockState!=Orientation.None||checkBlock)) || (i.Occupied != Orientation.None && i.Occupied != Orientation.Unknown && (i.Occupied != dir || !lastSignal.allowsOnSight)))
+			{
+				return false;
+			}
+			if(i instanceof Junction && !((Junction) i).blockedFor(p, checkBlock)) return false;
+			p = i;
+			i = i.getNext(dir);
+		}
+		return true;
 	}
 	class LockTrack implements TrackComparer
 	{
@@ -499,8 +503,11 @@ public class MainSignal extends Signal{
 							if(OverrideRequest && Class == SignalType.Exit && i.Station != Linked.Station) return false;
 							if(i.Occupied!=Orientation.None) EndOfLock1 = false;
 							if(!EndOfLock1 && i.Occupied == Orientation.None) EndOfLock2 = false;
-							if(i.BlockingItem != MainSignal.this) i.tryToFree(null);
-							else if(EndOfLock2&&i.BlockState==dir) i.setBlock(Orientation.None);
+							if(i.overlap == null || i.overlap.BlockingItem == MainSignal.this)
+							{
+								if(i.BlockingItem != MainSignal.this) i.tryToFree(null);
+								else if(EndOfLock2&&i.BlockState==dir) i.setBlock(Orientation.None);
+							}
 							return true;
 						}
 						return false;
@@ -701,7 +708,11 @@ public class MainSignal extends Signal{
 			setState();
 			update();
 		}
-		else Automatic = false;
+		else
+		{
+			Automatic = false;
+			UserRequest = ClearRequest;
+		}
 		setState();
 		update();
 	}
@@ -762,7 +773,7 @@ public class MainSignal extends Signal{
 						public boolean condition(TrackItem t, Orientation dir, TrackItem p)
 						{
 							if(t==null || (t.CounterLinked != null && t.CounterLinked!=ac)) return false;
-							MonitoringItems.add(i);
+							MonitoringItems.add(t);
 							return true;
 						}
 
@@ -778,9 +789,9 @@ public class MainSignal extends Signal{
 			if(t!=null&&!t.listeners.contains(this)) t.listeners.add(this);
 		}
 	}
-	long lastPass = 0;
+	public long lastPass = 0;
 	@Override
-	public void actionPerformed(SRCTEvent e) {
+	public void actionPerformed(SCRTEvent e) {
 		if(!EventsMuted)
 		{
 			if(e.type == EventType.Signal)
@@ -883,9 +894,9 @@ public class MainSignal extends Signal{
 		EventsMuted = mute;
 		if(!EventsMuted)
 		{
-			List<SRCTEvent> l = new ArrayList<>();
+			List<SCRTEvent> l = new ArrayList<>();
 			l.addAll(Queue);
-			for(SRCTEvent e : l)
+			for(SCRTEvent e : l)
 			{
 				if(EventsMuted) return;
 				else actionPerformed(e);

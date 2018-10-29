@@ -18,7 +18,7 @@
  ******************************************************************************/
 package scrt.event;
 
-public class UserEvent extends SRCTEvent {
+public class UserEvent extends SCRTEvent {
 
 	public UserEvent(Object c) {
 		super(EventType.User, c);

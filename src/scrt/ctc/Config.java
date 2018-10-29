@@ -27,7 +27,7 @@ public class Config
 	public static boolean lockBeforeBlock = false;
 	public static boolean lock = true;
 	public static boolean trailablePoints = true;
-	public static boolean overlap = false;
+	public static boolean overlap = true;
 	public static int D0 = 2000;
 	public static int D1 = 10000;
 	public static void set(String operator)

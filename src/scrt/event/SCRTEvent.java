@@ -18,10 +18,10 @@
  ******************************************************************************/
 package scrt.event;
 
-public class SRCTEvent{
+public class SCRTEvent{
 	public EventType type;
 	public Object creator;
-	public SRCTEvent(EventType t, Object c)
+	public SCRTEvent(EventType t, Object c)
 	{
 		type = t;
 		creator = c;

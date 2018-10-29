@@ -21,7 +21,7 @@ package scrt.ctc.Signal;
 import scrt.com.packet.SignalID;
 import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
-import scrt.event.SRCTEvent;
+import scrt.event.SCRTEvent;
 
 public class ExitIndicator extends Signal{
 	MainSignal MainSignal = null;
@@ -81,7 +81,7 @@ public class ExitIndicator extends Signal{
 		
 	}
 	@Override
-	public void actionPerformed(SRCTEvent e) {
+	public void actionPerformed(SCRTEvent e) {
 		setAspect();
 	}
 	@Override

@@ -34,7 +34,7 @@ import scrt.ctc.Signal.MainSignal;
 import scrt.event.AxleEvent;
 import scrt.event.OccupationEvent;
 import scrt.event.SCRTListener;
-import scrt.event.SRCTEvent;
+import scrt.event.SCRTEvent;
 import scrt.train.Locomotive;
 import scrt.train.Train;
 import scrt.train.Wagon;
@@ -217,7 +217,7 @@ public class AxleCounter extends CTCItem
 		}
 	}
 	@Override
-	public void actionPerformed(SRCTEvent e)
+	public void actionPerformed(SCRTEvent e)
 	{
 		// TODO Auto-generated method stub
 		

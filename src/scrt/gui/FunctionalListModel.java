@@ -27,7 +27,7 @@ import javax.swing.event.ListDataListener;
 
 import scrt.FunctionalList;
 import scrt.event.ListEvent;
-import scrt.event.SRCTEvent;
+import scrt.event.SCRTEvent;
 import scrt.event.SCRTListener;
 
 public class FunctionalListModel<E> implements ListModel<E>, SCRTListener {
@@ -56,7 +56,7 @@ public class FunctionalListModel<E> implements ListModel<E>, SCRTListener {
 		listeners.remove(arg0);
 	}
 	@Override
-	public void actionPerformed(SRCTEvent e) {
+	public void actionPerformed(SCRTEvent e) {
 		if(e instanceof ListEvent)
 		{
 			ListDataEvent le = new ListDataEvent(list, ListDataEvent.CONTENTS_CHANGED, 0, getSize());

@@ -43,7 +43,7 @@ import scrt.event.BlockEvent;
 import scrt.event.EventType;
 import scrt.event.OccupationEvent;
 import scrt.event.SCRTListener;
-import scrt.event.SRCTEvent;
+import scrt.event.SCRTEvent;
 import scrt.train.Train;
 
 public class TrackItem extends CTCItem{
@@ -433,7 +433,7 @@ public class TrackItem extends CTCItem{
 	}
 	public List<SCRTListener> listeners = new ArrayList<>();
 	@Override
-	public void actionPerformed(SRCTEvent e) 
+	public void actionPerformed(SCRTEvent e) 
 	{
 		if(!Muted)
 		{

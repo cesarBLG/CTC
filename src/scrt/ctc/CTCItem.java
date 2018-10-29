@@ -24,12 +24,12 @@ import java.util.List;
 import scrt.com.packet.ID;
 import scrt.com.packet.Packable;
 import scrt.com.packet.PacketManager;
-import scrt.event.SRCTEvent;
+import scrt.event.SCRTEvent;
 import scrt.event.SCRTListener;
 
 public abstract class CTCItem implements SCRTListener, Packable {
 	public List<SCRTListener> listeners = new ArrayList<>();
-	protected List<SRCTEvent> Queue = new ArrayList<>();
+	protected List<SCRTEvent> Queue = new ArrayList<>();
 	protected boolean EventsMuted = false;
 	public static PacketManager PacketManager = new PacketManager();
 	public CTCItem()

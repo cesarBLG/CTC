@@ -35,6 +35,9 @@ import scrt.com.packet.Packet;
 import scrt.com.packet.Packet.PacketType;
 import scrt.com.packet.StatePacket;
 import scrt.com.packet.TrackItemID;
+import scrt.ctc.Signal.MainSignal;
+import scrt.ctc.Signal.Signal;
+import scrt.ctc.TrackItem.TrackComparer;
 import scrt.event.AxleEvent;
 import scrt.event.BlockEvent;
 import scrt.event.OccupationEvent;
@@ -256,7 +259,6 @@ public class Junction extends TrackItem
 			else block(BackItem);
 		}
 		super.setOverlap(t);
-		//Maybe we should lock the point?
 	}
 	@Override
 	public void blockChanged()
@@ -322,12 +324,48 @@ public class Junction extends TrackItem
 		{
 			l.actionPerformed(new OccupationEvent(this, Orientation.None, 0));
 		}
+		if(BlockState == Direction && overlap != null)
+		{
+			blockPosition = 1-blockPosition;
+			blockChanged();
+			TrackItem.DirectExploration(FrontItems[p == Position.Straight ? 1 : 0], new TrackComparer()
+			{
+				@Override
+				public boolean condition(TrackItem t, Orientation dir, TrackItem p) 
+				{
+					if(t.overlap==overlap)
+					{
+						t.setOverlap(null);
+						return true;
+					}
+					return false;
+				}
+				@Override
+				public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p) 
+				{
+					return true;
+				}
+				
+			}, BlockState);
+		}
 	}
 	public boolean setSwitch(Position p)
 	{
 		//if(!Station.Opened) return false;
 		if(Switch==p||Occupied!=Orientation.None||Locked!=-1) return false;
-		if((Switch == Position.Straight && blockPosition == 0) || (Switch == Class && blockPosition == 1)) return false;
+		if((Switch == Position.Straight && blockPosition == 0) || (Switch == Class && blockPosition == 1))
+		{
+			if(overlap!=null)
+			{
+				if(BlockState == Direction)
+				{
+					TrackItem next = FrontItems[p == Position.Straight ? 0 : 1];
+					Signal lastsig = overlap.getNext(overlap.BlockState).SignalLinked;
+					if(!MainSignal.checkOverlap(next, this, BlockState, false, lastsig)) return false;
+				}
+			}
+			else return false;
+		}
 		target = p;
 		send(PacketType.JunctionPositionSwitch, true);
 		if(Linked!=null&&Linked.Switch != p && Linked.target != p) Linked.setSwitch(p);

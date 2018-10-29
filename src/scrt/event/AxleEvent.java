@@ -23,7 +23,7 @@ import scrt.ctc.Axle;
 import scrt.ctc.AxleCounter;
 import scrt.ctc.TrackItem;
 
-public class AxleEvent extends SRCTEvent 
+public class AxleEvent extends SCRTEvent 
 {
 	public Orientation dir;
 	public boolean release;
