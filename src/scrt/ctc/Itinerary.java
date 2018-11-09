@@ -161,12 +161,12 @@ public class Itinerary {
 	public static void set(TrackItem s, TrackItem e, Orientation dir, boolean shunt)
 	{
 		List<TrackItem> path = s.path(e, dir, true);
-		for(TrackItem t : path)
+		for(int i=1; i<path.size()-1; i++)
 		{
-			if(path.indexOf(t) < path.size() - 1 && !path.contains(t.getNext(dir)))
+			if(path.get(i) instanceof Junction)
 			{
-				Junction j = (Junction)t;
-				j.setSwitch(j.Switch == Position.Straight ? j.Class : Position.Straight);
+				Junction j = (Junction)path.get(i);
+				j.setSwitch(path.get(i-1), path.get(i+1));
 			}
 		}
 		for(TrackItem t : path)

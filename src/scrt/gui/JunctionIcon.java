@@ -205,7 +205,7 @@ public class JunctionIcon extends TrackIcon {
 		@Override
 		public void actionPerformed(ActionEvent e) 
 		{
-			Locking.setBackground(a ? Color.blue : Color.white);
+			Locking.setBackground(a ? Color.yellow : Color.white);
 			a = !a;
 		}
 	});
@@ -218,7 +218,7 @@ public class JunctionIcon extends TrackIcon {
 			FlashingTimer.setRepeats(true);
 			FlashingTimer.start();
 			FlashingTimer.setInitialDelay(0);
-			Locking.setBackground(Color.blue);
+			Locking.setBackground(Color.yellow);
 		}
 		else
 		{

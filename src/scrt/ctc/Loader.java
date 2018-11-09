@@ -228,6 +228,7 @@ public class Loader {
 				stations.add(new Station((StationRegister)p));
 			}
 		}
+		List<SignalRegister> signalregs = new ArrayList<>();
 		for(Packet p : packets)
 		{
 			if(p instanceof TrackRegister)

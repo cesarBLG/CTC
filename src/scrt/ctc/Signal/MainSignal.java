@@ -23,6 +23,8 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import scrt.Orientation;
 import scrt.com.packet.AutomaticOrder;
 import scrt.com.packet.ClearOrder;
@@ -158,6 +160,21 @@ public class MainSignal extends Signal{
 		}
 		return false;
 	};
+	static class OverlapEnd implements TrackIs
+	{
+		AxleCounter ac;
+		public OverlapEnd(AxleCounter ac)
+		{
+			this.ac = ac;
+		}
+		@Override
+		public boolean condition(TrackItem i, Orientation dir, TrackItem p) 
+		{
+			if(p!=null && (p.CounterLinked!=null && p.CounterLinked != ac)) return false;
+			if(i==null || (i.CounterLinked!=null && i.CounterLinked != ac && i.CounterDir != dir)) return false;
+			return true;
+		}
+	}
 	class TrackAvailable implements TrackComparer
 	{
 		boolean checkBlock = false;
@@ -225,25 +242,39 @@ public class MainSignal extends Signal{
 			{
 				p = i;
 				i = i.getNext(dir);
-				if(i != null && !end.condition(i, dir, p)) return checkOverlap(i, p, dir, checkBlock, lastSignal);
+				if(i != null && !end.condition(i, dir, p))
+				{
+					return TrackItem.DirectExploration(i, new MainSignal.OverlapAvailable(i, checkBlock, lastSignal), dir) != null;
+				}
 			}
 			return true;
 		}
 	}
-	public static boolean checkOverlap(TrackItem i, TrackItem p, Orientation dir, boolean checkBlock, Signal lastSignal)
+	public static class OverlapAvailable implements TrackComparer
 	{
-		AxleCounter ac = i.CounterLinked;
-		while(i!=null && (i.CounterLinked==null || i.CounterLinked==ac))
+		TrackIs end;
+		boolean checkBlock;
+		Signal lastSignal;
+		public OverlapAvailable(TrackItem start, boolean checkBlock, Signal lastSignal)
 		{
-			if((i.BlockState!=dir&&(i.BlockState!=Orientation.None||checkBlock)) || (i.Occupied != Orientation.None && i.Occupied != Orientation.Unknown && (i.Occupied != dir || !lastSignal.allowsOnSight)))
-			{
-				return false;
-			}
-			if(i instanceof Junction && !((Junction) i).blockedFor(p, checkBlock)) return false;
-			p = i;
-			i = i.getNext(dir);
+			this.checkBlock = checkBlock;
+			this.lastSignal = lastSignal;
+			end = new OverlapEnd(start.CounterLinked);
 		}
-		return true;
+		@Override
+		public boolean condition(TrackItem i, Orientation dir, TrackItem p) 
+		{
+			return end.condition(i,dir,p);
+		}
+		@Override
+		public boolean criticalCondition(TrackItem i, Orientation dir, TrackItem p) 
+		{
+			if(i.BlockingItem!=null && i.BlockState!=dir && (i.BlockState!=Orientation.None||checkBlock)) return false;
+			if(i.BlockingItem==null && checkBlock && i.BlockState!=dir && i.BlockState!=Orientation.Both) return false;
+			if(i.Occupied != Orientation.None && i.Occupied != Orientation.Unknown && (i.Occupied != dir || !lastSignal.allowsOnSight)) return false;
+			if(i instanceof Junction && (i.BlockingItem != null || i.Occupied != Orientation.None) && !((Junction) i).blockedFor(p, checkBlock)) return false;
+			return true;
+		}
 	}
 	class LockTrack implements TrackComparer
 	{
@@ -299,14 +330,31 @@ public class MainSignal extends Signal{
 			}
 			if(i != null && !override && Config.overlap && (Class == SignalType.Exit || Class == SignalType.Entry))
 			{
-				AxleCounter ac = i.CounterLinked;
-				while(i!=null && (i.CounterLinked==null || i.CounterLinked == ac))
-				{
-					i.setOverlap(prev);
-					i = i.getNext(dir);
-				}
+				TrackItem.DirectExploration(i, new BlockOverlap(i, prev), dir);
 			}
 			return false;
+		}
+		@Override
+		public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p) 
+		{
+			return true;
+		}
+	}
+	public static class BlockOverlap implements TrackComparer
+	{
+		TrackItem overlap;
+		TrackIs end;
+		public BlockOverlap(TrackItem start, TrackItem overlap)
+		{
+			this.overlap = overlap;
+			end = new OverlapEnd(start.CounterLinked);
+		}
+		@Override
+		public boolean condition(TrackItem i, Orientation dir, TrackItem p) 
+		{
+			if(!end.condition(i,dir,p)) return false;
+			i.setOverlap(overlap, dir);
+			return true;
 		}
 		@Override
 		public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p) 
@@ -354,7 +402,7 @@ public class MainSignal extends Signal{
 			{
 				if(Switches && Config.anuncioPrecaución == 2)
 				{
-					if(Linked.overlap != null) SignalAspect = Aspect.Anuncio_parada;
+					if(!Linked.overlaps.isEmpty()) SignalAspect = Aspect.Anuncio_parada;
 				}
 				if(NextSignal==null || NextSignal.SignalAspect == Aspect.Parada || NextSignal.SignalAspect == Aspect.Rebase || NextSignal.SignalAspect == Aspect.Apagado)
 				{
@@ -494,7 +542,7 @@ public class MainSignal extends Signal{
 		TrackItem.DirectExploration(Linked, new TrackComparer()
 				{
 					boolean EndOfLock1 = true;
-					boolean EndOfLock2 = true;
+					//boolean EndOfLock2 = true;
 					@Override
 					public boolean condition(TrackItem i, Orientation dir, TrackItem p) {
 						if(i==null) return false;
@@ -502,12 +550,9 @@ public class MainSignal extends Signal{
 						{
 							if(OverrideRequest && Class == SignalType.Exit && i.Station != Linked.Station) return false;
 							if(i.Occupied!=Orientation.None) EndOfLock1 = false;
-							if(!EndOfLock1 && i.Occupied == Orientation.None) EndOfLock2 = false;
-							if(i.overlap == null || i.overlap.BlockingItem == MainSignal.this)
-							{
-								if(i.BlockingItem != MainSignal.this) i.tryToFree(null);
-								else if(EndOfLock2&&i.BlockState==dir) i.setBlock(Orientation.None);
-							}
+							//if(!EndOfLock1 && i.Occupied == Orientation.None) EndOfLock2 = false;
+							if(i.BlockingItem == MainSignal.this) i.BlockingItem = null;
+							i.tryToFree(null);
 							return true;
 						}
 						return false;
@@ -530,7 +575,8 @@ public class MainSignal extends Signal{
 	}
 	public boolean BlockRequest()
 	{
-		return Linked.getNext(Orientation.OppositeDir(Direction)).BlockState == Direction;
+		TrackItem i = Linked.getNext(Orientation.OppositeDir(Direction));
+		return i.BlockState == Direction && i.BlockingItem != null;
 	}
 	@Override
 	public void update()
@@ -762,7 +808,7 @@ public class MainSignal extends Signal{
 					}
 					
 				}, Direction);
-		if(Config.overlap && (Class == SignalType.Exit || Class == SignalType.Entry))
+		if(Config.overlap)
 		{
 			TrackItem i = MonitoringItems.get(MonitoringItems.size()-1).getNext(Direction);
 			if(i==null) return;
@@ -808,29 +854,52 @@ public class MainSignal extends Signal{
 			}
 			if(e.type == EventType.AxleCounter)
 			{
+				AxleEvent ae = (AxleEvent)e;
 				if(e.creator == Linked.CounterLinked && Linked.CounterLinked.Working)
 				{
-					AxleEvent ae = (AxleEvent)e;
 					if(!ae.release && Direction==ae.dir)
 					{
-						if(SignalAspect==Aspect.Parada&&Clock.time() > lastPass + 10000)
+						if(!ae.first)
 						{
-							Logger.trace(this, "rebasada");
+							if(SignalAspect==Aspect.Parada&&Clock.time() > lastPass + 10000)
+							{
+								Logger.trace(this, "rebasada");
+								TrackItem.DirectExploration(Linked, new TrackComparer()
+										{
+											@Override
+											public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+											{
+												//ToDo: Needs revision
+												if(!nextSignal.condition(t, dir, p))
+												{
+													t.setBlock(Orientation.Unknown, MainSignal.this, false);
+													if(t instanceof Junction)
+													{
+														((Junction)t).lock(p);
+													}
+												}
+												else return false;
+												return true;
+											}
+											@Override
+											public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+											{
+												return true;
+											}
+										}, ae.dir);
+							}
+						}
+						else
+						{
+							if(SignalAspect != Aspect.Parada) lastPass = Clock.time();
 							TrackItem.DirectExploration(Linked, new TrackComparer()
 									{
 										@Override
 										public boolean condition(TrackItem t, Orientation dir, TrackItem p)
 										{
-											//ToDo: Needs revision
-											if(!nextSignal.condition(t, dir, p))
-											{
-												t.setBlock(Orientation.Unknown, MainSignal.this, false);
-												if(t instanceof Junction)
-												{
-													((Junction)t).lock(p);
-												}
-											}
-											else return false;
+											if(t==null) return false;
+											if(nextSignal.condition(t, dir, p)) return false;
+											t.BlockingItem = ae.axle;
 											return true;
 										}
 										@Override
@@ -838,28 +907,11 @@ public class MainSignal extends Signal{
 										{
 											return true;
 										}
-									}, ae.dir);
+									}, Direction);
+							if(UserRequest) OverrideRequest = UserRequest = false;
 						}
-						if(SignalAspect != Aspect.Parada) lastPass = Clock.time();
-						TrackItem.DirectExploration(Linked, new TrackComparer()
-								{
-									@Override
-									public boolean condition(TrackItem t, Orientation dir, TrackItem p)
-									{
-										if(t==null) return false;
-										if(nextSignal.condition(t, dir, p)) return false;
-										t.BlockingItem = ae.axle;
-										return true;
-									}
-									@Override
-									public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
-									{
-										return true;
-									}
-								}, Direction);
-						if(UserRequest) OverrideRequest = UserRequest = false;
 					}
-					else
+					else if(!ae.first)
 					{
 						/*CTCTimer t = new CTCTimer(1000, new ActionListener() { @Override
 						public void actionPerformed(ActionEvent e) {*/
@@ -884,6 +936,7 @@ public class MainSignal extends Signal{
 						t.start();*/
 					}
 				}
+				else if(!ae.first) update();
 			}
 			Queue.remove(e);
 		}

@@ -56,6 +56,11 @@ public class FixedSignal extends MainSignal {
 		super.setClearRequest();
 	}
 	@Override
+	public boolean TrackRequest()
+	{
+		return trainInProximity();
+	}
+	@Override
 	public void setAspect() {
 		SignalAspect = Aspects.get(0);
 		send();

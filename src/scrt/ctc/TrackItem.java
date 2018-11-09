@@ -22,8 +22,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import scrt.Orientation;
 import scrt.com.COM;
@@ -54,7 +57,7 @@ public class TrackItem extends CTCItem{
 	public AxleCounter CounterLinked = null;
 	public Station Station;
 	public String Name = "";
-	Orientation CounterDir = Orientation.None;
+	public Orientation CounterDir = Orientation.None;
 	public TrackItem EvenItem = null;
 	public TrackItem OddItem = null;
 	public int EvenAxles = 0;
@@ -125,9 +128,14 @@ public class TrackItem extends CTCItem{
 	{
 		if(BlockState == o) return;
 		BlockState = o;
+		if(BlockState == Orientation.None)
+		{
+			BlockingItem = null;
+			shunt = false;
+		}
 		blockChanged();
 	}
-	void blockChanged()
+	public void blockChanged()
 	{
 		if(EvenItem != null && EvenItem.SignalLinked!=null)
 		{
@@ -151,15 +159,18 @@ public class TrackItem extends CTCItem{
 	}
 	boolean wasFree = true;
 	long OccupiedTime = 0;
-	public void AxleRun(AxleEvent ae)
-	{
-		updateOccupancy(ae);
-		AxleActions(ae);
-		updateState();
-	}
 	void AxleActions(AxleEvent ae)
 	{
 		tryToFree(ae);
+		updateState();
+		if(EvenItem != null && EvenItem.SignalLinked!=null && EvenItem.SignalLinked instanceof MainSignal)
+		{
+			EvenItem.SignalLinked.actionPerformed(ae);
+		}
+		if(OddItem != null && OddItem.SignalLinked!=null && OddItem.SignalLinked instanceof MainSignal)
+		{
+			OddItem.SignalLinked.actionPerformed(ae);
+		}
 	}
 	CTCTimer trainStopTimer = new CTCTimer(10000, new ActionListener()
 			{
@@ -263,58 +274,83 @@ public class TrackItem extends CTCItem{
 				}
 			}
 		}*/
+		updateState();
 	}
 	public boolean trainStopped()
 	{
 		return Occupied == Orientation.None || (Clock.time() - OccupiedTime) >= (Station.AssociatedNumber == 0 ? 20000 : 10000);
 	}
-	public TrackItem overlap = null;
-	public void setOverlap(TrackItem t)
+	public Hashtable<TrackItem, Orientation> overlaps = new Hashtable<>();
+	public void setOverlap(TrackItem t, Orientation dir)
 	{
-		if(overlap==t || (t!=null && overlap!=null)) return;
-		if(overlap==null) t.listeners.add(this);
-		else overlap.listeners.remove(this);
-		overlap = t;
-		if(overlap == null) setBlock(Orientation.None);
-		else setBlock(t.BlockState);
+		if(overlaps.containsKey(t) || (BlockState != Orientation.None && dir != BlockState && BlockingItem != null)) return;
+		t.listeners.add(this);
+		overlaps.put(t, dir);
+		setOverlapBlock();
+	}
+	public void removeOverlap(TrackItem t)
+	{
+		if(overlaps.containsKey(t))
+		{
+			overlaps.remove(t);
+			t.listeners.remove(this);
+			setOverlapBlock();
+		}
+	}
+	void setOverlapBlock()
+	{
+		if(BlockingItem != null) return;
+		boolean even = overlaps.values().contains(Orientation.Even);
+		boolean odd = overlaps.values().contains(Orientation.Odd);
+		if(even&&odd) setBlock(Orientation.Both);
+		else if(even) setBlock(Orientation.Even);
+		else if(odd) setBlock(Orientation.Odd);
+		else setBlock(Orientation.None);
+		blockChanged();
 	}
 	boolean free;
 	public void tryToFree(AxleEvent ae)
 	{
-		if(BlockState!=Orientation.Odd && BlockState!=Orientation.Even) return;
-		if(overlap != null) return;
-		if(BlockingItem instanceof MainSignal)
+		if(BlockState==Orientation.None || BlockState == Orientation.Unknown) return;
+		if(BlockingItem instanceof MainSignal && ((MainSignal) BlockingItem).Locked) return;
+		if(BlockingItem instanceof Axle && !axles.contains(BlockingItem))
 		{
-			if(((MainSignal) BlockingItem).Locked) return;
-		}
-		if(BlockingItem instanceof Axle)
-		{
-			if(ae==null || ae.axle != BlockingItem)
-			{
-				free = true;
-				TrackItem.InverseExploration(this, new TrackComparer()
+			free = true;
+			TrackItem.InverseExploration(this, new TrackComparer()
+					{
+						@Override
+						public boolean condition(TrackItem t, Orientation dir, TrackItem p)
 						{
-							@Override
-							public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+							if(t.axles.contains(BlockingItem))
 							{
-								if(t!=null && t.axles.contains(BlockingItem))
-								{
-									free = false;
-								}
-								if(t!=null && t.SignalLinked instanceof MainSignal && t.SignalLinked.Direction == Orientation.OppositeDir(dir)) return false;
-								return true;
+								free = false;
+								return false;
 							}
-							@Override
-							public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
-							{
-								if(t==null) return false;
-								return true;
-							}
-						}, Orientation.OppositeDir(BlockState));
-				if(!free) return;
-			}
+							if(t!=null && t.SignalLinked instanceof MainSignal && t.SignalLinked.Direction == Orientation.OppositeDir(dir)) return false;
+							return true;
+						}
+						@Override
+						public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+						{
+							if(t==null) return false;
+							return true;
+						}
+					}, Orientation.OppositeDir(BlockState));
+			if(!free) return;
 		}
-		setBlock(Orientation.None);
+		BlockingItem = null;
+		shunt = false;
+		List<TrackItem> removableOverlaps = new ArrayList<>();
+		for(TrackItem t : overlaps.keySet())
+		{
+			if(t.BlockState!=Orientation.None || !t.trainStopped()) continue;
+			removableOverlaps.add(t);
+		}
+		for(TrackItem t : removableOverlaps)
+		{
+			removeOverlap(t);
+		}
+		setOverlapBlock();
 		/*if(BlockingSignal==null||!BlockingSignal.Locked)
 		{
 			if(Occupied == Orientation.None || BlockingTime<=OccupiedTime || BlockingSignal == null)
@@ -440,13 +476,11 @@ public class TrackItem extends CTCItem{
 			if(e.type == EventType.AxleCounter)
 			{
 				AxleEvent ae = (AxleEvent)e;
-				if(SignalLinked!=null) SignalLinked.actionPerformed(ae); 
-				AxleRun(ae);
+				if(ae.first) updateOccupancy(ae);
+				else AxleActions(ae);
+				if(SignalLinked!=null) SignalLinked.actionPerformed(ae);
 			}
-			if(overlap == e.creator && overlap.trainStopped() && overlap.BlockState != BlockState)
-			{
-				setOverlap(null);
-			}
+			if(e.creator!=null && overlaps.containsKey(e.creator)) tryToFree(null);
 		}
 	}
 	boolean Muted = false;
@@ -518,6 +552,7 @@ public class TrackItem extends CTCItem{
 						ac = new AxleCounter((ACID)link.id2);
 						//counters.add(ac);
 					}
+					if(ac.Number == 13 && ac.station.Name.equals("Cen")) return;
 					setCounterLinked(ac, ac.Number % 2 == 0 ? Orientation.Even : Orientation.Odd);
 				}
 				if(link.id2 instanceof TrackItemID)

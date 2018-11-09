@@ -29,10 +29,12 @@ public class AxleEvent extends SCRTEvent
 	public boolean release;
 	public TrackItem previous;
 	public Axle axle;
-	public AxleEvent(AxleCounter ac, Orientation dir, boolean release, TrackItem p, Axle a) 
+	public boolean first;
+	public AxleEvent(AxleCounter ac, Orientation dir, boolean release, boolean first, TrackItem p, Axle a) 
 	{
 		super(EventType.AxleCounter, ac);
 		this.release = release;
+		this.first = first;
 		this.dir = dir;
 		previous = p;
 		axle = a;

@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import scrt.Orientation;
 import scrt.com.packet.ACData;
 import scrt.com.packet.ACID;
@@ -113,7 +115,6 @@ public class AxleCounter extends CTCItem
 		if(axle == null)
 		{
 			axle = new Axle();
-			start = linked;
 			startDir = direction;
 			if(getAxles(direction).isEmpty())
 			{
@@ -134,45 +135,52 @@ public class AxleCounter extends CTCItem
 		else getAxles(OppositeDir(direction)).remove(axle);
 		getAxles(direction).add(axle);
 		axle.lastPosition = linked;
-		HashSet<SCRTListener> set = new HashSet<>();
-		release = true;
-		TrackItem.DirectExploration(start, new TrackComparer()
+		if(start != null)
+		{
+			TrackItem.DirectExploration(start, new TrackComparer()
+			{
+				@Override
+				public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+				{
+					if(t == start && t.CounterDir == dir) return true;
+					if(t == linked && t.CounterDir != dir) return false;
+					if(p == linked) return false;
+					t.actionPerformed(new AxleEvent(AxleCounter.this, dir, true, true, p, axle));
+					return true;
+				}
+				@Override
+				public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+				{
+					return true;
+				}
+			}, startDir);
+		}
+		TrackItem.DirectExploration(linked, new TrackComparer()
 		{
 			@Override
 			public boolean condition(TrackItem t, Orientation dir, TrackItem p)
 			{
-				if(t == start && t.CounterDir == dir) return true;
-				if(t == linked && t.CounterDir != dir) release = false;
-				if(p == linked) release = false;
+				if(t == linked && t.CounterDir == dir) return true;
 				if(t == null)
 				{
 					//TODO: Remove axle from train
 					return false;
 				}
-				if(t.CounterLinked != null && t.CounterLinked != AxleCounter.this && t.CounterLinked != start.CounterLinked && t.CounterDir != dir)
+				if(t.CounterLinked != null && t.CounterLinked != AxleCounter.this && t.CounterDir != dir)
 				{
 					t.CounterLinked.getAxles(OppositeDir(dir)).add(axle);
 					axle.firstPosition = p;
 					axle.orientation = dir;
 					return false;
 				}
-				if(p != null && p.CounterLinked != null && p.CounterLinked != AxleCounter.this && p.CounterLinked != start.CounterLinked)
+				if(p != null && p.CounterLinked != null && p.CounterLinked != AxleCounter.this)
 				{
 					p.CounterLinked.getAxles(OppositeDir(dir)).add(axle);
 					axle.firstPosition = p;
 					axle.orientation = dir;
 					return false;
 				}
-				t.actionPerformed(new AxleEvent(AxleCounter.this, dir, release, p, axle));
-				set.addAll(t.listeners);
-				if(t.EvenItem != null && t.EvenItem.SignalLinked!=null && t.EvenItem.SignalLinked instanceof MainSignal)
-				{
-					set.add(t.EvenItem.SignalLinked);
-				}
-				if(t.OddItem != null && t.OddItem.SignalLinked!=null && t.OddItem.SignalLinked instanceof MainSignal)
-				{
-					set.add(t.OddItem.SignalLinked);
-				}
+				t.actionPerformed(new AxleEvent(AxleCounter.this, dir, false, true, p, axle));
 				return true;
 			}
 			@Override
@@ -180,12 +188,62 @@ public class AxleCounter extends CTCItem
 			{
 				return true;
 			}
-		}, startDir);
+		}, direction);
 		axle.update();
-		for(SCRTListener l : set)
+		if(start != null)
 		{
-			l.actionPerformed(new OccupationEvent(null, Orientation.None, 0));
+			TrackItem.DirectExploration(start, new TrackComparer()
+			{
+				@Override
+				public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+				{
+					if(t == start && t.CounterDir == dir) return true;
+					if(t == linked && t.CounterDir != dir) return false;
+					if(p == linked) return false;
+					t.actionPerformed(new AxleEvent(AxleCounter.this, dir, true, false, p, axle));
+					return true;
+				}
+				@Override
+				public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+				{
+					return true;
+				}
+			}, startDir);
 		}
+		TrackItem.DirectExploration(linked, new TrackComparer()
+		{
+			@Override
+			public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+			{
+				if(t == linked && t.CounterDir == dir) return true;
+				if(t == null)
+				{
+					//TODO: Remove axle from train
+					return false;
+				}
+				if(t.CounterLinked != null && t.CounterLinked != AxleCounter.this && t.CounterDir != dir)
+				{
+					t.CounterLinked.getAxles(OppositeDir(dir)).add(axle);
+					axle.firstPosition = p;
+					axle.orientation = dir;
+					return false;
+				}
+				if(p != null && p.CounterLinked != null && p.CounterLinked != AxleCounter.this)
+				{
+					p.CounterLinked.getAxles(OppositeDir(dir)).add(axle);
+					axle.firstPosition = p;
+					axle.orientation = dir;
+					return false;
+				}
+				t.actionPerformed(new AxleEvent(AxleCounter.this, dir, false, false, p, axle));
+				return true;
+			}
+			@Override
+			public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+			{
+				return true;
+			}
+		}, direction);
 	}
 	public void Error()
 	{
