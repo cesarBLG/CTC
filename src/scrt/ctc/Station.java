@@ -45,7 +45,7 @@ public class Station {
 		Name = reg.shortName;
 		AssociatedNumber = reg.associatedNumber;
 		if(AssociatedNumber == 0) Close();
-		COM.send(reg);
+		COM.toSend(reg);
 	}
 	@Deprecated
 	public static int getNumber(String name)

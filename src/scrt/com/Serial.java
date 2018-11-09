@@ -78,6 +78,7 @@ public class Serial implements Device {
 		}
 		catch(Exception e){return;}
 		Connected = true;
+		COM.addDevice(this);
 	}
 	public void print(String a)
 	{

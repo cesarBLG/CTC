@@ -43,17 +43,16 @@ public class COM
 		comIn.start();
 		comOut.start();
 		new TCP().initialize();
-		/*try
+		try
 		{
 			Class.forName("gnu.io.SerialPort");
 			new Serial().begin(9600);
 		}
-		catch (ClassNotFoundException e){}*/
+		catch (ClassNotFoundException e){}
 		new File();
 	}
-	public static synchronized void addDevice(Device d)
+	public static void addDevice(Device d)
 	{
-		devs.add(d);
 		for(Packet p : registers)
 		{
 			d.write(p.getState());
@@ -69,6 +68,10 @@ public class COM
 		for(Packet p : extern)
 		{
 			d.write(p.getState());
+		}
+		synchronized(devs)
+		{
+			devs.add(d);
 		}
 	}
 	static List<Packet> registers = new ArrayList<>();
@@ -98,7 +101,10 @@ public class COM
 			extern.add(p);
 		}
 		byte[] data = p.getState();
-		for(Device dev : devs) dev.write(data);
+		synchronized(devs)
+		{
+			for(Device dev : devs) dev.write(data);
+		}
 		return;
 	}
 	public static Queue<Packet> inQueue = new LinkedList<>();
