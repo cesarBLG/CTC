@@ -252,7 +252,7 @@ public class Loader {
 		for(TrackItem a : items)
 		{
 			if(a instanceof Junction) continue;
-			if(a.SignalLinked!=null) a.SignalLinked.setAspect();
+			if(a.SignalLinked!=null) a.SignalLinked.update();
 			if(a.getNext(Orientation.Even) == null)
 			{
 				if(a.CounterLinked != null)
@@ -323,7 +323,9 @@ public class Loader {
 							if(b.connectsTo(j.Direction, a)) j.FrontItems[0] = b;
 							if(b.connectsTo(j.Direction, a.x, a.y, j.Class == Position.Right ? -1 : 1)) j.FrontItems[1] = b;
 							if(b.connectsTo(Orientation.OppositeDir(j.Direction), a)) j.BackItem = b;
-							if(a.x == b.x && a.y + 1 == b.y && j.Class == Position.Right && k.Class == Position.Left)
+							if(a.x == b.x && a.y + 1 == b.y && (
+									(j.Direction == Orientation.Even && j.Class == Position.Right && k.Class == Position.Left)
+									|| (j.Direction == Orientation.Odd && k.Class == Position.Right && j.Class == Position.Left)))
 							{
 								j.CrossingLinked = k;
 								k.CrossingLinked = j;

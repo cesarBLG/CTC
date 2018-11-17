@@ -58,7 +58,7 @@ public class TrackIcon extends CTCIcon {
 		paint();
 	}
 	TrackRegister reg;
-	TrackItemID id;
+	public TrackItemID id;
 	TrackData data;
 	SignalID sigId;
 	public SignalIcon signal = null;

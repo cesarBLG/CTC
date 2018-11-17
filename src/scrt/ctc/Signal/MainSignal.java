@@ -47,6 +47,10 @@ public class MainSignal extends Signal{
 	public MainSignal NextSignal = null;
 	List<TrackItem> MonitoringItems = new ArrayList<>();
 	boolean ForceClose = false;
+	boolean Occupied = false;
+	public boolean Override = false;
+	boolean Switches = false;
+	boolean allowsOnSight = false;
 	MainSignal(Station dep)
 	{
 		super(dep);
@@ -137,7 +141,7 @@ public class MainSignal extends Signal{
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					setCleared();
-					if(!Cleared) UserRequest = OverrideRequest = false;
+					if(!Cleared && !Automatic) UserRequest = OverrideRequest = false;
 					setAspect();
 				}
 			});
@@ -181,11 +185,11 @@ public class MainSignal extends Signal{
 		boolean Next = false;
 		TrackIs end;
 		boolean Override;
-		Signal lastSignal;
+		MainSignal lastSignal;
 		TrackAvailable(boolean Override, boolean CheckBlock)
 		{
 			this.Override = Override;
-			if(!Override) end = (i, dir, p) ->  i==Linked||i==null||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir||(i.SignalLinked.BlockSignal);
+			if(!Override) end = (i, dir, p) ->  i==Linked||i==null||i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir||((MainSignal)i.SignalLinked).BlockSignal;
 			else end = ovEnd;
 			checkBlock = CheckBlock;
 			lastSignal = MainSignal.this;
@@ -203,7 +207,7 @@ public class MainSignal extends Signal{
 					if(!NextSignal.listeners.contains(MainSignal.this)) NextSignal.listeners.add(MainSignal.this);
 					checkBlock = false;
 				}
-				lastSignal = i.SignalLinked;
+				lastSignal = (MainSignal)i.SignalLinked;
 			}
 			if(end.condition(i, dir, p))
 			{
@@ -212,7 +216,7 @@ public class MainSignal extends Signal{
 				if(i instanceof Junction && !Next)
 				{
 					Junction j = (Junction)i;
-					if(j.Switch != Position.Straight && j.Direction==dir) Switches = true;
+					if(j.Switch != Position.Straight || j.blockPosition == 1) Switches = true;
 				}
 				return true;
 			}
@@ -238,7 +242,7 @@ public class MainSignal extends Signal{
 					if(k.Locked == 1 || (k.Switch != Position.Straight && k.BlockState != Orientation.None)) return false;
 				}
 			}
-			if(!Override && Config.overlap && (lastSignal.Class == SignalType.Exit || lastSignal.Class == SignalType.Entry))
+			if(!Override && Config.overlap)
 			{
 				p = i;
 				i = i.getNext(dir);
@@ -254,8 +258,8 @@ public class MainSignal extends Signal{
 	{
 		TrackIs end;
 		boolean checkBlock;
-		Signal lastSignal;
-		public OverlapAvailable(TrackItem start, boolean checkBlock, Signal lastSignal)
+		MainSignal lastSignal;
+		public OverlapAvailable(TrackItem start, boolean checkBlock, MainSignal lastSignal)
 		{
 			this.checkBlock = checkBlock;
 			this.lastSignal = lastSignal;
@@ -328,7 +332,7 @@ public class MainSignal extends Signal{
 				i.setBlock(dir, MainSignal.this, override);
 				return true;
 			}
-			if(i != null && !override && Config.overlap && (Class == SignalType.Exit || Class == SignalType.Entry))
+			if(i != null && !override && Config.overlap)
 			{
 				TrackItem.DirectExploration(i, new BlockOverlap(i, prev), dir);
 			}
@@ -402,9 +406,9 @@ public class MainSignal extends Signal{
 			{
 				if(Switches && Config.anuncioPrecaución == 2)
 				{
-					if(!Linked.overlaps.isEmpty()) SignalAspect = Aspect.Anuncio_parada;
+					/*if(!Linked.overlaps.isEmpty()) */SignalAspect = Aspect.Anuncio_parada;
 				}
-				if(NextSignal==null || NextSignal.SignalAspect == Aspect.Parada || NextSignal.SignalAspect == Aspect.Rebase || NextSignal.SignalAspect == Aspect.Apagado)
+				if(NextSignal==null || (NextSignal.SignalAspect == Aspect.Parada && (!(NextSignal instanceof EoT) || NextSignal.Station.AssociatedNumber != 0)) || NextSignal.SignalAspect == Aspect.Rebase || NextSignal.SignalAspect == Aspect.Apagado)
 				{
 					SignalAspect = Aspect.Anuncio_parada;
 				}
@@ -461,7 +465,7 @@ public class MainSignal extends Signal{
 		}
 		super.setAspect();
 	}
-	@Override
+	public boolean BlockSignal = false;
 	public void setState()
 	{
 		boolean prev = BlockSignal;
@@ -470,21 +474,11 @@ public class MainSignal extends Signal{
 		update();
 	}
 	public boolean Locked = false;
-	@Override
 	public void Lock()
 	{
 		if(Locked || Linked==null) return;
-		muteEvents(true);
-		List<TrackItem> items = TrackItem.DirectExploration(Linked, new TrackAvailable(OverrideRequest, false), Direction);
-		muteEvents(false);
-		setMonitors();
 		Locked = true;
-		if(items==null)
-		{
-			Unlock();
-			return;
-		}
-		if(!Config.trailablePoints)
+		if(Config.lock || !Config.trailablePoints)
 		{
 			if(TrackItem.DirectExploration(Linked, new TrackComparer()
 					{
@@ -533,7 +527,6 @@ public class MainSignal extends Signal{
 		TrackItem.DirectExploration(Linked, new BlockTrack(OverrideRequest), Direction);
 		muteEvents(false);
 	}
-	@Override
 	public void Unlock()
 	{
 		if(!Locked) return;
@@ -564,12 +557,11 @@ public class MainSignal extends Signal{
 			
 				}, Direction);
 		muteEvents(false);
-		setMonitors();
 		if(NextSignal != null) NextSignal.listeners.remove(this);
 	}
 	public void setClearRequest()
 	{
-		ClearRequest = UserRequest || ((Automatic||BlockSignal) && TrackRequest()) || ((/*Automatic||*/BlockSignal) && BlockRequest());
+		ClearRequest = UserRequest || ((Automatic||BlockSignal) && TrackRequest()) || (BlockSignal && BlockRequest());
 		if(Class == SignalType.Shunting) OverrideRequest = true;
 		else if(!UserRequest) OverrideRequest = false;
 	}
@@ -582,25 +574,20 @@ public class MainSignal extends Signal{
 	public void update()
 	{
 		if(Linked==null||ForceClose) return;
+		setMonitors();
 		setClearRequest();
-		if(TrackItem.DirectExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction) != null)
-		{
-			if(ClearRequest) Lock();
-			else tryClose();
-		}
+		List<TrackItem> avail = TrackItem.DirectExploration(Linked,  new TrackAvailable(OverrideRequest, false), Direction);
+		List<TrackItem> check = TrackItem.DirectExploration(Linked,  new TrackAvailable(OverrideRequest, true), Direction);
+		if(avail == null || !ClearRequest) tryClose();
 		else
 		{
-			if(ClearRequest)
-			{
-				Locked = false;
-				Lock();
-			}
-			else Unlock();
+			if(ClosingTimer!=null) ClosingTimer.stop();
+			if(check==null) Locked = false;
+			Lock();
 		}
 		if(ClosingTimer!=null && ClosingTimer.isRunning())
 		{
-			if(ClearRequest) ClosingTimer.stop();
-			else if(Cleared) tryClose();
+			if(Cleared) tryClose();
 		}
 		setAspect();
 		if(Config.sigsAhead == 2 && NextSignal!=null && NextSignal.SignalAspect == Aspect.Parada && NextSignal.Automatic) NextSignal.update();
@@ -635,7 +622,7 @@ public class MainSignal extends Signal{
 	boolean affects = false;
 	public void tryClose()
 	{
-		if(ClearRequest&&!Automatic) return;
+		if(!Locked || (ClosingTimer!=null && ClosingTimer.isRunning())) return;
 		proximity = affects = false;
 		if(trainInProximity()) proximity = true;
 		TrackItem.InverseExploration(Linked, new TrackComparer()
@@ -689,19 +676,9 @@ public class MainSignal extends Signal{
 			ClosingTimer = new CTCTimer(time, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if(!Cleared)
-					{
-						ClosingTimer.stop();
-						return;
-					}
-					if(!ClearRequest)
-					{
-						Unlock();
-						setAspect();
-						ClosingTimer.stop();
-						return;
-					}
-					if(!(Automatic||BlockSignal)) return;
+					Unlock();
+					ClosingTimer.stop();
+					/*if(!(Automatic||BlockSignal)) return;
 					ClearRequest = false;
 					ForceClose = true;
 					muteEvents(true);
@@ -709,12 +686,12 @@ public class MainSignal extends Signal{
 					ClearRequest = true;
 					ForceClose = false;
 					Lock();
-					muteEvents(false);
+					muteEvents(false);*/
 				}
 			});
 			ClosingTimer.setRepeats(false);
 		}
-		if(ClosingTimer.isRunning() && ClosingTimer.getInitialDelay() == time) return;
+		if(ClosingTimer.isRunning()/* && ClosingTimer.getInitialDelay() == time*/) return;
 		ClosingTimer.setInitialDelay(time);
 		ClosingTimer.restart();
 	}
@@ -799,7 +776,7 @@ public class MainSignal extends Signal{
 					@Override
 					public boolean condition(TrackItem i, Orientation dir, TrackItem p) 
 					{
-						return i==Linked||(i!=null&&(i.SignalLinked==null||!(i.SignalLinked instanceof MainSignal)||i.SignalLinked.Direction!=dir||i.SignalLinked.BlockSignal));
+						return i!=null && !nextSignal.condition(i, dir, p);
 					}
 					@Override
 					public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p) {
@@ -808,27 +785,30 @@ public class MainSignal extends Signal{
 					}
 					
 				}, Direction);
+		
 		if(Config.overlap)
 		{
 			TrackItem i = MonitoringItems.get(MonitoringItems.size()-1).getNext(Direction);
-			if(i==null) return;
-			AxleCounter ac = i.CounterLinked;
-			TrackItem.DirectExploration(i, new TrackComparer()
-					{
-						@Override
-						public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+			if(i!=null)
+			{
+				AxleCounter ac = i.CounterLinked;
+				TrackItem.DirectExploration(i, new TrackComparer()
 						{
-							if(t==null || (t.CounterLinked != null && t.CounterLinked!=ac)) return false;
-							MonitoringItems.add(t);
-							return true;
-						}
+							@Override
+							public boolean condition(TrackItem t, Orientation dir, TrackItem p)
+							{
+								if(t==null || (t.CounterLinked != null && t.CounterLinked!=ac)) return false;
+								MonitoringItems.add(t);
+								return true;
+							}
 
-						@Override
-						public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
-						{
-							return true;
-						}
-					}, Direction);		
+							@Override
+							public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p)
+							{
+								return true;
+							}
+						}, Direction);	
+			}	
 		}
 		for(TrackItem t : MonitoringItems)
 		{
@@ -908,7 +888,10 @@ public class MainSignal extends Signal{
 											return true;
 										}
 									}, Direction);
-							if(UserRequest) OverrideRequest = UserRequest = false;
+							if(UserRequest && (!OverrideRequest || Linked.getNext(Orientation.OppositeDir(Direction)).Occupied == Orientation.None))
+							{
+								if(!Automatic && !BlockSignal) OverrideRequest = UserRequest = false;
+							}
 						}
 					}
 					else if(!ae.first)

@@ -39,6 +39,7 @@ import scrt.com.packet.SignalID;
 import scrt.com.packet.TrackData;
 import scrt.com.packet.TrackItemID;
 import scrt.com.packet.TrackRegister;
+import scrt.ctc.Junction.Position;
 import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 import scrt.event.AxleEvent;
@@ -170,6 +171,11 @@ public class TrackItem extends CTCItem{
 		if(OddItem != null && OddItem.SignalLinked!=null && OddItem.SignalLinked instanceof MainSignal)
 		{
 			OddItem.SignalLinked.actionPerformed(ae);
+		}
+		List<SCRTListener> list = new ArrayList<>(listeners);
+		for(SCRTListener l : list)
+		{
+			l.actionPerformed(new OccupationEvent(this, ae.dir, 0));
 		}
 	}
 	CTCTimer trainStopTimer = new CTCTimer(10000, new ActionListener()
@@ -306,7 +312,6 @@ public class TrackItem extends CTCItem{
 		else if(even) setBlock(Orientation.Even);
 		else if(odd) setBlock(Orientation.Odd);
 		else setBlock(Orientation.None);
-		blockChanged();
 	}
 	boolean free;
 	public void tryToFree(AxleEvent ae)
@@ -438,8 +443,8 @@ public class TrackItem extends CTCItem{
 				Junction j = (Junction)t;
 				if(j.Direction == dir)
 				{
-					if(tc.condition(j.FrontItems[0], dir, prev)) list.addAll(InverseExploration(j.FrontItems[0], tc, dir));
-					if(tc.condition(j.FrontItems[1], dir, prev)) list.addAll(InverseExploration(j.FrontItems[1], tc, dir));
+					if(tc.condition(j.FrontItems[j.Switch == Position.Straight ? 0 : 1], dir, prev)) list.addAll(InverseExploration(j.FrontItems[j.Switch == Position.Straight ? 0 : 1], tc, dir));
+					if(tc.condition(j.FrontItems[j.Switch == Position.Straight ? 0 : 1], dir, prev)) list.addAll(InverseExploration(j.FrontItems[j.Switch == Position.Straight ? 0 : 1], tc, dir));
 					break;
 				}
 			}
@@ -467,7 +472,6 @@ public class TrackItem extends CTCItem{
 		}
 		return false;
 	}
-	public List<SCRTListener> listeners = new ArrayList<>();
 	@Override
 	public void actionPerformed(SCRTEvent e) 
 	{

@@ -56,37 +56,17 @@ public class ExitIndicator extends Signal{
 
 		}
 	}
+	public void update()
+	{
+		setMain();
+		super.update();
+	}
 	@Override
 	public void setAspect()
 	{
-		setMain();
 		Cleared = MainSignal != null && MainSignal.SignalAspect != Aspect.Parada;
 		if(Cleared) SignalAspect = Aspect.Via_libre;
 		else SignalAspect = Aspect.Parada;
 		super.setAspect();
-	}
-	@Override
-	public void Lock() {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void Unlock() {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void setState() {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void actionPerformed(SCRTEvent e) {
-		setAspect();
-	}
-	@Override
-	public void muteEvents(boolean mute) {
-		// TODO Auto-generated method stub
-		
 	}
 }

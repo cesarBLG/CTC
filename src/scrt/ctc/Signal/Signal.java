@@ -31,6 +31,7 @@ import scrt.com.packet.SignalRegister;
 import scrt.ctc.CTCItem;
 import scrt.ctc.Station;
 import scrt.ctc.TrackItem;
+import scrt.event.SCRTEvent;
 import scrt.event.SCRTListener;
 import scrt.event.SignalEvent;
 import scrt.log.Logger;
@@ -72,23 +73,15 @@ public abstract class Signal extends CTCItem
 	public String Name = "";
 	public SignalType Class;
 	public boolean Automatic = false;
-	public boolean BlockSignal = false;
 	public boolean Cleared = false;
-	boolean Occupied = false;
-	public boolean Override = false;
 	public boolean ClearRequest = false;
 	public boolean OverrideRequest = false;
-	boolean Switches = false;
-	boolean allowsOnSight = false;
 	public Aspect SignalAspect = Aspect.Parada;
 	public List<Aspect> Aspects = new ArrayList<>();
 	public Station Station;
 	public int Track;
 	public int Number;
 	public TrackItem Linked;
-	public abstract void Lock();
-	public abstract void Unlock();
-	public abstract void setState();
 	Aspect LastAspect = null;
 	SignalID id = null;
 	public Signal(Station s)
@@ -186,4 +179,11 @@ public abstract class Signal extends CTCItem
 	{
 		return "Señal " + Name + " de " + Station.FullName;
 	}
+	@Override
+	public void actionPerformed(SCRTEvent e)
+	{
+		update();
+	}
+	@Override
+	public void muteEvents(boolean mute) {}
 }

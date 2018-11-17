@@ -46,12 +46,12 @@ public class COM
 		try
 		{
 			Class.forName("gnu.io.SerialPort");
-			new Serial().begin(9600);
+			new Serial().begin(115200);
 		}
 		catch (ClassNotFoundException e){}
 		new File();
 	}
-	public static void addDevice(Device d)
+	public static synchronized void addDevice(Device d)
 	{
 		for(Packet p : registers)
 		{
@@ -69,10 +69,7 @@ public class COM
 		{
 			d.write(p.getState());
 		}
-		synchronized(devs)
-		{
-			devs.add(d);
-		}
+		devs.add(d);
 	}
 	static List<Packet> registers = new ArrayList<>();
 	static List<LinkPacket> linkers = new ArrayList<>();
@@ -86,7 +83,7 @@ public class COM
 			outQueue.notify();
 		}
 	}
-	public static void send(Packet p)
+	public static synchronized void send(Packet p)
 	{
 		if(p instanceof RegisterPacket) registers.add(p);
 		else if(p instanceof LinkPacket) linkers.add((LinkPacket) p);
@@ -101,10 +98,7 @@ public class COM
 			extern.add(p);
 		}
 		byte[] data = p.getState();
-		synchronized(devs)
-		{
-			for(Device dev : devs) dev.write(data);
-		}
+		for(Device dev : devs) dev.write(data);
 		return;
 	}
 	public static Queue<Packet> inQueue = new LinkedList<>();

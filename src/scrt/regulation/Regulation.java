@@ -33,6 +33,7 @@ public class Regulation
 	public static List<Place> p = new ArrayList<>();
 	public static void load()
 	{
+		if(true) return;
 		Place cen = new Place(Station.byName("Cen"));
 		List<Track> tr = new ArrayList<>();
 		tr.add(new Track(cen, 100));

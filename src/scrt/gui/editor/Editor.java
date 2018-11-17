@@ -182,7 +182,7 @@ public class Editor
 							int y = p.y;
 							if(ev.isControlDown() ^ ev.isAltDown())
 							{
-								solveFromX(x, ev.isAltDown() ? -1 : 1);
+								solveFrom(false, x, ev.isAltDown() ? -1 : 1);
 								return;
 							}
 							TrackItemID id = new TrackItemID();
@@ -197,7 +197,7 @@ public class Editor
 								jid.stationNumber = currentStation;
 								JunctionRegister reg = new JunctionRegister(jid, id);
 								reg.Class = currentTrack == 7 ? Position.Left : Position.Right;
-								reg.Direction = jid.Number % 2 == 0 ? Orientation.Even : Orientation.Odd;
+								reg.Direction = JOptionPane.showInputDialog("Orientación").equals("e") ? Orientation.Even : Orientation.Odd;
 								send(reg);
 								set(CTCIcon.findID(jid));
 							}
@@ -246,7 +246,7 @@ public class Editor
 				});
 		
 	}
-	void solveFromX(int x, int i)
+	void solveFrom(boolean y, int x, int i)
 	{
 		List<TrackItemID> ids = new ArrayList<>();
 		for(Packet p : packets)
@@ -265,10 +265,12 @@ public class Editor
 		for(CTCIcon icon : CTCIcon.items)
 		{
 			if(icon.getID() instanceof TrackItemID) ids.add((TrackItemID) icon.getID());
+			if(icon instanceof JunctionIcon) ids.add(((JunctionIcon)icon).id);
 		}
 		for(TrackItemID id : ids)
 		{
-			if(id.x >= x) id.x += i;
+			if(y && id.y>=x) id.y+=i;
+			if(!y && id.x >= x) id.x += i;
 		}
 		CTCIcon.layout.removeAll();
 		for(CTCIcon icon : CTCIcon.items)

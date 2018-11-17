@@ -23,6 +23,7 @@ import java.util.List;
 
 import scrt.com.COM;
 import scrt.com.packet.StationRegister;
+import scrt.ctc.Signal.MainSignal;
 import scrt.ctc.Signal.Signal;
 import scrt.regulation.grp.GRP;
 import scrt.train.Train;
@@ -65,7 +66,7 @@ public class Station {
 		Opened = true;
 		for(Signal s : Signals)
 		{
-			s.setState();
+			if(s instanceof MainSignal) ((MainSignal)s).setState();
 		}
 	}
 	public void Close()
@@ -74,7 +75,7 @@ public class Station {
 		Opened = false;
 		for(Signal s : Signals)
 		{
-			s.setState();
+			if(s instanceof MainSignal) ((MainSignal)s).setState();
 		}
 	}
 	public void MandoLocal()

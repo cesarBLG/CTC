@@ -28,6 +28,7 @@ import javax.swing.Timer;
 
 import scrt.Orientation;
 import scrt.ctc.TrackItem;
+import scrt.ctc.Signal.MainSignal;
 import scrt.regulation.Regulation;
 import scrt.regulation.timetable.Timetable;
 import scrt.regulation.timetable.TimetableEntry;
@@ -59,13 +60,13 @@ public class Train {
 	public Train(String name)
 	{
 		Name = name;
-		new Thread(new Runnable(){
+		/*new Thread(new Runnable(){
 			@Override
 			public void run()
 			{
 				assign(++foo);
 			}
-		}).start();
+		}).start();*/
 	}
 	public void assign(int number)
 	{
@@ -114,7 +115,7 @@ public class Train {
 	{
 		List<TrackItem> pathItems = new ArrayList<>();
 		TrackItem t = start.getNext(Direction);
-		while(t!=null && t.BlockState == Direction && (t.SignalLinked == null || t.SignalLinked.Cleared || t.SignalLinked.Override))
+		while(t!=null && t.BlockState == Direction && (t.SignalLinked == null || !(t.SignalLinked instanceof MainSignal) || t.SignalLinked.Cleared || ((MainSignal)t.SignalLinked).Override))
 		{
 			t = t.getNext(Direction);
 			pathItems.add(t);

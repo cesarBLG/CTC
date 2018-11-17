@@ -341,38 +341,42 @@ public class Junction extends TrackItem
 		}
 		if(!overlaps.isEmpty())
 		{
-			if(BlockState == Direction)
+			if(BlockState == Direction || BlockState == Orientation.Both)
 			{
-				blockPosition = Switch == Position.Straight ? 0 : 1;
-				blockChanged();
-			}
-			TrackItem.DirectExploration(FrontItems[Switch == Position.Straight ? 1 : 0], new TrackComparer()
-			{
-				@Override
-				public boolean condition(TrackItem t, Orientation dir, TrackItem p) 
+				if(BlockState == Direction)
 				{
-					if(t == null) return false;
-					boolean contains = false;
-					for(TrackItem i : overlaps.keySet())
+					blockPosition = 1-blockPosition;
+					blockChanged();
+				}
+				int pos = Switch == Position.Straight ? 0 : 1;
+				TrackItem.DirectExploration(FrontItems[1-pos], new TrackComparer()
+				{
+					@Override
+					public boolean condition(TrackItem t, Orientation dir, TrackItem p) 
 					{
-						if(overlaps.get(i)==Direction && t.overlaps.containsKey(i))
+						if(t == null) return false;
+						boolean contains = false;
+						for(TrackItem i : overlaps.keySet())
 						{
-							contains = true;
-							t.removeOverlap(i);
+							if(overlaps.get(i)==Direction && t.overlaps.containsKey(i))
+							{
+								contains = true;
+								t.removeOverlap(i);
+							}
 						}
+						return contains;
 					}
-					return contains;
-				}
-				@Override
-				public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p) 
+					@Override
+					public boolean criticalCondition(TrackItem t, Orientation dir, TrackItem p) 
+					{
+						return true;
+					}
+					
+				}, Direction);
+				for(TrackItem i : overlaps.keySet())
 				{
-					return true;
+					if(overlaps.get(i) == Direction) TrackItem.DirectExploration(FrontItems[pos], new MainSignal.BlockOverlap(FrontItems[pos], i), Direction);
 				}
-				
-			}, BlockState);
-			for(TrackItem i : overlaps.keySet())
-			{
-				if(overlaps.get(i) == Direction) TrackItem.DirectExploration(FrontItems[blockPosition], new MainSignal.BlockOverlap(FrontItems[blockPosition], i), BlockState);
 			}
 		}
 	}
@@ -385,7 +389,8 @@ public class Junction extends TrackItem
 	public boolean setSwitch(Position p)
 	{
 		//if(!Station.Opened) return false;
-		if(Switch==p||Occupied!=Orientation.None||Locked!=-1) return false;
+		if(Switch==p) return true;
+		if(Occupied!=Orientation.None||Locked!=-1) return false;
 		if(BlockingItem != null) return false;
 		if(!overlaps.isEmpty())
 		{
@@ -396,7 +401,9 @@ public class Junction extends TrackItem
 				{
 					if(overlaps.get(overlap) == Direction)
 					{
-						Signal lastsig = overlap.getNext(overlap.BlockState).SignalLinked;
+						TrackItem t = overlap.getNext(Direction);
+						if(!t.overlaps.contains(overlap)) t = overlap.getNext(Orientation.OppositeDir(Direction));
+						MainSignal lastsig = (MainSignal)t.SignalLinked;
 						if(TrackItem.DirectExploration(next, new MainSignal.OverlapAvailable(next, false, lastsig), BlockState)==null) return false;
 					}
 				}

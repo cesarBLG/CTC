@@ -74,8 +74,7 @@ public class Itinerary {
 				{
 					if(Switches.get(j.Number)==0)
 					{
-						j.setSwitch(Position.Straight);
-						if(j.Switch!=Position.Straight)
+						if(!j.setSwitch(Position.Straight))
 						{
 							Undo();
 							return;
@@ -83,8 +82,7 @@ public class Itinerary {
 					}
 					else
 					{
-						j.setSwitch(j.Class);
-						if(j.Switch!=j.Class)
+						if(!j.setSwitch(j.Class))
 						{
 							Undo();
 							return;
@@ -101,11 +99,6 @@ public class Itinerary {
 				if(sig.Name.equalsIgnoreCase(s))
 				{
 					((MainSignal) sig).UserRequest(true);
-					if(!sig.Cleared)
-					{
-						Undo();
-						return;
-					}
 				}
 			}
 		}
