@@ -1,0 +1,47 @@
+/*******************************************************************************
+ * Copyright (C) 2017-2018 César Benito Lamata
+ * 
+ * This file is part of SCRT.
+ * 
+ * SCRT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * SCRT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCRT.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+#pragma once
+#include "Orientation.h"
+#include <vector>
+#include "Packet.h"
+#include "TrackItemID.h"
+class ItineraryStablisher : public Packet
+{
+	public:
+	shared_ptr<TrackItemID> start;
+	shared_ptr<TrackItemID> destination;
+	Orientation dir;
+	ItineraryStablisher(shared_ptr<TrackItemID> start, shared_ptr<TrackItemID> destination) : Packet(PacketType::ItineraryStablisher, PacketGroup::Order), start(start), destination(destination) {}
+	vector<char> getListState() override
+	{
+		vector<char> data = start->getId();
+		vector<char> destid = destination->getId();
+		data.insert(data.end(), data.begin(), data.end());
+		data.push_back((char)dir);
+		return data;
+	}
+	Packet* byState(char *&data) override
+	{
+		TrackItemID *i1 = new TrackItemID(++data);
+		TrackItemID *i2 = new TrackItemID(++data);
+		ItineraryStablisher *ir = new ItineraryStablisher(shared_ptr<TrackItemID>(i1), shared_ptr<TrackItemID>(i2));
+		ir->dir = (Orientation)*data++;
+		return ir;
+	}
+};

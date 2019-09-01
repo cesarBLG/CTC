@@ -3,6 +3,9 @@ lib/
 *.jar
 *.dll
 *.class
+*.o
+*.d
+jmanifest.txt
 
 .DS_Store
 /nbproject/private/

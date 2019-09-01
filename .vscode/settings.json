@@ -1,0 +1,27 @@
+{
+    "files.associations": {
+        "*.java": "java",
+        "vector": "cpp",
+        "thread": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "unordered_map": "cpp",
+        "initializer_list": "cpp",
+        "string_view": "cpp",
+        "*.tcc": "cpp",
+        "unordered_set": "cpp",
+        "utility": "cpp",
+        "functional": "cpp",
+        "new": "cpp",
+        "condition_variable": "cpp",
+        "string": "cpp",
+        "fstream": "cpp",
+        "*.o": "cpp",
+        "ostream": "cpp",
+        "iosfwd": "cpp",
+        "sstream": "cpp",
+        "iostream": "cpp",
+        "set": "cpp"
+    }
+}
