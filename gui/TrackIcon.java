@@ -144,7 +144,7 @@ public class TrackIcon extends CTCIcon {
 		TrackIcon.setOpaque(true);
 		if(reg.OddRotation==reg.EvenRotation&&reg.EvenRotation!=0)
 		{
-			Icon ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/".concat(reg.EvenRotation == 1 ? "Left" : "Right").concat(".png")));
+			Icon ic = new ImageIcon(getClass().getResource("/scrt/common/Images/Track/".concat(reg.EvenRotation == 1 ? "Left" : "Right").concat(".png")));
 			TrackIcon.setIcon(ic);
 			TrackIcon.setBounds(0, 0, 30, 73);
 		}
@@ -159,24 +159,24 @@ public class TrackIcon extends CTCIcon {
 				Icon ic = null;
 				if(reg.OddRotation == 1 && reg.EvenRotation == 0)
 				{
-					ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/UpLeft.png"));
+					ic = new ImageIcon(getClass().getResource("/scrt/common/Images/Track/UpLeft.png"));
 					TrackIcon.setBounds(0, 35, 30, 38);
 				}
 				if(reg.OddRotation == -1 && reg.EvenRotation == 0)
 				{
-					ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/DownLeft.png"));
+					ic = new ImageIcon(getClass().getResource("/scrt/common/Images/Track/DownLeft.png"));
 					TrackIcon.setBounds(0, 0, 30, 38);
 				}
 				if(reg.EvenRotation == -1 && reg.OddRotation == 0)
 				{
 					TrackIcon.setHorizontalAlignment(JLabel.RIGHT);
-					ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/UpRight.png"));
+					ic = new ImageIcon(getClass().getResource("/scrt/common/Images/Track/UpRight.png"));
 					TrackIcon.setBounds(0, 35, 30, 38);
 				}
 				if(reg.EvenRotation == 1 && reg.OddRotation == 0)
 				{
 					TrackIcon.setHorizontalAlignment(JLabel.RIGHT);
-					ic = new ImageIcon(getClass().getResource("/scrt/Images/Track/DownRight.png"));
+					ic = new ImageIcon(getClass().getResource("/scrt/common/Images/Track/DownRight.png"));
 					TrackIcon.setBounds(0, 0, 30, 38);
 				}
 				TrackIcon.setIcon(ic);
@@ -244,7 +244,7 @@ public class TrackIcon extends CTCIcon {
 			{
 				n = "Block".concat(i.BlockState.name());
 			}
-			NumAxles.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Track/".concat(n).concat(".png"))));
+			NumAxles.setIcon(new ImageIcon(getClass().getResource("/scrt/common/Images/Track/".concat(n).concat(".png"))));
 			NumAxles.setForeground(i.OddAxles + i.EvenAxles == 0 ? Color.YELLOW : Color.red);
 			NumAxles.setText(Integer.toString(i.EvenAxles + i.OddAxles));
 		}

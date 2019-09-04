@@ -1,6 +1,9 @@
-SUBDIRS = common ctc simulator gui
-.PHONY: $(SUBDIRS)
-all: $(SUBDIRS)
+SUBDIRS = common ctc
+.PHONY: $(SUBDIRS) java
+all: $(SUBDIRS) java
 
 $(SUBDIRS):
 	$(MAKE) -C $@
+	
+java:
+	ant

@@ -1,12 +1,15 @@
 bin/
 lib/
+build/
 *.jar
 *.dll
 *.class
 *.o
 *.d
-jmanifest.txt
+*.so
 
 .DS_Store
 /nbproject/private/
 /dist/
+
+ctcd

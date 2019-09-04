@@ -1,0 +1,35 @@
+<project name="scrt" default="dist" basedir=".">
+    <description>
+        SCRT build file
+    </description>
+    <property name="src" location="."/>
+    <property name="build" location="build"/>
+    <target name="init">
+        <tstamp/>
+        <mkdir dir="${build}"/>
+    </target>
+    <target name="compile" depends="init" description="compile java">
+        <javac srcdir="${src}" destdir="${build}" sourcepath="${src}/.." includeantruntime="false">
+            <include name="**/common/**"/>
+            <include name="**/gui/**"/>
+            <include name="**/simulator/**"/>
+        </javac>
+    </target>
+    <target name="dist" depends="compile" description="generate jars">
+        <jar destfile="libscrt.jar" basedir="${build}">
+            <include name="**/common/**"/>
+            <fileset dir="${src}/..">
+                <include name="scrt/common/Images/**"/>
+            </fileset>
+        </jar>
+        <jar destfile="gui.jar" basedir="${build}" manifest="${src}/gui/manifest.mf">
+            <include name="**/gui/**"/>
+        </jar>
+        <jar destfile="simulator.jar" basedir="${build}" manifest="${src}/simulator/manifest.mf">
+            <include name="**/simulator/**"/>
+        </jar>
+    </target>
+    <target name="clean">
+        <delete dir="${build}"/>
+    </target>
+</project>

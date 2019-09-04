@@ -1,42 +1,25 @@
 SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp)
-OBJECTS=$(patsubst %.cpp, build/%.o, $(SOURCES))
-DEPENDS=$(patsubst %.cpp, build/%.d, $(SOURCES))
+BUILDPATH=../build/scrt/common
+OBJECTS=$(patsubst %.cpp, $(BUILDPATH)/%.o, $(SOURCES))
+DEPENDS=$(patsubst %.cpp, $(BUILDPATH)/%.d, $(SOURCES))
 HEADERS= $(wildcard *.h) $(wildcard */*.h)
 CFLAGS = -I. -Wall -Wno-sign-compare
 CFLAGS += -g -rdynamic -fpic
 CXXFLAGS = $(CFLAGS)
 LDFLAGS = -shared
-LIB = libscrt.so
+LIB = ../libscrt.so
 DESTDIR=.
 
-JSOURCES = $(wildcard *.java) $(wildcard */*.java)
-JCLASSES=$(patsubst %.java, build/scrt/common/%.class, $(JSOURCES))
-JFLAGS=-g
-JC=javac
-JVM=java
-JLIB = libscrt.jar
-
-all: $(LIB) $(JLIB)
+all: $(LIB)
 
 $(LIB): $(OBJECTS)
 	$(CXX) $(LDFLAGS) -o $(LIB) $(OBJECTS)
 
-build/%.d: %.cpp
-	$(CXX) $(CFLAGS) -MM $< -MT $(patsubst %.cpp, build/%.o, $<) > $@
-	echo "	$(CXX) $(CFLAGS) $< -c -o $(patsubst %.cpp, build/%.o, $<)" >> $@
+$(BUILDPATH)/%.d: %.cpp
+	$(CXX) $(CFLAGS) -MM $< -MT $(patsubst %.cpp, $(BUILDPATH)/%.o, $<) > $@
+	echo "	$(CXX) $(CFLAGS) $< -c -o $(patsubst %.cpp, $(BUILDPATH)/%.o, $<)" >> $@
 	
 include $(DEPENDS)
-
-$(JLIB): $(JCLASSES) jmanifest.txt
-	jar cfm $(JLIB) jmanifest.txt
-	cd build && zip -ur ../$(JLIB) scrt
-	cd ../.. && zip -ur scrt/common/$(JLIB) scrt/common/Images
-
-build/scrt/common/%.class: %.java
-	javac $< -d build -cp build -sourcepath ../..
-
-jmanifest.txt:
-	echo "" > jmanifest.txt
 
 install:
 	install -d $(DESTDIR)/bin/

@@ -1,0 +1,2 @@
+Main-Class: scrt.simulator.Simulator
+Class-Path: libscrt.jar

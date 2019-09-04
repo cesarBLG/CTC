@@ -108,11 +108,11 @@ public class SignalIcon extends CTCIcon {
 		}
 		else
 		{
-			pie.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/Pie.png")));
-			mastil1 = new ImageIcon(getClass().getResource("/scrt/Images/Signals/Mastil.png"));
-			mastil2 = new ImageIcon(getClass().getResource("/scrt/Images/Signals/Recuadro.png"));
-			mastil3 = new ImageIcon(getClass().getResource("/scrt/Images/Signals/MT.png"));
-			foco.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Signals/Foco.png")));
+			pie.setIcon(new ImageIcon(getClass().getResource("/scrt/common/Images/Signals/Pie.png")));
+			mastil1 = new ImageIcon(getClass().getResource("/scrt/common/Images/Signals/Mastil.png"));
+			mastil2 = new ImageIcon(getClass().getResource("/scrt/common/Images/Signals/Recuadro.png"));
+			mastil3 = new ImageIcon(getClass().getResource("/scrt/common/Images/Signals/MT.png"));
+			foco.setIcon(new ImageIcon(getClass().getResource("/scrt/common/Images/Signals/Foco.png")));
 			sucesion.setHorizontalAlignment(id.Direction == Orientation.Even ? JLabel.LEFT : JLabel.RIGHT);
 			sucesion.setHorizontalTextPosition(id.Direction == Orientation.Even ? JLabel.RIGHT : JLabel.LEFT);
 			sucesion.setFont(new Font("Tahoma", 0, 9));

@@ -1,0 +1,2 @@
+Main-Class: scrt.gui.GUI
+Class-Path: libscrt.jar

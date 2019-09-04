@@ -176,7 +176,7 @@ public class JunctionIcon extends TrackIcon {
 		g.anchor = reg.Direction == Orientation.Even ? GridBagConstraints.EAST : GridBagConstraints.WEST;
 		Desv.setBackground(Color.yellow);
 		Desv.setOpaque(true);
-		Desv.setIcon(new ImageIcon(getClass().getResource("/scrt/Images/Junction/".concat(reg.Class.name()).concat(".png"))));
+		Desv.setIcon(new ImageIcon(getClass().getResource("/scrt/common/Images/Junction/".concat(reg.Class.name()).concat(".png"))));
 		Desv.setPreferredSize(new Dimension(9, 33));
 		Desv.setMaximumSize(new Dimension(9, 33));
 		Desv.setMinimumSize(new Dimension(9, 33));

@@ -60,7 +60,7 @@ public class IconDatabase
 	{
 		if(!aspects.containsKey(a))
 		{
-			Icon ic = new ImageIcon(IconDatabase.class.getResource("/scrt/Images/Signals".concat(a.fixedSignal ? "/Fixed/" : (a.exitIndicator ? "/IS/" : "/")).concat(a.aspect.name().concat(".png"))));
+			Icon ic = new ImageIcon(IconDatabase.class.getResource("/scrt/common/Images/Signals".concat(a.fixedSignal ? "/Fixed/" : (a.exitIndicator ? "/IS/" : "/")).concat(a.aspect.name().concat(".png"))));
 			if(a.direction == Orientation.Odd)
 			{
 				ic = getRotated(ic);
